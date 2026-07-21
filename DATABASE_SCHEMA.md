@@ -260,6 +260,3 @@ Instructor-marked, tied to a specific booking (lesson).
 | User (learner) → Review | One-to-Many |
 
 ---
-
-## Next Step (Day 3)
-This schema will be directly translated into a `schema.prisma` file in `server/prisma/schema.prisma`, then migrated into the PostgreSQL database.
