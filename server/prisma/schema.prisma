@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  school_owner
+  instructor
+  learner
+}
+
+enum VerificationStatus {
+  pending
+  verified
+  rejected
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  completed
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+}
+
+enum SubscriptionPlan {
+  monthly
+  yearly
+}
+
+enum SubscriptionStatus {
+  active
+  expired
+}
+
+enum AttendanceStatus {
+  present
+  absent
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  name          String
+  email         String         @unique
+  password      String
+  phone         String
+  role          Role
+  createdAt     DateTime       @default(now())
+
+  drivingSchool DrivingSchool?
+  instructor    Instructor?
+  bookings      Booking[]
+  reviews       Review[]
+}
+
+model DrivingSchool {
+  id                  Int                @id @default(autoincrement())
+  ownerId             Int                @unique
+  owner               User               @relation(fields: [ownerId], references: [id])
+  name                String
+  description         String?
+  city                String
+  state               String
+  address             String
+  verificationStatus  VerificationStatus @default(pending)
+  documentsUrl        String?
+  createdAt           DateTime           @default(now())
+
+  branches            Branch[]
+  instructors         Instructor[]
+  courses             Course[]
+  subscriptions       Subscription[]
+  reviews             Review[]
+}
+
+model Branch {
+  id        Int           @id @default(autoincrement())
+  schoolId  Int
+  school    DrivingSchool @relation(fields: [schoolId], references: [id])
+  city      String
+  state     String
+  address   String
+}
+
+model Instructor {
+  id               Int           @id @default(autoincrement())
+  userId           Int           @unique
+  user             User          @relation(fields: [userId], references: [id])
+  schoolId         Int
+  school           DrivingSchool @relation(fields: [schoolId], references: [id])
+  specialization   String?
+  experienceYears  Int?
+
+  bookings         Booking[]
+}
+
+model Course {
+  id            Int           @id @default(autoincrement())
+  schoolId      Int
+  school        DrivingSchool @relation(fields: [schoolId], references: [id])
+  title         String
+  description   String?
+  price         Decimal
+  durationDays  Int
+
+  bookings      Booking[]
+}
+
+model Booking {
+  id            Int           @id @default(autoincrement())
+  learnerId     Int
+  learner       User          @relation(fields: [learnerId], references: [id])
+  courseId      Int
+  course        Course        @relation(fields: [courseId], references: [id])
+  instructorId  Int
+  instructor    Instructor    @relation(fields: [instructorId], references: [id])
+  status        BookingStatus @default(pending)
+  bookedDate    DateTime
+  createdAt     DateTime      @default(now())
+
+  payment       Payment?
+  attendance    Attendance[]
+}
+
+model Payment {
+  id               Int           @id @default(autoincrement())
+  bookingId        Int           @unique
+  booking          Booking       @relation(fields: [bookingId], references: [id])
+  amount           Decimal
+  status           PaymentStatus @default(pending)
+  razorpayOrderId  String?
+  paidAt           DateTime?
+}
+
+model Subscription {
+  id         Int                 @id @default(autoincrement())
+  schoolId   Int
+  school     DrivingSchool       @relation(fields: [schoolId], references: [id])
+  plan       SubscriptionPlan
+  status     SubscriptionStatus  @default(active)
+  startDate  DateTime
+  endDate    DateTime
+}
+
+model Review {
+  id         Int           @id @default(autoincrement())
+  learnerId  Int
+  learner    User          @relation(fields: [learnerId], references: [id])
+  schoolId   Int
+  school     DrivingSchool @relation(fields: [schoolId], references: [id])
+  rating     Int
+  comment    String?
+  createdAt  DateTime      @default(now())
+}
+
+model Attendance {
+  id         Int               @id @default(autoincrement())
+  bookingId  Int
+  booking    Booking           @relation(fields: [bookingId], references: [id])
+  date       DateTime
+  status     AttendanceStatus
+  notes      String?
+}
