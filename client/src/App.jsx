@@ -5,6 +5,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import LearnerDashboard from './pages/learner/LearnerDashboard';
+import Home from './pages/public/Home';
 
 // Placeholder simple components for other roles - build these out fully in later parts
 const AdminDashboard = () => <div style={{ padding: '40px' }}><h1>Admin Dashboard</h1></div>;
@@ -16,7 +17,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
