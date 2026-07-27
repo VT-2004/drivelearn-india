@@ -6,6 +6,8 @@ import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import LearnerDashboard from './pages/learner/LearnerDashboard';
 import Home from './pages/public/Home';
+import ForSchools from './pages/public/ForSchools';
+import ForLearners from './pages/public/ForLearners';
 
 // Placeholder simple components for other roles - build these out fully in later parts
 const AdminDashboard = () => <div style={{ padding: '40px' }}><h1>Admin Dashboard</h1></div>;
@@ -20,6 +22,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/for-schools" element={<ForSchools />} />
+          <Route path="/for-learners" element={<ForLearners />} />
 
           <Route
             path="/learner"
