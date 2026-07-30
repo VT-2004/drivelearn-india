@@ -10,6 +10,9 @@ import {
   getInstructors,
   addInstructor,
   deleteInstructor,
+  getMyCourses,
+  addCourse,
+  deleteCourse,
 } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
@@ -39,6 +42,11 @@ const SchoolDashboard = () => {
   });
   const [instructorError, setInstructorError] = useState('');
 
+  const [courses, setCourses] = useState([]);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [courseData, setCourseData] = useState({ title: '', description: '', price: '', durationDays: '' });
+  const [courseError, setCourseError] = useState('');
+
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
@@ -54,14 +62,16 @@ const SchoolDashboard = () => {
         address: schoolRes.data.school.address,
       });
 
-      const [statsRes, branchRes, instructorRes] = await Promise.all([
+      const [statsRes, branchRes, instructorRes, courseRes] = await Promise.all([
         getSchoolStats(),
         getMyBranches(),
         getInstructors(),
+        getMyCourses(),
       ]);
       setStats(statsRes.data.stats);
       setBranches(branchRes.data.branches);
       setInstructors(instructorRes.data.instructors);
+      setCourses(courseRes.data.courses);
     } catch (err) {
       if (err.response?.status === 404) {
         navigate('/school/register');
@@ -128,6 +138,29 @@ const SchoolDashboard = () => {
   const handleDeleteInstructor = async (id) => {
     if (!window.confirm('Remove this instructor?')) return;
     await deleteInstructor(id);
+    loadData();
+  };
+
+  const handleCourseChange = (e) => {
+    setCourseData({ ...courseData, [e.target.name]: e.target.value });
+  };
+
+  const handleAddCourse = async (e) => {
+    e.preventDefault();
+    setCourseError('');
+    try {
+      await addCourse(courseData);
+      setCourseData({ title: '', description: '', price: '', durationDays: '' });
+      setShowCourseForm(false);
+      loadData();
+    } catch (err) {
+      setCourseError(err.response?.data?.error || 'Failed to add course');
+    }
+  };
+
+  const handleDeleteCourse = async (id) => {
+    if (!window.confirm('Delete this course?')) return;
+    await deleteCourse(id);
     loadData();
   };
 
@@ -272,6 +305,41 @@ const SchoolDashboard = () => {
               {i.experienceYears && ` · ${i.experienceYears} yrs exp`}
             </span>
             <button className="action-btn reject-btn" onClick={() => handleDeleteInstructor(i.id)}>Remove</button>
+          </div>
+        ))
+      )}
+
+      <div className="dash-header" style={{ marginTop: '40px' }}>
+        <h1 style={{ fontSize: '22px' }}>Courses</h1>
+        <button className="btn btn-primary" onClick={() => setShowCourseForm(!showCourseForm)}>
+          {showCourseForm ? 'Cancel' : '+ Add Course'}
+        </button>
+      </div>
+
+      {showCourseForm && (
+        <form className="form-card" onSubmit={handleAddCourse} style={{ marginBottom: '24px' }}>
+          <label>Course Title</label>
+          <input type="text" name="title" value={courseData.title} onChange={handleCourseChange} required />
+          <label>Description</label>
+          <textarea name="description" value={courseData.description} onChange={handleCourseChange} />
+          <label>Price (₹)</label>
+          <input type="number" name="price" value={courseData.price} onChange={handleCourseChange} required />
+          <label>Duration (Days)</label>
+          <input type="number" name="durationDays" value={courseData.durationDays} onChange={handleCourseChange} required />
+          {courseError && <p style={{ color: 'red', fontSize: '14px' }}>{courseError}</p>}
+          <button type="submit" className="btn btn-primary submit-btn">Save Course</button>
+        </form>
+      )}
+
+      {courses.length === 0 ? (
+        <div className="empty-state">No courses added yet. Add one so learners can book it.</div>
+      ) : (
+        courses.map((c) => (
+          <div className="branch-card" key={c.id}>
+            <span>
+              <strong>{c.title}</strong> — ₹{Number(c.price).toLocaleString('en-IN')} · {c.durationDays} days
+            </span>
+            <button className="action-btn reject-btn" onClick={() => handleDeleteCourse(c.id)}>Delete</button>
           </div>
         ))
       )}

@@ -12,6 +12,8 @@ import Contact from './pages/public/Contact';
 import RegisterSchool from './pages/school/RegisterSchool';
 import SchoolDashboard from './pages/school/SchoolDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import SearchSchools from './pages/learner/SearchSchools';
+import SchoolProfile from './pages/learner/SchoolProfile';
 
 // Placeholder simple components for other roles - build these out fully in later parts
 const InstructorDashboard = () => <div style={{ padding: '40px' }}><h1>Instructor Dashboard</h1></div>;
@@ -32,7 +34,15 @@ function App() {
             path="/learner"
             element={
               <ProtectedRoute allowedRoles={['learner']}>
-                <LearnerDashboard />
+                <SearchSchools />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learner/school/:id"
+            element={
+              <ProtectedRoute allowedRoles={['learner']}>
+                <SchoolProfile />
               </ProtectedRoute>
             }
           />

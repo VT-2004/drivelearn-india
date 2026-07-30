@@ -43,4 +43,15 @@ export const addInstructor = (data) => api.post('/schools/instructors', data);
 export const getInstructors = () => api.get('/schools/instructors');
 export const deleteInstructor = (id) => api.delete(`/schools/instructors/${id}`);
 
+// ===== Courses (School Owner) =====
+export const addCourse = (data) => api.post('/schools/courses', data);
+export const getMyCourses = () => api.get('/schools/courses');
+export const updateCourse = (id, data) => api.put(`/schools/courses/${id}`, data);
+export const deleteCourse = (id) => api.delete(`/schools/courses/${id}`);
+
+// ===== Public (Learner Search) =====
+export const searchSchools = (city) =>
+  api.get('/public/schools', { params: city ? { city } : {} });
+export const getSchoolProfile = (id) => api.get(`/public/schools/${id}`);
+
 export default api;

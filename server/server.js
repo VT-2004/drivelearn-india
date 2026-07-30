@@ -5,6 +5,8 @@ const authRoutes = require('./src/routes/authRoutes');
 const testRoutes = require('./src/routes/testRoutes');
 const path = require('path');
 const schoolRoutes = require('./src/routes/schoolRoutes');
+const courseRoutes = require('./src/routes/courseRoutes');
+const publicRoutes = require('./src/routes/publicRoutes');
 
 
 const app = express();
@@ -20,6 +22,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/schools/courses', courseRoutes);
+app.use('/api/public', publicRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
