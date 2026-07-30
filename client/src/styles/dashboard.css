@@ -1,0 +1,139 @@
+
+/* ===== Dashboard Layout ===== */
+.dash-page {
+  padding: 40px 48px;
+  min-height: 100vh;
+  background: var(--color-offwhite, #F7F6F2);
+}
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.dash-header h1 {
+  font-family: var(--font-display, sans-serif);
+  font-size: 32px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* ===== Form Card ===== */
+.form-card {
+  background: white;
+  border: 1px solid #E4E1D9;
+  border-radius: 10px;
+  padding: 32px;
+  max-width: 600px;
+}
+
+.form-card label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  margin-top: 16px;
+}
+
+.form-card label:first-child {
+  margin-top: 0;
+}
+
+.form-card input,
+.form-card textarea,
+.form-card select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #D8D4C9;
+  border-radius: 4px;
+  font-family: var(--font-body, sans-serif);
+  font-size: 14px;
+}
+
+.form-card textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.form-card .submit-btn {
+  margin-top: 24px;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #8B929A;
+  margin-top: 4px;
+}
+
+/* ===== Status Badge ===== */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending { background: #FFF3CD; color: #856404; }
+.status-verified { background: #D4EDDA; color: #155724; }
+.status-rejected { background: #F8D7DA; color: #721C24; }
+
+/* ===== Table ===== */
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #E4E1D9;
+}
+
+.dash-table th {
+  background: #1C1F22;
+  color: white;
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dash-table td {
+  padding: 14px 16px;
+  border-top: 1px solid #EFEDE6;
+  font-size: 14px;
+}
+
+.action-btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.approve-btn { background: #4CAF50; color: white; }
+.reject-btn { background: #E14B3C; color: white; }
+
+/* ===== Branch List ===== */
+.branch-card {
+  background: white;
+  border: 1px solid #E4E1D9;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #8B929A;
+}

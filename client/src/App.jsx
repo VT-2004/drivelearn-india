@@ -9,10 +9,11 @@ import Home from './pages/public/Home';
 import ForSchools from './pages/public/ForSchools';
 import ForLearners from './pages/public/ForLearners';
 import Contact from './pages/public/Contact';
+import RegisterSchool from './pages/school/RegisterSchool';
+import SchoolDashboard from './pages/school/SchoolDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Placeholder simple components for other roles - build these out fully in later parts
-const AdminDashboard = () => <div style={{ padding: '40px' }}><h1>Admin Dashboard</h1></div>;
-const SchoolDashboard = () => <div style={{ padding: '40px' }}><h1>School Owner Dashboard</h1></div>;
 const InstructorDashboard = () => <div style={{ padding: '40px' }}><h1>Instructor Dashboard</h1></div>;
 
 function App() {
@@ -48,6 +49,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['school_owner']}>
                 <SchoolDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school/register"
+            element={
+              <ProtectedRoute allowedRoles={['school_owner']}>
+                <RegisterSchool />
               </ProtectedRoute>
             }
           />
