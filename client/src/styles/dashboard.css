@@ -154,6 +154,15 @@
 .approve-btn { background: #4CAF50; color: white; }
 .reject-btn { background: #E14B3C; color: white; }
 
+.dash-price-tag {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: #B8860B;
+  background: #FFF8E1;
+  padding: 3px 10px;
+  border-radius: 5px;
+}
+
 /* ===== Branch List ===== */
 .branch-card {
   background: white;

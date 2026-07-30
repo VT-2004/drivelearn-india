@@ -57,10 +57,11 @@ const SchoolProfile = () => {
                     </p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 600 }}>
+                    <div className="course-price-tag">
                       ₹{Number(c.price).toLocaleString('en-IN')}
                     </div>
-                    <button className="btn btn-primary" style={{ marginTop: '8px', fontSize: '13px', padding: '8px 16px' }} disabled>
+                    <br />
+                    <button className="btn btn-primary" style={{ marginTop: '10px', fontSize: '13px', padding: '8px 16px' }} disabled>
                       Book (coming soon)
                     </button>
                   </div>

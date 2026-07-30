@@ -337,7 +337,7 @@ const SchoolDashboard = () => {
         courses.map((c) => (
           <div className="branch-card" key={c.id}>
             <span>
-              <strong>{c.title}</strong> — ₹{Number(c.price).toLocaleString('en-IN')} · {c.durationDays} days
+              <strong>{c.title}</strong> — <span className="dash-price-tag">₹{Number(c.price).toLocaleString('en-IN')}</span> · {c.durationDays} days
             </span>
             <button className="action-btn reject-btn" onClick={() => handleDeleteCourse(c.id)}>Delete</button>
           </div>
