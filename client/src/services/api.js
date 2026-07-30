@@ -6,7 +6,6 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Automatically attach the token to every request if it exists
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -25,6 +24,8 @@ export const registerSchool = (formData) =>
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 export const getMySchool = () => api.get('/schools/my-school');
+export const updateSchool = (data) => api.put('/schools/my-school', data);
+export const getSchoolStats = () => api.get('/schools/stats');
 
 // ===== School (Admin) =====
 export const getAllSchools = (status) =>
@@ -36,5 +37,10 @@ export const rejectSchool = (id) => api.patch(`/schools/${id}/reject`);
 export const addBranch = (data) => api.post('/schools/branches', data);
 export const getMyBranches = () => api.get('/schools/branches');
 export const deleteBranch = (id) => api.delete(`/schools/branches/${id}`);
+
+// ===== Instructors =====
+export const addInstructor = (data) => api.post('/schools/instructors', data);
+export const getInstructors = () => api.get('/schools/instructors');
+export const deleteInstructor = (id) => api.delete(`/schools/instructors/${id}`);
 
 export default api;

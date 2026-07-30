@@ -117,10 +117,74 @@ const rejectSchool = async (req, res) => {
   }
 };
 
+// SCHOOL OWNER: Update school profile
+const updateSchool = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const { name, description, city, state, address } = req.body;
+
+    const school = await prisma.drivingSchool.findUnique({ where: { ownerId } });
+    if (!school) {
+      return res.status(404).json({ error: 'No school registered yet' });
+    }
+
+    const updated = await prisma.drivingSchool.update({
+      where: { ownerId },
+      data: {
+        name: name ?? school.name,
+        description: description ?? school.description,
+        city: city ?? school.city,
+        state: state ?? school.state,
+        address: address ?? school.address,
+      },
+    });
+
+    res.json({ message: 'School profile updated', school: updated });
+  } catch (error) {
+    console.error('Update school error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+// SCHOOL OWNER: Get dashboard stats overview
+const getSchoolStats = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+
+    const school = await prisma.drivingSchool.findUnique({ where: { ownerId } });
+    if (!school) {
+      return res.status(404).json({ error: 'No school registered yet' });
+    }
+
+    const [branchCount, instructorCount, courseCount, bookingCount] = await Promise.all([
+      prisma.branch.count({ where: { schoolId: school.id } }),
+      prisma.instructor.count({ where: { schoolId: school.id } }),
+      prisma.course.count({ where: { schoolId: school.id } }),
+      prisma.booking.count({
+        where: { course: { schoolId: school.id } },
+      }),
+    ]);
+
+    res.json({
+      stats: {
+        branches: branchCount,
+        instructors: instructorCount,
+        courses: courseCount,
+        bookings: bookingCount,
+      },
+    });
+  } catch (error) {
+    console.error('Get stats error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
 module.exports = {
   registerSchool,
   getMySchool,
   getAllSchools,
   approveSchool,
   rejectSchool,
+  updateSchool,
+  getSchoolStats,
 };
