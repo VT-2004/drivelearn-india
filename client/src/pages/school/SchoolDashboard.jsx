@@ -13,6 +13,8 @@ import {
   getMyCourses,
   addCourse,
   deleteCourse,
+  getSchoolBookings,
+  cancelBooking,
 } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
@@ -47,6 +49,8 @@ const SchoolDashboard = () => {
   const [courseData, setCourseData] = useState({ title: '', description: '', price: '', durationDays: '' });
   const [courseError, setCourseError] = useState('');
 
+  const [bookings, setBookings] = useState([]);
+
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
@@ -62,16 +66,18 @@ const SchoolDashboard = () => {
         address: schoolRes.data.school.address,
       });
 
-      const [statsRes, branchRes, instructorRes, courseRes] = await Promise.all([
+      const [statsRes, branchRes, instructorRes, courseRes, bookingRes] = await Promise.all([
         getSchoolStats(),
         getMyBranches(),
         getInstructors(),
         getMyCourses(),
+        getSchoolBookings(),
       ]);
       setStats(statsRes.data.stats);
       setBranches(branchRes.data.branches);
       setInstructors(instructorRes.data.instructors);
       setCourses(courseRes.data.courses);
+      setBookings(bookingRes.data.bookings);
     } catch (err) {
       if (err.response?.status === 404) {
         navigate('/school/register');
@@ -161,6 +167,12 @@ const SchoolDashboard = () => {
   const handleDeleteCourse = async (id) => {
     if (!window.confirm('Delete this course?')) return;
     await deleteCourse(id);
+    loadData();
+  };
+
+  const handleCancelBooking = async (id) => {
+    if (!window.confirm('Cancel this booking?')) return;
+    await cancelBooking(id);
     loadData();
   };
 
@@ -342,6 +354,43 @@ const SchoolDashboard = () => {
             <button className="action-btn reject-btn" onClick={() => handleDeleteCourse(c.id)}>Delete</button>
           </div>
         ))
+      )}
+
+      <div className="dash-header" style={{ marginTop: '40px' }}>
+        <h1 style={{ fontSize: '22px' }}>Bookings</h1>
+      </div>
+
+      {bookings.length === 0 ? (
+        <div className="empty-state">No bookings yet.</div>
+      ) : (
+        <table className="dash-table">
+          <thead>
+            <tr>
+              <th>Learner</th>
+              <th>Course</th>
+              <th>Instructor</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.map((b) => (
+              <tr key={b.id}>
+                <td>{b.learner.name}<br /><span style={{ color: '#8B929A', fontSize: '12px' }}>{b.learner.phone}</span></td>
+                <td>{b.course.title}</td>
+                <td>{b.instructor.user.name}</td>
+                <td>{new Date(b.bookedDate).toLocaleDateString('en-IN')}</td>
+                <td><span className={`status-badge ${b.status === 'cancelled' ? 'status-rejected' : b.status === 'pending' ? 'status-pending' : 'status-verified'}`}>{b.status}</span></td>
+                <td>
+                  {(b.status === 'pending' || b.status === 'confirmed') && (
+                    <button className="action-btn reject-btn" onClick={() => handleCancelBooking(b.id)}>Cancel</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );

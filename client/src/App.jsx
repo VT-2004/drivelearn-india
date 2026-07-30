@@ -4,7 +4,6 @@ import ProtectedRoute from './routes/ProtectedRoute';
 
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
-import LearnerDashboard from './pages/learner/LearnerDashboard';
 import Home from './pages/public/Home';
 import ForSchools from './pages/public/ForSchools';
 import ForLearners from './pages/public/ForLearners';
@@ -14,6 +13,7 @@ import SchoolDashboard from './pages/school/SchoolDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SearchSchools from './pages/learner/SearchSchools';
 import SchoolProfile from './pages/learner/SchoolProfile';
+import MyBookings from './pages/learner/MyBookings';
 
 // Placeholder simple components for other roles - build these out fully in later parts
 const InstructorDashboard = () => <div style={{ padding: '40px' }}><h1>Instructor Dashboard</h1></div>;
@@ -35,6 +35,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['learner']}>
                 <SearchSchools />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learner/bookings"
+            element={
+              <ProtectedRoute allowedRoles={['learner']}>
+                <MyBookings />
               </ProtectedRoute>
             }
           />

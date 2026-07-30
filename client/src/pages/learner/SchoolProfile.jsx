@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getSchoolProfile } from '../../services/api';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getSchoolProfile, createBooking } from '../../services/api';
 import '../../styles/search.css';
 
 const SchoolProfile = () => {
@@ -9,32 +9,82 @@ const SchoolProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [bookingCourse, setBookingCourse] = useState(null); // course being booked
+  const [bookingDate, setBookingDate] = useState('');
+  const [bookingInstructorId, setBookingInstructorId] = useState('');
+  const [bookingError, setBookingError] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const navigate = useNavigate();
+
+  const load = async () => {
+    try {
+      const res = await getSchoolProfile(id);
+      setSchool(res.data.school);
+    } catch (err) {
+      setError(err.response?.data?.error || 'School not found');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await getSchoolProfile(id);
-        setSchool(res.data.school);
-      } catch (err) {
-        setError(err.response?.data?.error || 'School not found');
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, [id]);
+
+  const openBookingForm = (course) => {
+    setBookingCourse(course);
+    setBookingDate('');
+    setBookingInstructorId('');
+    setBookingError('');
+    setBookingSuccess('');
+  };
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    setBookingError('');
+    setSubmitting(true);
+    try {
+      await createBooking({
+        courseId: bookingCourse.id,
+        instructorId: bookingInstructorId || undefined,
+        bookedDate: bookingDate,
+      });
+      setBookingSuccess('Booking created successfully! View it under "My Bookings".');
+      setBookingCourse(null);
+    } catch (err) {
+      setBookingError(err.response?.data?.error || 'Failed to create booking');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) return <div style={{ padding: '60px' }}>Loading...</div>;
   if (error) return <div style={{ padding: '60px' }}>{error} — <Link to="/learner">Go back to search</Link></div>;
   if (!school) return null;
 
+  const today = new Date().toISOString().split('T')[0];
+
   return (
     <div>
       <div className="profile-hero">
-        <Link to="/learner" style={{ color: '#F2B705', fontSize: '13px', textDecoration: 'none' }}>← Back to search</Link>
-        <span className="verified-tag" style={{ marginTop: '16px' }}>Verified School</span>
-        <h1>{school.name}</h1>
-        <p style={{ color: '#C8CDD2' }}>{school.address}, {school.city}, {school.state}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <Link to="/learner" style={{ color: '#F2B705', fontSize: '13px', textDecoration: 'none' }}>← Back to search</Link>
+            <span className="verified-tag" style={{ marginTop: '16px' }}>Verified School</span>
+            <h1>{school.name}</h1>
+            <p style={{ color: '#C8CDD2' }}>{school.address}, {school.city}, {school.state}</p>
+          </div>
+          <Link to="/learner/bookings" className="btn btn-outline">My Bookings</Link>
+        </div>
       </div>
+
+      {bookingSuccess && (
+        <div style={{ background: '#E8F5E9', color: '#2E7D32', padding: '14px 48px', fontSize: '14px' }}>
+          {bookingSuccess}
+        </div>
+      )}
 
       <div className="profile-body">
         <div>
@@ -49,22 +99,66 @@ const SchoolProfile = () => {
               <p style={{ color: '#8B929A' }}>No courses listed yet.</p>
             ) : (
               school.courses.map((c) => (
-                <div className="course-card" key={c.id}>
-                  <div>
-                    <h4>{c.title}</h4>
-                    <p style={{ color: '#6B7680', fontSize: '14px', margin: 0 }}>
-                      {c.description} · {c.durationDays} days
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="course-price-tag">
-                      ₹{Number(c.price).toLocaleString('en-IN')}
+                <div key={c.id}>
+                  <div className="course-card">
+                    <div>
+                      <h4>{c.title}</h4>
+                      <p style={{ color: '#6B7680', fontSize: '14px', margin: 0 }}>
+                        {c.description} · {c.durationDays} days
+                      </p>
                     </div>
-                    <br />
-                    <button className="btn btn-primary" style={{ marginTop: '10px', fontSize: '13px', padding: '8px 16px' }} disabled>
-                      Book (coming soon)
-                    </button>
+                    <div style={{ textAlign: 'right' }}>
+                      <div className="course-price-tag">
+                        ₹{Number(c.price).toLocaleString('en-IN')}
+                      </div>
+                      <br />
+                      <button
+                        className="btn btn-primary"
+                        style={{ marginTop: '10px', fontSize: '13px', padding: '8px 16px' }}
+                        onClick={() => openBookingForm(c)}
+                      >
+                        Book This Course
+                      </button>
+                    </div>
                   </div>
+
+                  {bookingCourse?.id === c.id && (
+                    <form className="form-card" onSubmit={handleBookingSubmit} style={{ marginBottom: '20px' }}>
+                      <h4 style={{ marginTop: 0 }}>Book: {c.title}</h4>
+
+                      <label>Preferred Date</label>
+                      <input
+                        type="date"
+                        min={today}
+                        value={bookingDate}
+                        onChange={(e) => setBookingDate(e.target.value)}
+                        required
+                      />
+
+                      {school.instructors.length > 1 && (
+                        <>
+                          <label>Instructor (optional)</label>
+                          <select value={bookingInstructorId} onChange={(e) => setBookingInstructorId(e.target.value)}>
+                            <option value="">Auto-assign available instructor</option>
+                            {school.instructors.map((i) => (
+                              <option key={i.id} value={i.id}>{i.user.name}{i.specialization ? ` — ${i.specialization}` : ''}</option>
+                            ))}
+                          </select>
+                        </>
+                      )}
+
+                      {bookingError && <p style={{ color: 'red', fontSize: '14px' }}>{bookingError}</p>}
+
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                        <button type="submit" className="btn btn-primary" disabled={submitting}>
+                          {submitting ? 'Booking...' : 'Confirm Booking'}
+                        </button>
+                        <button type="button" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }} onClick={() => setBookingCourse(null)}>
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               ))
             )}
@@ -98,12 +192,6 @@ const SchoolProfile = () => {
                 </p>
               ))
             )}
-          </div>
-          <div className="sidebar-card">
-            <h4>Contact</h4>
-            <p style={{ fontSize: '14px', color: '#6B7680' }}>
-              Booking and direct contact will be available soon.
-            </p>
           </div>
         </div>
       </div>

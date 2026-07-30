@@ -54,4 +54,10 @@ export const searchSchools = (city) =>
   api.get('/public/schools', { params: city ? { city } : {} });
 export const getSchoolProfile = (id) => api.get(`/public/schools/${id}`);
 
+// ===== Bookings =====
+export const createBooking = (data) => api.post('/bookings', data);
+export const getMyBookings = () => api.get('/bookings/my');
+export const getSchoolBookings = () => api.get('/bookings/school');
+export const cancelBooking = (id) => api.patch(`/bookings/${id}/cancel`);
+
 export default api;
