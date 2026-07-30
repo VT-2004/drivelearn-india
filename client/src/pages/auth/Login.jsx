@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import '../../styles/auth.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -26,7 +27,6 @@ const Login = () => {
 
       login(user, token);
 
-      // Redirect based on role
       const roleRoutes = {
         admin: '/admin',
         school_owner: '/school',
@@ -43,39 +43,55 @@ const Login = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '80px auto', padding: '20px' }}>
-      <h2>Login to DriveLearn India</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '12px' }}>
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
+    <div className="auth-page">
+      <div className="auth-visual">
+        <Link to="/" className="auth-back-home">← Back to home</Link>
+        <div className="auth-visual-logo">
+          Drive<span>Learn</span> India
         </div>
-        <div style={{ marginBottom: '12px' }}>
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
+        <h2>Welcome back to the road ahead</h2>
+        <p>
+          Log in to manage your bookings, track your progress, or run your
+          driving school — all from one place.
+        </p>
+      </div>
+
+      <div className="auth-form-side">
+        <div className="auth-form-box">
+          <h2>Log In</h2>
+          <p className="auth-subtext">Enter your credentials to continue</p>
+
+          <form onSubmit={handleSubmit}>
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+
+            {error && <div className="auth-error">{error}</div>}
+
+            <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>
+              {loading ? 'Logging in...' : 'Log In'}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            Don't have an account? <Link to="/signup">Sign up</Link>
+          </p>
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ padding: '10px 20px' }}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      <p style={{ marginTop: '12px' }}>
-        Don't have an account? <Link to="/signup">Sign up</Link>
-      </p>
+      </div>
     </div>
   );
 };

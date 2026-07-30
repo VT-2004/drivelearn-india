@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signupUser } from '../../services/api';
+import '../../styles/auth.css';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -38,75 +39,81 @@ const Signup = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '80px auto', padding: '20px' }}>
-      <h2>Create an Account</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '12px' }}>
-          <label>Full Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
+    <div className="auth-page">
+      <div className="auth-visual">
+        <Link to="/" className="auth-back-home">← Back to home</Link>
+        <div className="auth-visual-logo">
+          Drive<span>Learn</span> India
         </div>
-        <div style={{ marginBottom: '12px' }}>
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
+        <h2>Start your journey with us</h2>
+        <p>
+          Whether you're learning to drive or running a driving school,
+          your digital dashboard starts here.
+        </p>
+      </div>
+
+      <div className="auth-form-side">
+        <div className="auth-form-box">
+          <h2>Create Account</h2>
+          <p className="auth-subtext">Fill in your details to get started</p>
+
+          <form onSubmit={handleSubmit}>
+            <label>Full Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+
+            <label>Phone</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+            />
+
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+
+            <label>I am a</label>
+            <select name="role" value={formData.role} onChange={handleChange}>
+              <option value="learner">Learner</option>
+              <option value="school_owner">Driving School Owner</option>
+              <option value="instructor">Instructor</option>
+            </select>
+
+            {error && <div className="auth-error">{error}</div>}
+            {success && <div className="auth-success">{success}</div>}
+
+            <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>
+              {loading ? 'Creating account...' : 'Sign Up'}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
         </div>
-        <div style={{ marginBottom: '12px' }}>
-          <label>Phone</label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '12px' }}>
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '12px' }}>
-          <label>I am a</label>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="learner">Learner</option>
-            <option value="school_owner">Driving School Owner</option>
-            <option value="instructor">Instructor</option>
-          </select>
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
-        <button type="submit" disabled={loading} style={{ padding: '10px 20px' }}>
-          {loading ? 'Creating account...' : 'Sign Up'}
-        </button>
-      </form>
-      <p style={{ marginTop: '12px' }}>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+      </div>
     </div>
   );
 };
