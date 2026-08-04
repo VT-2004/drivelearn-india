@@ -13,6 +13,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+const paymentRoutes = require('./src/routes/paymentRoutes');
+app.use('/api/payments', paymentRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/health', (req, res) => {

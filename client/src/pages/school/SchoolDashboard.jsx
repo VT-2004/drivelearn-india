@@ -15,7 +15,11 @@ import {
   deleteCourse,
   getSchoolBookings,
   cancelBooking,
+  getMySubscription,
+  createSubscriptionOrder,
+  verifySubscriptionPayment,
 } from '../../services/api';
+import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
@@ -50,6 +54,9 @@ const SchoolDashboard = () => {
   const [courseError, setCourseError] = useState('');
 
   const [bookings, setBookings] = useState([]);
+  const [subscription, setSubscription] = useState(null);
+  const [subStatus, setSubStatus] = useState('none');
+  const [subscribing, setSubscribing] = useState(false);
 
   const { logout, user } = useAuth();
   const navigate = useNavigate();
@@ -66,18 +73,21 @@ const SchoolDashboard = () => {
         address: schoolRes.data.school.address,
       });
 
-      const [statsRes, branchRes, instructorRes, courseRes, bookingRes] = await Promise.all([
+      const [statsRes, branchRes, instructorRes, courseRes, bookingRes, subRes] = await Promise.all([
         getSchoolStats(),
         getMyBranches(),
         getInstructors(),
         getMyCourses(),
         getSchoolBookings(),
+        getMySubscription(),
       ]);
       setStats(statsRes.data.stats);
       setBranches(branchRes.data.branches);
       setInstructors(instructorRes.data.instructors);
       setCourses(courseRes.data.courses);
       setBookings(bookingRes.data.bookings);
+      setSubscription(subRes.data.subscription);
+      setSubStatus(subRes.data.currentStatus);
     } catch (err) {
       if (err.response?.status === 404) {
         navigate('/school/register');
@@ -176,6 +186,39 @@ const SchoolDashboard = () => {
     loadData();
   };
 
+  const handleSubscribe = async (plan) => {
+    setSubscribing(true);
+    try {
+      const orderRes = await createSubscriptionOrder(plan);
+      const orderData = orderRes.data;
+
+      await openRazorpayCheckout(orderData, {
+        name: 'DriveLearn India',
+        description: `${plan === 'monthly' ? 'Monthly' : 'Yearly'} School Subscription`,
+        prefill: { name: user?.name, email: user?.email },
+        onSuccess: async (response) => {
+          try {
+            await verifySubscriptionPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              plan,
+            });
+            alert('Subscription activated successfully!');
+            loadData();
+          } catch (err) {
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        onFailure: () => setSubscribing(false),
+      });
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to start subscription payment');
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   if (loading) return <div className="dash-page">Loading...</div>;
   if (!school) return null;
 
@@ -205,6 +248,32 @@ const SchoolDashboard = () => {
           <div className="stat-value">{stats?.bookings ?? 0}</div>
           <div className="stat-label">Bookings</div>
         </div>
+      </div>
+
+      <div className="form-card" style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0 }}>Subscription</h3>
+          <span className={`status-badge ${subStatus === 'active' ? 'status-verified' : subStatus === 'expired' ? 'status-rejected' : 'status-pending'}`}>
+            {subStatus === 'none' ? 'no plan' : subStatus}
+          </span>
+        </div>
+
+        {subscription && (
+          <p style={{ fontSize: '14px', color: '#6B7680', marginTop: '12px' }}>
+            {subscription.plan === 'monthly' ? 'Monthly' : 'Yearly'} plan · Valid until {new Date(subscription.endDate).toLocaleDateString('en-IN')}
+          </p>
+        )}
+
+        {subStatus !== 'active' && (
+          <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
+            <button className="btn btn-primary" onClick={() => handleSubscribe('monthly')} disabled={subscribing}>
+              Subscribe Monthly — ₹999
+            </button>
+            <button className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }} onClick={() => handleSubscribe('yearly')} disabled={subscribing}>
+              Subscribe Yearly — ₹9,999
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="form-card" style={{ marginBottom: '32px' }}>

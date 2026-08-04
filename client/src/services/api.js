@@ -60,4 +60,13 @@ export const getMyBookings = () => api.get('/bookings/my');
 export const getSchoolBookings = () => api.get('/bookings/school');
 export const cancelBooking = (id) => api.patch(`/bookings/${id}/cancel`);
 
+// ===== Payments (Course Booking) =====
+export const createBookingOrder = (bookingId) => api.post('/payments/booking/create-order', { bookingId });
+export const verifyBookingPayment = (data) => api.post('/payments/booking/verify', data);
+
+// ===== Payments (School Subscription) =====
+export const createSubscriptionOrder = (plan) => api.post('/payments/subscription/create-order', { plan });
+export const verifySubscriptionPayment = (data) => api.post('/payments/subscription/verify', data);
+export const getMySubscription = () => api.get('/payments/subscription/my');
+
 export default api;

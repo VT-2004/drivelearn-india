@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyBookings, cancelBooking } from '../../services/api';
+import { getMyBookings, cancelBooking, createBookingOrder, verifyBookingPayment } from '../../services/api';
+import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
@@ -14,7 +15,8 @@ const statusClass = {
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { logout } = useAuth();
+  const [payingId, setPayingId] = useState(null);
+  const { logout, user } = useAuth();
 
   const load = async () => {
     setLoading(true);
@@ -31,6 +33,41 @@ const MyBookings = () => {
     if (!window.confirm('Cancel this booking?')) return;
     await cancelBooking(id);
     load();
+  };
+
+  const handlePayNow = async (booking) => {
+    setPayingId(booking.id);
+    try {
+      const orderRes = await createBookingOrder(booking.id);
+      const orderData = orderRes.data;
+
+      await openRazorpayCheckout(orderData, {
+        name: 'DriveLearn India',
+        description: booking.course.title,
+        prefill: { name: user?.name, email: user?.email },
+        onSuccess: async (response) => {
+          try {
+            await verifyBookingPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              bookingId: booking.id,
+            });
+            alert('Payment successful! Your booking is now confirmed.');
+            load();
+          } catch (err) {
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        onFailure: () => {
+          setPayingId(null);
+        },
+      });
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to start payment');
+    } finally {
+      setPayingId(null);
+    }
   };
 
   return (
@@ -65,17 +102,25 @@ const MyBookings = () => {
                 <p style={{ margin: '0 0 4px', fontSize: '14px' }}>
                   <strong>Date:</strong> {new Date(b.bookedDate).toLocaleDateString('en-IN')}
                 </p>
-                <p style={{ margin: 0, fontSize: '14px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '14px' }}>
                   <strong>Instructor:</strong> {b.instructor.user.name}
+                </p>
+                <p style={{ margin: 0, fontSize: '14px' }}>
+                  <strong>Amount:</strong> <span className="dash-price-tag">₹{Number(b.course.price).toLocaleString('en-IN')}</span>
                 </p>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span className={`status-badge ${statusClass[b.status]}`}>{b.status}</span>
-                {(b.status === 'pending' || b.status === 'confirmed') && (
-                  <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {b.status === 'pending' && (
+                    <button className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 16px' }} onClick={() => handlePayNow(b)} disabled={payingId === b.id}>
+                      {payingId === b.id ? 'Processing...' : 'Pay Now'}
+                    </button>
+                  )}
+                  {(b.status === 'pending' || b.status === 'confirmed') && (
                     <button className="action-btn reject-btn" onClick={() => handleCancel(b.id)}>Cancel</button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
