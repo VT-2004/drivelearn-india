@@ -38,7 +38,7 @@ export const addBranch = (data) => api.post('/schools/branches', data);
 export const getMyBranches = () => api.get('/schools/branches');
 export const deleteBranch = (id) => api.delete(`/schools/branches/${id}`);
 
-// ===== Instructors =====
+// ===== Instructors (School Owner managing) =====
 export const addInstructor = (data) => api.post('/schools/instructors', data);
 export const getInstructors = () => api.get('/schools/instructors');
 export const deleteInstructor = (id) => api.delete(`/schools/instructors/${id}`);
@@ -68,5 +68,11 @@ export const verifyBookingPayment = (data) => api.post('/payments/booking/verify
 export const createSubscriptionOrder = (plan) => api.post('/payments/subscription/create-order', { plan });
 export const verifySubscriptionPayment = (data) => api.post('/payments/subscription/verify', data);
 export const getMySubscription = () => api.get('/payments/subscription/my');
+
+// ===== Instructor Portal =====
+export const getMyAssignedBookings = () => api.get('/instructor/bookings');
+export const markAttendance = (data) => api.post('/instructor/attendance', data);
+export const getBookingAttendance = (bookingId) => api.get(`/instructor/attendance/${bookingId}`);
+export const markBookingComplete = (id) => api.patch(`/instructor/bookings/${id}/complete`);
 
 export default api;

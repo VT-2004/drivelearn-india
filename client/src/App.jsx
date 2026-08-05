@@ -16,7 +16,7 @@ import SchoolProfile from './pages/learner/SchoolProfile';
 import MyBookings from './pages/learner/MyBookings';
 
 // Placeholder simple components for other roles - build these out fully in later parts
-const InstructorDashboard = () => <div style={{ padding: '40px' }}><h1>Instructor Dashboard</h1></div>;
+import InstructorDashboard from './pages/instructor/InstructorDashboard';
 
 function App() {
   return (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyBookings, cancelBooking, createBookingOrder, verifyBookingPayment } from '../../services/api';
+import { getMyBookings, cancelBooking, createBookingOrder, verifyBookingPayment, getBookingAttendance } from '../../services/api';
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
@@ -16,6 +16,8 @@ const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState(null);
+  const [progressMap, setProgressMap] = useState({});
+  const [expandedId, setExpandedId] = useState(null);
   const { logout, user } = useAuth();
 
   const load = async () => {
@@ -33,6 +35,18 @@ const MyBookings = () => {
     if (!window.confirm('Cancel this booking?')) return;
     await cancelBooking(id);
     load();
+  };
+
+  const toggleProgress = async (bookingId) => {
+    if (expandedId === bookingId) {
+      setExpandedId(null);
+      return;
+    }
+    if (!progressMap[bookingId]) {
+      const res = await getBookingAttendance(bookingId);
+      setProgressMap({ ...progressMap, [bookingId]: res.data.attendance });
+    }
+    setExpandedId(bookingId);
   };
 
   const handlePayNow = async (booking) => {
@@ -120,9 +134,37 @@ const MyBookings = () => {
                   {(b.status === 'pending' || b.status === 'confirmed') && (
                     <button className="action-btn reject-btn" onClick={() => handleCancel(b.id)}>Cancel</button>
                   )}
+                  {(b.status === 'confirmed' || b.status === 'completed') && (
+                    <button
+                      className="btn btn-outline"
+                      style={{ fontSize: '13px', padding: '6px 14px', color: '#1C1F22', border: '1.5px solid #1C1F22' }}
+                      onClick={() => toggleProgress(b.id)}
+                    >
+                      {expandedId === b.id ? 'Hide Progress' : 'View Progress'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
+
+            {expandedId === b.id && (
+              <div style={{ marginTop: '16px', borderTop: '1px solid #EFEDE6', paddingTop: '16px' }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Lesson Progress</p>
+                {(!progressMap[b.id] || progressMap[b.id].length === 0) ? (
+                  <p style={{ fontSize: '13px', color: '#8B929A' }}>No lessons recorded yet.</p>
+                ) : (
+                  progressMap[b.id].map((a) => (
+                    <div key={a.id} style={{ fontSize: '13px', color: '#6B7680', marginBottom: '6px' }}>
+                      {new Date(a.date).toLocaleDateString('en-IN')} —{' '}
+                      <span style={{ color: a.status === 'present' ? '#2E7D32' : '#B3261E', fontWeight: 600 }}>
+                        {a.status}
+                      </span>
+                      {a.notes && ` — ${a.notes}`}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         ))
       )}

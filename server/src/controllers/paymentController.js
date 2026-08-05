@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const razorpay = require('../utils/razorpayInstance');
 const prisma = require('../utils/prismaClient');
+const { sendEmail } = require('../utils/emailService');
+const { bookingConfirmationEmail, subscriptionReceiptEmail } = require('../utils/emailTemplates');
 
 // ============ COURSE PAYMENT (Learner pays for a booking) ============
 
@@ -64,7 +66,11 @@ const verifyBookingPayment = async (req, res) => {
 
     const booking = await prisma.booking.findUnique({
       where: { id: parseInt(bookingId) },
-      include: { course: true },
+      include: {
+        course: { include: { school: true } },
+        learner: true,
+        instructor: { include: { user: { select: { name: true } } } },
+      },
     });
 
     if (!booking) {
@@ -86,6 +92,17 @@ const verifyBookingPayment = async (req, res) => {
       where: { id: booking.id },
       data: { status: 'confirmed' },
     });
+
+    // Send confirmation email (non-blocking - won't fail the request if email fails)
+    const emailContent = bookingConfirmationEmail({
+      learnerName: booking.learner.name,
+      courseName: booking.course.title,
+      schoolName: booking.course.school.name,
+      bookedDate: new Date(booking.bookedDate).toLocaleDateString('en-IN'),
+      instructorName: booking.instructor.user.name,
+      amount: Number(booking.course.price).toLocaleString('en-IN'),
+    });
+    sendEmail({ to: booking.learner.email, ...emailContent });
 
     res.json({ message: 'Payment verified successfully', booking: updatedBooking });
   } catch (error) {
@@ -152,7 +169,10 @@ const verifySubscriptionPayment = async (req, res) => {
       return res.status(400).json({ error: 'Payment verification failed - signature mismatch' });
     }
 
-    const school = await prisma.drivingSchool.findUnique({ where: { ownerId } });
+    const school = await prisma.drivingSchool.findUnique({
+      where: { ownerId },
+      include: { owner: true },
+    });
     if (!school) {
       return res.status(404).json({ error: 'No school registered yet' });
     }
@@ -174,6 +194,15 @@ const verifySubscriptionPayment = async (req, res) => {
         endDate,
       },
     });
+
+    const emailContent = subscriptionReceiptEmail({
+      ownerName: school.owner.name,
+      schoolName: school.name,
+      plan,
+      amount: PLAN_PRICES[plan].toLocaleString('en-IN'),
+      endDate: endDate.toLocaleDateString('en-IN'),
+    });
+    sendEmail({ to: school.owner.email, ...emailContent });
 
     res.json({ message: 'Subscription activated successfully', subscription });
   } catch (error) {
