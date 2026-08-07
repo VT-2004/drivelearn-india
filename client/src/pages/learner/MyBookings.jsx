@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyBookings, cancelBooking, createBookingOrder, verifyBookingPayment, getBookingAttendance } from '../../services/api';
+import { getMyBookings, cancelBooking, createBookingOrder, verifyBookingPayment, getBookingAttendance, getReviewableSchools, createReview } from '../../services/api';
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
@@ -18,12 +18,18 @@ const MyBookings = () => {
   const [payingId, setPayingId] = useState(null);
   const [progressMap, setProgressMap] = useState({});
   const [expandedId, setExpandedId] = useState(null);
+  const [reviewable, setReviewable] = useState([]);
+  const [reviewFormFor, setReviewFormFor] = useState(null);
+  const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
+  const [reviewError, setReviewError] = useState('');
   const { logout, user } = useAuth();
 
   const load = async () => {
     setLoading(true);
     const res = await getMyBookings();
     setBookings(res.data.bookings);
+    const reviewableRes = await getReviewableSchools();
+    setReviewable(reviewableRes.data.reviewable);
     setLoading(false);
   };
 
@@ -47,6 +53,19 @@ const MyBookings = () => {
       setProgressMap({ ...progressMap, [bookingId]: res.data.attendance });
     }
     setExpandedId(bookingId);
+  };
+
+  const handleSubmitReview = async (e, schoolId) => {
+    e.preventDefault();
+    setReviewError('');
+    try {
+      await createReview({ schoolId, ...reviewData });
+      setReviewFormFor(null);
+      setReviewData({ rating: 5, comment: '' });
+      load();
+    } catch (err) {
+      setReviewError(err.response?.data?.error || 'Failed to submit review');
+    }
   };
 
   const handlePayNow = async (booking) => {
@@ -97,6 +116,42 @@ const MyBookings = () => {
           </button>
         </div>
       </div>
+
+      {reviewable.length > 0 && (
+        <div style={{ marginBottom: '24px' }}>
+          {reviewable.map((r) => (
+            <div key={r.schoolId} className="form-card" style={{ maxWidth: '700px', marginBottom: '12px', background: '#FFF8E1', border: '1px solid #F2B705' }}>
+              {reviewFormFor === r.schoolId ? (
+                <form onSubmit={(e) => handleSubmitReview(e, r.schoolId)}>
+                  <p style={{ margin: '0 0 12px', fontWeight: 600 }}>Rate your experience with {r.schoolName}</p>
+                  <label>Rating</label>
+                  <select value={reviewData.rating} onChange={(e) => setReviewData({ ...reviewData, rating: e.target.value })}>
+                    <option value={5}>5 - Excellent</option>
+                    <option value={4}>4 - Good</option>
+                    <option value={3}>3 - Average</option>
+                    <option value={2}>2 - Poor</option>
+                    <option value={1}>1 - Very Poor</option>
+                  </select>
+                  <label>Comment (optional)</label>
+                  <textarea value={reviewData.comment} onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })} />
+                  {reviewError && <p style={{ color: 'red', fontSize: '14px' }}>{reviewError}</p>}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+                    <button type="submit" className="btn btn-primary">Submit Review</button>
+                    <button type="button" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }} onClick={() => setReviewFormFor(null)}>Cancel</button>
+                  </div>
+                </form>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>How was your course at <strong>{r.schoolName}</strong>?</span>
+                  <button className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 16px' }} onClick={() => setReviewFormFor(r.schoolId)}>
+                    Leave a Review
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <p>Loading...</p>

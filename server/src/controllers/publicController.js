@@ -22,6 +22,9 @@ const searchSchools = async (req, res) => {
         courses: {
           select: { price: true },
         },
+        reviews: {
+          select: { rating: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -29,8 +32,11 @@ const searchSchools = async (req, res) => {
     const schoolsWithPricing = schools.map((s) => {
       const prices = s.courses.map((c) => Number(c.price));
       const startingPrice = prices.length > 0 ? Math.min(...prices) : null;
-      const { courses, ...rest } = s;
-      return { ...rest, startingPrice, courseCount: courses.length };
+      const avgRating = s.reviews.length > 0
+        ? (s.reviews.reduce((sum, r) => sum + r.rating, 0) / s.reviews.length).toFixed(1)
+        : null;
+      const { courses, reviews, ...rest } = s;
+      return { ...rest, startingPrice, courseCount: courses.length, avgRating, reviewCount: reviews.length };
     });
 
     res.json({ schools: schoolsWithPricing });
@@ -53,6 +59,10 @@ const getSchoolProfile = async (req, res) => {
         instructors: {
           include: { user: { select: { name: true } } },
         },
+        reviews: {
+          include: { learner: { select: { name: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
@@ -60,7 +70,11 @@ const getSchoolProfile = async (req, res) => {
       return res.status(404).json({ error: 'School not found' });
     }
 
-    res.json({ school });
+    const avgRating = school.reviews.length > 0
+      ? (school.reviews.reduce((sum, r) => sum + r.rating, 0) / school.reviews.length).toFixed(1)
+      : null;
+
+    res.json({ school: { ...school, avgRating, reviewCount: school.reviews.length } });
   } catch (error) {
     console.error('Get school profile error:', error);
     res.status(500).json({ error: 'Something went wrong' });

@@ -75,4 +75,12 @@ export const markAttendance = (data) => api.post('/instructor/attendance', data)
 export const getBookingAttendance = (bookingId) => api.get(`/instructor/attendance/${bookingId}`);
 export const markBookingComplete = (id) => api.patch(`/instructor/bookings/${id}/complete`);
 
+// ===== Reviews =====
+export const createReview = (data) => api.post('/reviews', data);
+export const getReviewableSchools = () => api.get('/reviews/reviewable');
+
+// ===== Analytics =====
+export const getAdminAnalytics = () => api.get('/analytics/admin');
+export const getSchoolAnalytics = () => api.get('/analytics/school');
+
 export default api;

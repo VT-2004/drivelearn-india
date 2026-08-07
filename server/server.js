@@ -15,6 +15,12 @@ app.use(cors());
 app.use(express.json());
 const paymentRoutes = require('./src/routes/paymentRoutes');
 app.use('/api/payments', paymentRoutes);
+
+const reviewRoutes = require('./src/routes/reviewRoutes');
+const analyticsRoutes = require('./src/routes/analyticsRoutes');
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
 const instructorPortalRoutes = require('./src/routes/instructorPortalRoutes');
 app.use('/api/instructor', instructorPortalRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

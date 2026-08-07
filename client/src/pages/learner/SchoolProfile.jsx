@@ -73,6 +73,11 @@ const SchoolProfile = () => {
           <div>
             <Link to="/learner" style={{ color: '#F2B705', fontSize: '13px', textDecoration: 'none' }}>← Back to search</Link>
             <span className="verified-tag" style={{ marginTop: '16px' }}>Verified School</span>
+            {school.avgRating && (
+              <span style={{ marginLeft: '10px', color: '#F2B705', fontWeight: 600, fontSize: '14px' }}>
+                ★ {school.avgRating} ({school.reviewCount} review{school.reviewCount !== 1 ? 's' : ''})
+              </span>
+            )}
             <h1>{school.name}</h1>
             <p style={{ color: '#C8CDD2' }}>{school.address}, {school.city}, {school.state}</p>
           </div>
@@ -176,6 +181,23 @@ const SchoolProfile = () => {
                   </span>
                 ))}
               </div>
+            )}
+          </div>
+
+          <div className="profile-section">
+            <h2>Reviews {school.avgRating && `(★ ${school.avgRating} average)`}</h2>
+            {school.reviews.length === 0 ? (
+              <p style={{ color: '#8B929A' }}>No reviews yet.</p>
+            ) : (
+              school.reviews.map((r) => (
+                <div key={r.id} style={{ borderBottom: '1px solid #EFEDE6', padding: '14px 0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <strong style={{ fontSize: '14px' }}>{r.learner.name}</strong>
+                    <span style={{ color: '#F2B705', fontWeight: 600 }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                  </div>
+                  {r.comment && <p style={{ fontSize: '14px', color: '#6B7680', margin: '6px 0 0' }}>{r.comment}</p>}
+                </div>
+              ))
             )}
           </div>
         </div>

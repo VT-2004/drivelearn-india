@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllSchools, approveSchool, rejectSchool } from '../../services/api';
+import { getAllSchools, approveSchool, rejectSchool, getAdminAnalytics } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
@@ -13,6 +13,7 @@ const AdminDashboard = () => {
   const [schools, setSchools] = useState([]);
   const [filter, setFilter] = useState('pending');
   const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState(null);
 
   const { logout } = useAuth();
 
@@ -31,6 +32,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadSchools();
   }, [filter]);
+
+  useEffect(() => {
+    getAdminAnalytics().then((res) => setAnalytics(res.data.analytics));
+  }, []);
 
   const handleApprove = async (id) => {
     await approveSchool(id);
@@ -51,6 +56,47 @@ const AdminDashboard = () => {
           Logout
         </button>
       </div>
+
+      {analytics && (
+        <>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-value">{analytics.totalSchools}</div>
+              <div className="stat-label">Total Schools</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{analytics.verifiedSchools}</div>
+              <div className="stat-label">Verified Schools</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{analytics.totalLearners}</div>
+              <div className="stat-label">Learners</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{analytics.totalInstructors}</div>
+              <div className="stat-label">Instructors</div>
+            </div>
+          </div>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-value">{analytics.totalBookings}</div>
+              <div className="stat-label">Total Bookings</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{analytics.activeSubscriptions}</div>
+              <div className="stat-label">Active Subscriptions</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">₹{Number(analytics.totalCourseRevenue).toLocaleString('en-IN')}</div>
+              <div className="stat-label">Course Revenue (Platform-wide)</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{analytics.pendingSchools}</div>
+              <div className="stat-label">Pending Verification</div>
+            </div>
+          </div>
+        </>
+      )}
 
       <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
         {['pending', 'verified', 'rejected', 'all'].map((f) => (

@@ -18,6 +18,7 @@ import {
   getMySubscription,
   createSubscriptionOrder,
   verifySubscriptionPayment,
+  getSchoolAnalytics,
 } from '../../services/api';
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
@@ -57,6 +58,7 @@ const SchoolDashboard = () => {
   const [subscription, setSubscription] = useState(null);
   const [subStatus, setSubStatus] = useState('none');
   const [subscribing, setSubscribing] = useState(false);
+  const [analytics, setAnalytics] = useState(null);
 
   const { logout, user } = useAuth();
   const navigate = useNavigate();
@@ -73,13 +75,14 @@ const SchoolDashboard = () => {
         address: schoolRes.data.school.address,
       });
 
-      const [statsRes, branchRes, instructorRes, courseRes, bookingRes, subRes] = await Promise.all([
+      const [statsRes, branchRes, instructorRes, courseRes, bookingRes, subRes, analyticsRes] = await Promise.all([
         getSchoolStats(),
         getMyBranches(),
         getInstructors(),
         getMyCourses(),
         getSchoolBookings(),
         getMySubscription(),
+        getSchoolAnalytics(),
       ]);
       setStats(statsRes.data.stats);
       setBranches(branchRes.data.branches);
@@ -88,6 +91,7 @@ const SchoolDashboard = () => {
       setBookings(bookingRes.data.bookings);
       setSubscription(subRes.data.subscription);
       setSubStatus(subRes.data.currentStatus);
+      setAnalytics(analyticsRes.data.analytics);
     } catch (err) {
       if (err.response?.status === 404) {
         navigate('/school/register');
@@ -249,6 +253,39 @@ const SchoolDashboard = () => {
           <div className="stat-label">Bookings</div>
         </div>
       </div>
+
+      {analytics && (
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-value">₹{Number(analytics.totalRevenue).toLocaleString('en-IN')}</div>
+            <div className="stat-label">Total Revenue</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">{analytics.confirmedBookings + analytics.completedBookings}</div>
+            <div className="stat-label">Paid Bookings</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">{analytics.avgRating ? `★ ${analytics.avgRating}` : '—'}</div>
+            <div className="stat-label">{analytics.reviewCount} Review{analytics.reviewCount !== 1 ? 's' : ''}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">{analytics.pendingBookings}</div>
+            <div className="stat-label">Awaiting Payment</div>
+          </div>
+        </div>
+      )}
+
+      {analytics?.popularCourses?.length > 0 && (
+        <div className="form-card" style={{ marginBottom: '32px' }}>
+          <h4 style={{ marginTop: 0 }}>Most Booked Courses</h4>
+          {analytics.popularCourses.map((c, idx) => (
+            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: idx < analytics.popularCourses.length - 1 ? '1px solid #EFEDE6' : 'none' }}>
+              <span style={{ fontSize: '14px' }}>{c.title}</span>
+              <span style={{ fontSize: '14px', fontWeight: 600 }}>{c.bookings} booking{c.bookings !== 1 ? 's' : ''}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="form-card" style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
