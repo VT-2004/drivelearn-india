@@ -12,7 +12,7 @@ const bookingRoutes = require('./src/routes/bookingRoutes');
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://YOUR-VERCEL-URL.vercel.app'],
+  origin: ['http://localhost:5173', 'https://drivelearn-india.vercel.app'],
   credentials: true,
 }));
 app.use(express.json());
