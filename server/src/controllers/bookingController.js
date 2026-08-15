@@ -1,4 +1,6 @@
 const prisma = require('../utils/prismaClient');
+const { sendEmail } = require('../utils/emailService');
+const { bookingCancelledEmail } = require('../utils/emailTemplates');
 
 // LEARNER: Create a booking
 const createBooking = async (req, res) => {
@@ -133,7 +135,10 @@ const cancelBooking = async (req, res) => {
 
     const booking = await prisma.booking.findUnique({
       where: { id: parseInt(id) },
-      include: { course: { include: { school: true } } },
+      include: {
+        course: { include: { school: true } },
+        learner: true,
+      },
     });
 
     if (!booking) {
@@ -154,6 +159,20 @@ const cancelBooking = async (req, res) => {
     });
 
     res.json({ message: 'Booking cancelled', booking: updated });
+
+    // Send cancellation email (non-blocking, wrapped separately)
+    try {
+      const emailContent = bookingCancelledEmail({
+        learnerName: booking.learner.name,
+        courseName: booking.course.title,
+        schoolName: booking.course.school.name,
+        bookedDate: new Date(booking.bookedDate).toLocaleDateString('en-IN'),
+        cancelledBy: role,
+      });
+      sendEmail({ to: booking.learner.email, ...emailContent });
+    } catch (emailErr) {
+      console.error('Failed to send cancellation email (non-blocking):', emailErr.message);
+    }
   } catch (error) {
     console.error('Cancel booking error:', error);
     res.status(500).json({ error: 'Something went wrong' });

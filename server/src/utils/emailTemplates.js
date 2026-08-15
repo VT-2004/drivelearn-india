@@ -77,4 +77,27 @@ const schoolVerifiedEmail = ({ ownerName, schoolName }) => ({
   `,
 });
 
-module.exports = { bookingConfirmationEmail, subscriptionReceiptEmail, schoolPendingEmail, schoolVerifiedEmail };
+const bookingCancelledEmail = ({ learnerName, courseName, schoolName, bookedDate, cancelledBy }) => ({
+  subject: `Booking Cancelled - ${courseName} at ${schoolName}`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #eee;">
+      <h2 style="color: #B3261E;">Booking Cancelled</h2>
+      <p>Hi ${learnerName},</p>
+      <p>
+        This is a confirmation that the following booking has been cancelled
+        ${cancelledBy === 'school_owner' ? 'by the driving school' : 'by you'}:
+      </p>
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+        <tr><td style="padding: 8px 0; color: #6B7680;">Course</td><td style="padding: 8px 0; font-weight: bold;">${courseName}</td></tr>
+        <tr><td style="padding: 8px 0; color: #6B7680;">School</td><td style="padding: 8px 0; font-weight: bold;">${schoolName}</td></tr>
+        <tr><td style="padding: 8px 0; color: #6B7680;">Original Date</td><td style="padding: 8px 0; font-weight: bold;">${bookedDate}</td></tr>
+      </table>
+      <p style="color: #6B7680; font-size: 13px;">
+        If you didn't expect this cancellation, please contact the driving school or our support team.
+        You're welcome to book another course anytime.
+      </p>
+    </div>
+  `,
+});
+
+module.exports = { bookingConfirmationEmail, subscriptionReceiptEmail, schoolPendingEmail, schoolVerifiedEmail, bookingCancelledEmail };
