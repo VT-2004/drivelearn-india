@@ -1,13 +1,28 @@
 const prisma = require('../utils/prismaClient');
 
-// PUBLIC: Search verified schools, optionally filtered by city
+// Haversine formula - distance in km between two lat/lng points
+const getDistanceKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// PUBLIC: Search verified schools - by city text, or by lat/lng ("near me")
 const searchSchools = async (req, res) => {
   try {
-    const { city } = req.query;
+    const { city, lat, lng, radiusKm } = req.query;
 
     const where = {
       verificationStatus: 'verified',
-      ...(city && { city: { contains: city, mode: 'insensitive' } }),
+      ...(city && !lat && { city: { contains: city, mode: 'insensitive' } }),
     };
 
     const schools = await prisma.drivingSchool.findMany({
@@ -19,6 +34,8 @@ const searchSchools = async (req, res) => {
         city: true,
         state: true,
         address: true,
+        latitude: true,
+        longitude: true,
         courses: {
           select: { price: true },
         },
@@ -29,7 +46,7 @@ const searchSchools = async (req, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    const schoolsWithPricing = schools.map((s) => {
+    let schoolsWithPricing = schools.map((s) => {
       const prices = s.courses.map((c) => Number(c.price));
       const startingPrice = prices.length > 0 ? Math.min(...prices) : null;
       const avgRating = s.reviews.length > 0
@@ -38,6 +55,22 @@ const searchSchools = async (req, res) => {
       const { courses, reviews, ...rest } = s;
       return { ...rest, startingPrice, courseCount: courses.length, avgRating, reviewCount: reviews.length };
     });
+
+    // "Near me" mode: filter + sort by distance if lat/lng provided
+    if (lat && lng) {
+      const userLat = parseFloat(lat);
+      const userLng = parseFloat(lng);
+      const radius = radiusKm ? parseFloat(radiusKm) : 50; // default 500km radius
+
+      schoolsWithPricing = schoolsWithPricing
+        .filter((s) => s.latitude != null && s.longitude != null)
+        .map((s) => ({
+          ...s,
+          distanceKm: parseFloat(getDistanceKm(userLat, userLng, s.latitude, s.longitude).toFixed(1)),
+        }))
+        .filter((s) => s.distanceKm <= radius)
+        .sort((a, b) => a.distanceKm - b.distanceKm);
+    }
 
     res.json({ schools: schoolsWithPricing });
   } catch (error) {

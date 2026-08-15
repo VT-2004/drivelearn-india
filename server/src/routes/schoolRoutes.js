@@ -11,6 +11,7 @@ const {
   rejectSchool,
   updateSchool,
   getSchoolStats,
+  cancelSchoolRegistration,
 } = require('../controllers/schoolController');
 const { addBranch, getMyBranches, deleteBranch } = require('../controllers/branchController');
 const { addInstructor, getInstructors, deleteInstructor } = require('../controllers/instructorController');
@@ -25,6 +26,7 @@ router.post(
 );
 router.get('/my-school', authenticate, authorize('school_owner'), getMySchool);
 router.put('/my-school', authenticate, authorize('school_owner'), updateSchool);
+router.delete('/my-school', authenticate, authorize('school_owner'), cancelSchoolRegistration);
 router.get('/stats', authenticate, authorize('school_owner'), getSchoolStats);
 
 // Branch routes (School Owner)

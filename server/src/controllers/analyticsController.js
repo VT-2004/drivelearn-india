@@ -126,4 +126,61 @@ const getSchoolAnalytics = async (req, res) => {
   }
 };
 
-module.exports = { getAdminAnalytics, getSchoolAnalytics };
+// ADMIN: Full detail view for a single school (registration info, stats, reviews)
+const getSchoolDetailForAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const schoolId = parseInt(id);
+
+    const school = await prisma.drivingSchool.findUnique({
+      where: { id: schoolId },
+      include: {
+        owner: { select: { name: true, email: true, phone: true, createdAt: true } },
+        branches: true,
+        instructors: { include: { user: { select: { name: true, email: true } } } },
+        courses: true,
+        subscriptions: { orderBy: { endDate: 'desc' } },
+        reviews: { include: { learner: { select: { name: true } } }, orderBy: { createdAt: 'desc' } },
+      },
+    });
+
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+    const [enrolledLearnersResult, payments] = await Promise.all([
+      prisma.booking.findMany({
+        where: { course: { schoolId }, status: { in: ['confirmed', 'completed'] } },
+        select: { learnerId: true },
+        distinct: ['learnerId'],
+      }),
+      prisma.payment.findMany({
+        where: { status: 'success', booking: { course: { schoolId } } },
+        select: { amount: true },
+      }),
+    ]);
+
+    const totalRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const avgRating = school.reviews.length > 0
+      ? (school.reviews.reduce((sum, r) => sum + r.rating, 0) / school.reviews.length).toFixed(1)
+      : null;
+
+    res.json({
+      school,
+      stats: {
+        enrolledLearners: enrolledLearnersResult.length,
+        totalRevenue,
+        avgRating,
+        reviewCount: school.reviews.length,
+        totalBranches: school.branches.length,
+        totalInstructors: school.instructors.length,
+        totalCourses: school.courses.length,
+      },
+    });
+  } catch (error) {
+    console.error('Get school detail error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+module.exports = { getAdminAnalytics, getSchoolAnalytics, getSchoolDetailForAdmin };

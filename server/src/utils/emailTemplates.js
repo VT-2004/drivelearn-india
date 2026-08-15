@@ -34,4 +34,47 @@ const subscriptionReceiptEmail = ({ ownerName, schoolName, plan, amount, endDate
   `,
 });
 
-module.exports = { bookingConfirmationEmail, subscriptionReceiptEmail };
+const schoolPendingEmail = ({ ownerName, schoolName }) => ({
+  subject: `Registration Received - ${schoolName}`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #eee;">
+      <h2 style="color: #1C1F22;">Registration Received</h2>
+      <p>Hi ${ownerName},</p>
+      <p>
+        Thanks for registering <strong>${schoolName}</strong> on DriveLearn India.
+        Your submission is currently <strong>pending verification</strong> by our team.
+      </p>
+      <p style="background: #FFF3CD; color: #856404; padding: 12px 16px; border-radius: 6px; font-size: 14px;">
+        We typically review new registrations within 1-3 business days. You'll receive
+        another email as soon as a decision is made.
+      </p>
+      <p style="color: #6B7680; font-size: 13px;">
+        In the meantime, feel free to log in and set up your branches, instructors, and courses
+        so you're ready to go live the moment you're verified.
+      </p>
+    </div>
+  `,
+});
+
+const schoolVerifiedEmail = ({ ownerName, schoolName }) => ({
+  subject: `You're Verified! Welcome to DriveLearn India, ${schoolName}`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #eee;">
+      <h2 style="color: #2E7D32;">Verification Successful ✓</h2>
+      <p>Hi ${ownerName},</p>
+      <p>
+        Great news — <strong>${schoolName}</strong> has been verified and is now
+        <strong>live</strong> on DriveLearn India!
+      </p>
+      <p style="background: #E8F5E9; color: #2E7D32; padding: 12px 16px; border-radius: 6px; font-size: 14px;">
+        Welcome aboard! Learners across the platform can now find and book courses at your school.
+      </p>
+      <p style="color: #6B7680; font-size: 13px;">
+        Make sure your courses, instructors, and pricing are up to date so learners get the best
+        first impression. We're excited to have you on the platform!
+      </p>
+    </div>
+  `,
+});
+
+module.exports = { bookingConfirmationEmail, subscriptionReceiptEmail, schoolPendingEmail, schoolVerifiedEmail };

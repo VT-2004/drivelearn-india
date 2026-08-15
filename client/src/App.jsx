@@ -8,12 +8,14 @@ import Home from './pages/public/Home';
 import ForSchools from './pages/public/ForSchools';
 import ForLearners from './pages/public/ForLearners';
 import Contact from './pages/public/Contact';
+import AptitudeTest from './pages/public/AptitudeTest';
 import RegisterSchool from './pages/school/RegisterSchool';
 import SchoolDashboard from './pages/school/SchoolDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SearchSchools from './pages/learner/SearchSchools';
 import SchoolProfile from './pages/learner/SchoolProfile';
 import MyBookings from './pages/learner/MyBookings';
+import AdminSchoolDetail from './pages/admin/AdminSchoolDetail';
 
 // Placeholder simple components for other roles - build these out fully in later parts
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
@@ -29,6 +31,7 @@ function App() {
           <Route path="/for-schools" element={<ForSchools />} />
           <Route path="/for-learners" element={<ForLearners />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/aptitude-test" element={<AptitudeTest />} />
 
           <Route
             path="/learner"
@@ -83,6 +86,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['instructor']}>
                 <InstructorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/school/:id"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSchoolDetail />
               </ProtectedRoute>
             }
           />

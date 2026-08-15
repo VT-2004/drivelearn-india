@@ -7,10 +7,12 @@ const {
   getMyBookings,
   getSchoolBookings,
   cancelBooking,
+  getMyCalendar,
 } = require('../controllers/bookingController');
 
 router.post('/', authenticate, authorize('learner'), createBooking);
 router.get('/my', authenticate, authorize('learner'), getMyBookings);
+router.get('/my/calendar', authenticate, authorize('learner'), getMyCalendar);
 router.get('/school', authenticate, authorize('school_owner'), getSchoolBookings);
 router.patch('/:id/cancel', authenticate, authorize('learner', 'school_owner'), cancelBooking);
 

@@ -1,10 +1,12 @@
 const prisma = require('../utils/prismaClient');
+const { sendEmail } = require('../utils/emailService');
+const { schoolPendingEmail, schoolVerifiedEmail } = require('../utils/emailTemplates');
 
 // SCHOOL OWNER: Register a new school
 const registerSchool = async (req, res) => {
   try {
     const ownerId = req.user.id; // from auth middleware
-    const { name, description, city, state, address } = req.body;
+    const { name, description, city, state, address, latitude, longitude } = req.body;
 
     if (!name || !city || !state || !address) {
       return res.status(400).json({ error: 'Name, city, state, and address are required' });
@@ -27,6 +29,8 @@ const registerSchool = async (req, res) => {
         city,
         state,
         address,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null,
         documentsUrl,
         verificationStatus: 'pending',
       },
@@ -36,6 +40,18 @@ const registerSchool = async (req, res) => {
       message: 'School registered successfully. Awaiting verification.',
       school,
     });
+
+    // Send pending confirmation email (non-blocking, wrapped separately so any
+    // failure here never tries to send a second response back to the client)
+    try {
+      const owner = await prisma.user.findUnique({ where: { id: ownerId } });
+      if (owner) {
+        const emailContent = schoolPendingEmail({ ownerName: owner.name, schoolName: school.name });
+        sendEmail({ to: owner.email, ...emailContent });
+      }
+    } catch (emailErr) {
+      console.error('Failed to send pending email (non-blocking):', emailErr.message);
+    }
   } catch (error) {
     console.error('Register school error:', error);
     res.status(500).json({ error: 'Something went wrong during registration' });
@@ -91,9 +107,18 @@ const approveSchool = async (req, res) => {
     const school = await prisma.drivingSchool.update({
       where: { id: parseInt(id) },
       data: { verificationStatus: 'verified' },
+      include: { owner: true },
     });
 
     res.json({ message: 'School approved', school });
+
+    // Send welcome/verified email (non-blocking, wrapped separately)
+    try {
+      const emailContent = schoolVerifiedEmail({ ownerName: school.owner.name, schoolName: school.name });
+      sendEmail({ to: school.owner.email, ...emailContent });
+    } catch (emailErr) {
+      console.error('Failed to send verified email (non-blocking):', emailErr.message);
+    }
   } catch (error) {
     console.error('Approve school error:', error);
     res.status(500).json({ error: 'Something went wrong' });
@@ -121,7 +146,7 @@ const rejectSchool = async (req, res) => {
 const updateSchool = async (req, res) => {
   try {
     const ownerId = req.user.id;
-    const { name, description, city, state, address } = req.body;
+    const { name, description, city, state, address, latitude, longitude } = req.body;
 
     const school = await prisma.drivingSchool.findUnique({ where: { ownerId } });
     if (!school) {
@@ -136,6 +161,8 @@ const updateSchool = async (req, res) => {
         city: city ?? school.city,
         state: state ?? school.state,
         address: address ?? school.address,
+        latitude: latitude !== undefined ? parseFloat(latitude) : school.latitude,
+        longitude: longitude !== undefined ? parseFloat(longitude) : school.longitude,
       },
     });
 
@@ -179,6 +206,37 @@ const getSchoolStats = async (req, res) => {
   }
 };
 
+// SCHOOL OWNER: Cancel a pending (or rejected) school registration
+const cancelSchoolRegistration = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+
+    const school = await prisma.drivingSchool.findUnique({ where: { ownerId } });
+    if (!school) {
+      return res.status(404).json({ error: 'No school registered yet' });
+    }
+
+    if (school.verificationStatus === 'verified') {
+      return res.status(400).json({
+        error: 'Cannot cancel a verified school. Please contact support if you need to remove your listing.',
+      });
+    }
+
+    // Clean up dependent records first (no cascade delete configured in schema)
+    await prisma.course.deleteMany({ where: { schoolId: school.id } });
+    await prisma.branch.deleteMany({ where: { schoolId: school.id } });
+    await prisma.instructor.deleteMany({ where: { schoolId: school.id } });
+    await prisma.subscription.deleteMany({ where: { schoolId: school.id } });
+
+    await prisma.drivingSchool.delete({ where: { id: school.id } });
+
+    res.json({ message: 'School registration cancelled successfully' });
+  } catch (error) {
+    console.error('Cancel school registration error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
 module.exports = {
   registerSchool,
   getMySchool,
@@ -187,4 +245,5 @@ module.exports = {
   rejectSchool,
   updateSchool,
   getSchoolStats,
+  cancelSchoolRegistration,
 };

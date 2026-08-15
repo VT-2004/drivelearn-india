@@ -1,0 +1,87 @@
+.location-picker {
+  margin: 16px 0;
+}
+
+.location-search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.location-search-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid #D8D4C9;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.location-search-results {
+  background: white;
+  border: 1px solid #E4E1D9;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.location-search-result-item {
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #F0EEE7;
+}
+
+.location-search-result-item:last-child {
+  border-bottom: none;
+}
+
+.location-search-result-item:hover {
+  background: #FFF8E1;
+}
+
+.leaflet-map-container {
+  height: 280px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid #D8D4C9;
+}
+
+.location-hint {
+  font-size: 12px;
+  color: #8B929A;
+  margin-top: 6px;
+}
+
+.selected-location-badge {
+  font-size: 12px;
+  color: #2E7D32;
+  background: #E8F5E9;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+/* ===== Near Me Search Results Map ===== */
+.results-map-wrapper {
+  margin-bottom: 24px;
+}
+
+.near-me-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.distance-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #6B7680;
+  background: #F0EEE7;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 4px;
+}

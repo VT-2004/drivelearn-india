@@ -26,7 +26,7 @@ const signup = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user - learners get a ₹10 signup bonus credited to their wallet
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -34,6 +34,7 @@ const signup = async (req, res) => {
         password: hashedPassword,
         phone,
         role,
+        walletBalance: role === 'learner' ? 10 : 0,
       },
     });
 
@@ -41,7 +42,9 @@ const signup = async (req, res) => {
     const { password: _, ...userWithoutPassword } = newUser;
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message: role === 'learner'
+        ? 'User registered successfully. ₹10 welcome bonus added to your wallet!'
+        : 'User registered successfully',
       user: userWithoutPassword,
     });
   } catch (error) {
@@ -91,4 +94,19 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, login };
+// GET CURRENT USER (fresh data, e.g. for up-to-date wallet balance)
+const getMe = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const { password: _, ...userWithoutPassword } = user;
+    res.json({ user: userWithoutPassword });
+  } catch (error) {
+    console.error('Get me error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+module.exports = { signup, login, getMe };

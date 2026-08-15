@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerSchool } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import LocationPicker from '../../components/LocationPicker';
 import '../../styles/dashboard.css';
 
 const RegisterSchool = () => {
@@ -12,6 +13,7 @@ const RegisterSchool = () => {
     state: '',
     address: '',
   });
+  const [location, setLocation] = useState(null); // [lat, lng]
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,6 +29,10 @@ const RegisterSchool = () => {
     setFile(e.target.files[0]);
   };
 
+  const handleLocationChange = (lat, lng) => {
+    setLocation([lat, lng]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -35,6 +41,10 @@ const RegisterSchool = () => {
     try {
       const data = new FormData();
       Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+      if (location) {
+        data.append('latitude', location[0]);
+        data.append('longitude', location[1]);
+      }
       if (file) data.append('document', file);
 
       await registerSchool(data);
@@ -76,6 +86,9 @@ const RegisterSchool = () => {
 
           <label>Address</label>
           <input type="text" name="address" value={formData.address} onChange={handleChange} required />
+
+          <label>Pin Your Exact Location on the Map</label>
+          <LocationPicker value={location} onChange={handleLocationChange} />
 
           <label>Verification Document (License/Registration proof)</label>
           <input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={handleFileChange} />

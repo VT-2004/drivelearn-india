@@ -61,6 +61,8 @@ model User {
   instructor    Instructor?
   bookings      Booking[]
   reviews       Review[]
+  lessonUpdates LessonUpdate[]
+  walletBalance Float          @default(0)
 }
 
 model DrivingSchool {
@@ -72,6 +74,8 @@ model DrivingSchool {
   city                String
   state               String
   address             String
+  latitude            Float?
+  longitude           Float?
   verificationStatus  VerificationStatus @default(pending)
   documentsUrl        String?
   createdAt           DateTime           @default(now())
@@ -130,6 +134,7 @@ model Booking {
 
   payment       Payment?
   attendance    Attendance[]
+  updates       LessonUpdate[]
 }
 
 model Payment {
@@ -140,6 +145,7 @@ model Payment {
   status           PaymentStatus @default(pending)
   razorpayOrderId  String?
   paidAt           DateTime?
+  walletUsed       Decimal?      @default(0)
 }
 
 model Subscription {
@@ -164,10 +170,23 @@ model Review {
 }
 
 model Attendance {
-  id         Int               @id @default(autoincrement())
+  id            Int               @id @default(autoincrement())
+  bookingId     Int
+  booking       Booking           @relation(fields: [bookingId], references: [id])
+  date          DateTime
+  status        AttendanceStatus
+  notes         String?
+  checkInTime   DateTime?
+  checkOutTime  DateTime?
+}
+
+model LessonUpdate {
+  id         Int      @id @default(autoincrement())
   bookingId  Int
-  booking    Booking           @relation(fields: [bookingId], references: [id])
-  date       DateTime
-  status     AttendanceStatus
-  notes      String?
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  authorId   Int
+  author     User     @relation(fields: [authorId], references: [id])
+  authorRole String
+  message    String
+  createdAt  DateTime @default(now())
 }

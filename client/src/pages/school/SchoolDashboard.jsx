@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LocationPicker from '../../components/LocationPicker';
 import {
   getMySchool,
   updateSchool,
@@ -19,6 +20,7 @@ import {
   createSubscriptionOrder,
   verifySubscriptionPayment,
   getSchoolAnalytics,
+  cancelSchoolRegistration,
 } from '../../services/api';
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
@@ -59,6 +61,7 @@ const SchoolDashboard = () => {
   const [subStatus, setSubStatus] = useState('none');
   const [subscribing, setSubscribing] = useState(false);
   const [analytics, setAnalytics] = useState(null);
+  const [location, setLocation] = useState(null);
 
   const { logout, user } = useAuth();
   const navigate = useNavigate();
@@ -74,6 +77,9 @@ const SchoolDashboard = () => {
         state: schoolRes.data.school.state,
         address: schoolRes.data.school.address,
       });
+      if (schoolRes.data.school.latitude && schoolRes.data.school.longitude) {
+        setLocation([schoolRes.data.school.latitude, schoolRes.data.school.longitude]);
+      }
 
       const [statsRes, branchRes, instructorRes, courseRes, bookingRes, subRes, analyticsRes] = await Promise.all([
         getSchoolStats(),
@@ -112,7 +118,12 @@ const SchoolDashboard = () => {
   const handleProfileSave = async (e) => {
     e.preventDefault();
     try {
-      await updateSchool(profileData);
+      const dataToSave = { ...profileData };
+      if (location) {
+        dataToSave.latitude = location[0];
+        dataToSave.longitude = location[1];
+      }
+      await updateSchool(dataToSave);
       setEditMode(false);
       loadData();
     } catch (err) {
@@ -188,6 +199,18 @@ const SchoolDashboard = () => {
     if (!window.confirm('Cancel this booking?')) return;
     await cancelBooking(id);
     loadData();
+  };
+
+  const handleCancelRegistration = async () => {
+    if (!window.confirm('Are you sure you want to cancel this school registration? This will permanently delete your school, branches, instructors, and courses. This cannot be undone.')) {
+      return;
+    }
+    try {
+      await cancelSchoolRegistration();
+      navigate('/school/register');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to cancel registration');
+    }
   };
 
   const handleSubscribe = async (plan) => {
@@ -332,6 +355,11 @@ const SchoolDashboard = () => {
             <p style={{ fontSize: '14px' }}>
               <strong>Main Location:</strong> {school.address}, {school.city}, {school.state}
             </p>
+            {!location && (
+              <p style={{ fontSize: '13px', color: '#856404', background: '#FFF3CD', padding: '10px', borderRadius: '4px' }}>
+                ⚠️ No map location pinned yet — your school won't appear in learners' "Near Me" search until you add one. Click "Edit Profile" to pin your location.
+              </p>
+            )}
           </>
         ) : (
           <form onSubmit={handleProfileSave} style={{ marginTop: '16px' }}>
@@ -345,14 +373,25 @@ const SchoolDashboard = () => {
             <input type="text" name="state" value={profileData.state} onChange={handleProfileChange} required />
             <label>Address</label>
             <input type="text" name="address" value={profileData.address} onChange={handleProfileChange} required />
+            <label>Pin Your Exact Location on the Map</label>
+            <LocationPicker value={location} onChange={(lat, lng) => setLocation([lat, lng])} />
             <button type="submit" className="btn btn-primary submit-btn">Save Changes</button>
           </form>
         )}
 
         {school.verificationStatus === 'pending' && (
-          <p style={{ fontSize: '13px', color: '#856404', background: '#FFF3CD', padding: '10px', borderRadius: '4px', marginTop: '16px' }}>
-            Your school is awaiting verification from our team.
-          </p>
+          <>
+            <p style={{ fontSize: '13px', color: '#856404', background: '#FFF3CD', padding: '10px', borderRadius: '4px', marginTop: '16px' }}>
+              Your school is awaiting verification from our team.
+            </p>
+            <button
+              className="btn"
+              style={{ marginTop: '10px', background: '#E14B3C', color: 'white', border: 'none' }}
+              onClick={handleCancelRegistration}
+            >
+              Cancel Registration Request
+            </button>
+          </>
         )}
       </div>
 

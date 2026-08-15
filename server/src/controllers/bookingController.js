@@ -160,4 +160,37 @@ const cancelBooking = async (req, res) => {
   }
 };
 
-module.exports = { createBooking, getMyBookings, getSchoolBookings, cancelBooking };
+// LEARNER: Get calendar view of my attendance across all bookings for a month
+const getMyCalendar = async (req, res) => {
+  try {
+    const learnerId = req.user.id;
+    const { month, year } = req.query;
+
+    const targetMonth = parseInt(month) || new Date().getMonth() + 1;
+    const targetYear = parseInt(year) || new Date().getFullYear();
+    const startDate = new Date(targetYear, targetMonth - 1, 1);
+    const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59);
+
+    const records = await prisma.attendance.findMany({
+      where: {
+        date: { gte: startDate, lte: endDate },
+        booking: { learnerId },
+      },
+    });
+
+    const dayMap = {};
+    records.forEach((r) => {
+      const day = new Date(r.date).getDate();
+      if (!dayMap[day] || r.status === 'present') {
+        dayMap[day] = r.status;
+      }
+    });
+
+    res.json({ month: targetMonth, year: targetYear, days: dayMap });
+  } catch (error) {
+    console.error('Get learner calendar error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+module.exports = { createBooking, getMyBookings, getSchoolBookings, cancelBooking, getMyCalendar };

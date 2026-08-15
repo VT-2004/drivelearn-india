@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getAllSchools, approveSchool, rejectSchool, getAdminAnalytics } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
@@ -145,6 +146,9 @@ const AdminDashboard = () => {
                   ) : 'None'}
                 </td>
                 <td>
+                  <Link to={`/admin/school/${s.id}`} className="action-btn" style={{ background: '#1C1F22', color: 'white', textDecoration: 'none', display: 'inline-block' }}>
+                    View
+                  </Link>
                   {s.verificationStatus === 'pending' && (
                     <>
                       <button className="action-btn approve-btn" onClick={() => handleApprove(s.id)}>Approve</button>

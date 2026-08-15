@@ -4,7 +4,9 @@ const authenticate = require('../middleware/authMiddleware');
 const authorize = require('../middleware/roleMiddleware');
 const {
   createBookingOrder,
+  confirmBookingWithWallet,
   verifyBookingPayment,
+  downloadReceipt,
   createSubscriptionOrder,
   verifySubscriptionPayment,
   getMySubscription,
@@ -12,7 +14,9 @@ const {
 
 // Course payment (learner)
 router.post('/booking/create-order', authenticate, authorize('learner'), createBookingOrder);
+router.post('/booking/confirm-wallet', authenticate, authorize('learner'), confirmBookingWithWallet);
 router.post('/booking/verify', authenticate, authorize('learner'), verifyBookingPayment);
+router.get('/booking/:bookingId/receipt', authenticate, authorize('learner'), downloadReceipt);
 
 // School subscription (school owner)
 router.post('/subscription/create-order', authenticate, authorize('school_owner'), createSubscriptionOrder);
