@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import LocationPicker from '../../components/LocationPicker';
+import LiveClock from '../../components/LiveClock';
+import AccountMenu from '../../components/AccountMenu';
 import {
   getMySchool,
   updateSchool,
@@ -253,9 +255,7 @@ const SchoolDashboard = () => {
     <div className="dash-page">
       <div className="dash-header">
         <h1>School Dashboard</h1>
-        <button className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }} onClick={logout}>
-          Logout
-        </button>
+        <AccountMenu />
       </div>
 
       <div className="stats-grid">
@@ -503,6 +503,9 @@ const SchoolDashboard = () => {
 
       <div className="dash-header" style={{ marginTop: '40px' }}>
         <h1 style={{ fontSize: '22px' }}>Bookings</h1>
+        <Link to="/school/students" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }}>
+          View All Students
+        </Link>
       </div>
 
       {bookings.length === 0 ? (

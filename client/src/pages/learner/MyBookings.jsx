@@ -4,6 +4,7 @@ import { getMyBookings, cancelBooking, createBookingOrder, confirmBookingWithWal
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
 import LiveClock from '../../components/LiveClock';
+import AccountMenu from '../../components/AccountMenu';
 import AttendanceCalendar from '../../components/AttendanceCalendar';
 import '../../styles/dashboard.css';
 
@@ -152,16 +153,11 @@ const MyBookings = () => {
       <div className="dash-header">
         <h1>My Bookings</h1>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <div className="dash-price-tag" style={{ fontSize: '15px', padding: '8px 14px' }}>
-            💰 Wallet: ₹{Number(walletBalance).toLocaleString('en-IN')}
-          </div>
           <LiveClock />
           <Link to="/learner" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }}>
             Find More Schools
           </Link>
-          <button className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }} onClick={logout}>
-            Logout
-          </button>
+          <AccountMenu walletBalance={walletBalance} />
         </div>
       </div>
 

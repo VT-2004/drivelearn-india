@@ -63,6 +63,7 @@ model User {
   reviews       Review[]
   lessonUpdates LessonUpdate[]
   walletBalance Float          @default(0)
+  googleId      String?        @unique
 }
 
 model DrivingSchool {

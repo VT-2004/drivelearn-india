@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signupUser } from '../../services/api';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
 import '../../styles/auth.css';
 
 const Signup = () => {
@@ -57,6 +58,17 @@ const Signup = () => {
           <h2>Create Account</h2>
           <p className="auth-subtext">Fill in your details to get started</p>
 
+          <GoogleSignInButton onError={setError} />
+          <p style={{ fontSize: '12px', color: '#8B929A', textAlign: 'center', marginTop: '8px' }}>
+            Google sign-up creates a Learner account. School owners and instructors, please use the form below.
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: '#E4E1D9' }} />
+            <span style={{ fontSize: '12px', color: '#8B929A' }}>OR</span>
+            <div style={{ flex: 1, height: '1px', background: '#E4E1D9' }} />
+          </div>
+
           <form onSubmit={handleSubmit}>
             <label>Full Name</label>
             <input
@@ -93,6 +105,9 @@ const Signup = () => {
               onChange={handleChange}
               required
             />
+            <p style={{ fontSize: '12px', color: '#8B929A', marginTop: '4px', marginBottom: '0' }}>
+              At least 8 characters, with uppercase, lowercase, a number, and a special character.
+            </p>
 
             <label>I am a</label>
             <select name="role" value={formData.role} onChange={handleChange}>

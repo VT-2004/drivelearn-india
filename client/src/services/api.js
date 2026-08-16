@@ -17,7 +17,10 @@ api.interceptors.request.use((config) => {
 // ===== Auth =====
 export const signupUser = (data) => api.post('/auth/signup', data);
 export const loginUser = (data) => api.post('/auth/login', data);
+export const googleAuth = (credential) => api.post('/auth/google', { credential });
 export const getMe = () => api.get('/auth/me');
+export const updateProfile = (data) => api.put('/auth/me', data);
+export const changePassword = (data) => api.put('/auth/change-password', data);
 
 // ===== School (Owner) =====
 export const registerSchool = (formData) =>
@@ -83,12 +86,15 @@ export const getMySubscription = () => api.get('/payments/subscription/my');
 
 // ===== Instructor Portal =====
 export const getMyAssignedBookings = () => api.get('/instructor/bookings');
+export const getInstructorCourses = () => api.get('/instructor/courses');
+export const getMyWorkplace = () => api.get('/instructor/workplace');
+export const getCourseStudents = (courseId, status) => api.get(`/instructor/courses/${courseId}/students`, { params: status ? { status } : {} });
 export const markAttendance = (data) => api.post('/instructor/attendance', data);
 export const getBookingAttendance = (bookingId) => api.get(`/instructor/attendance/${bookingId}`);
 export const markBookingComplete = (id) => api.patch(`/instructor/bookings/${id}/complete`);
 export const clockIn = (bookingId) => api.post('/instructor/clock-in', { bookingId });
 export const clockOut = (bookingId) => api.post('/instructor/clock-out', { bookingId });
-export const getInstructorCalendar = (month, year) => api.get('/instructor/calendar', { params: { month, year } });
+export const getInstructorCalendar = (month, year, courseId) => api.get('/instructor/calendar', { params: { month, year, courseId } });
 export const getLearnerCalendar = (month, year) => api.get('/bookings/my/calendar', { params: { month, year } });
 
 // ===== Lesson Updates (shared comments) =====
@@ -103,5 +109,7 @@ export const getReviewableSchools = () => api.get('/reviews/reviewable');
 export const getAdminAnalytics = () => api.get('/analytics/admin');
 export const getSchoolAnalytics = () => api.get('/analytics/school');
 export const getSchoolDetailForAdmin = (id) => api.get(`/analytics/admin/school/${id}`);
+export const getAllUsers = (role) => api.get('/analytics/admin/users', { params: role ? { role } : {} });
+export const getMyStudents = () => api.get('/schools/students');
 
 export default api;

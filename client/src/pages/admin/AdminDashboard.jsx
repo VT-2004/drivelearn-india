@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllSchools, approveSchool, rejectSchool, getAdminAnalytics } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import AccountMenu from '../../components/AccountMenu';
 import '../../styles/dashboard.css';
 
 const statusClass = {
@@ -53,9 +54,12 @@ const AdminDashboard = () => {
     <div className="dash-page">
       <div className="dash-header">
         <h1>Admin Dashboard</h1>
-        <button className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }} onClick={logout}>
-          Logout
-        </button>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <Link to="/admin/users" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }}>
+            User Directory
+          </Link>
+          <AccountMenu />
+        </div>
       </div>
 
       {analytics && (

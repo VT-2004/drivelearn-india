@@ -5,6 +5,81 @@ const getInstructorRecord = async (userId) => {
   return prisma.instructor.findUnique({ where: { userId } });
 };
 
+// INSTRUCTOR: Get list of distinct courses I'm teaching, with student counts
+const getMyCourses = async (req, res) => {
+  try {
+    const instructor = await getInstructorRecord(req.user.id);
+    if (!instructor) {
+      return res.status(404).json({ error: 'Instructor profile not found' });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: { instructorId: instructor.id },
+      include: {
+        course: { select: { id: true, title: true, durationDays: true, school: { select: { name: true } } } },
+      },
+    });
+
+    const courseMap = {};
+    bookings.forEach((b) => {
+      const cid = b.course.id;
+      if (!courseMap[cid]) {
+        courseMap[cid] = {
+          id: cid,
+          title: b.course.title,
+          durationDays: b.course.durationDays,
+          schoolName: b.course.school.name,
+          totalStudents: 0,
+          ongoingStudents: 0,
+          completedStudents: 0,
+        };
+      }
+      courseMap[cid].totalStudents += 1;
+      if (b.status === 'confirmed') courseMap[cid].ongoingStudents += 1;
+      if (b.status === 'completed') courseMap[cid].completedStudents += 1;
+    });
+
+    res.json({ courses: Object.values(courseMap) });
+  } catch (error) {
+    console.error('Get my courses error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+// INSTRUCTOR: Get students (bookings) for a specific course I teach, optionally filtered by status
+const getCourseStudents = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { status } = req.query; // 'pending' | 'confirmed' | 'completed' | 'cancelled' | undefined (=all)
+
+    const instructor = await getInstructorRecord(req.user.id);
+    if (!instructor) {
+      return res.status(404).json({ error: 'Instructor profile not found' });
+    }
+
+    const where = {
+      instructorId: instructor.id,
+      courseId: parseInt(courseId),
+      ...(status && { status }),
+    };
+
+    const bookings = await prisma.booking.findMany({
+      where,
+      include: {
+        course: { select: { title: true } },
+        learner: { select: { name: true, phone: true, email: true, createdAt: true } },
+        attendance: { orderBy: { date: 'desc' } },
+      },
+      orderBy: { bookedDate: 'asc' },
+    });
+
+    res.json({ bookings });
+  } catch (error) {
+    console.error('Get course students error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
 // INSTRUCTOR: Get all bookings assigned to me
 const getMyAssignedBookings = async (req, res) => {
   try {
@@ -20,7 +95,7 @@ const getMyAssignedBookings = async (req, res) => {
       },
       include: {
         course: { select: { title: true } },
-        learner: { select: { name: true, phone: true } },
+        learner: { select: { name: true, phone: true, email: true, createdAt: true } },
         attendance: { orderBy: { date: 'desc' } },
       },
       orderBy: { bookedDate: 'asc' },
@@ -230,7 +305,7 @@ const clockOut = async (req, res) => {
 // INSTRUCTOR: Get calendar view of my attendance across all assigned bookings for a month
 const getMyCalendar = async (req, res) => {
   try {
-    const { month, year } = req.query; // month: 1-12
+    const { month, year, courseId } = req.query; // month: 1-12
     const instructor = await getInstructorRecord(req.user.id);
     if (!instructor) {
       return res.status(404).json({ error: 'Instructor profile not found' });
@@ -244,7 +319,10 @@ const getMyCalendar = async (req, res) => {
     const records = await prisma.attendance.findMany({
       where: {
         date: { gte: startDate, lte: endDate },
-        booking: { instructorId: instructor.id },
+        booking: {
+          instructorId: instructor.id,
+          ...(courseId && { courseId: parseInt(courseId) }),
+        },
       },
     });
 
@@ -264,4 +342,46 @@ const getMyCalendar = async (req, res) => {
   }
 };
 
-module.exports = { getMyAssignedBookings, markAttendance, getBookingAttendance, markBookingComplete, clockIn, clockOut, getMyCalendar };
+// INSTRUCTOR: Get my workplace info - always available, even with zero students assigned yet
+const getMyWorkplace = async (req, res) => {
+  try {
+    const instructor = await prisma.instructor.findUnique({
+      where: { userId: req.user.id },
+      include: {
+        school: {
+          select: {
+            name: true,
+            description: true,
+            city: true,
+            state: true,
+            address: true,
+            verificationStatus: true,
+            courses: { select: { id: true, title: true, durationDays: true } },
+          },
+        },
+      },
+    });
+
+    if (!instructor) {
+      return res.status(404).json({ error: 'Instructor profile not found' });
+    }
+
+    res.json({
+      workplace: {
+        schoolName: instructor.school.name,
+        description: instructor.school.description,
+        city: instructor.school.city,
+        state: instructor.school.state,
+        address: instructor.school.address,
+        specialization: instructor.specialization,
+        experienceYears: instructor.experienceYears,
+        allCourses: instructor.school.courses,
+      },
+    });
+  } catch (error) {
+    console.error('Get my workplace error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+module.exports = { getMyAssignedBookings, markAttendance, getBookingAttendance, markBookingComplete, clockIn, clockOut, getMyCalendar, getMyCourses, getCourseStudents, getMyWorkplace };

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { searchSchools } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import LiveClock from '../../components/LiveClock';
+import AccountMenu from '../../components/AccountMenu';
 import SchoolsMap from '../../components/SchoolsMap';
 import '../../styles/search.css';
 
@@ -53,7 +55,7 @@ const SearchSchools = () => {
         setUserLocation([latitude, longitude]);
         setCity('');
         setShowMap(true);
-        loadSchools({ lat: latitude, lng: longitude, radiusKm: 50 });
+        loadSchools({ lat: latitude, lng: longitude, radiusKm: 500 });
         setLocating(false);
       },
       (error) => {
@@ -88,7 +90,10 @@ const SearchSchools = () => {
             </button>
             {locationError && <p style={{ color: '#F8D7DA', fontSize: '13px', marginTop: '8px' }}>{locationError}</p>}
           </div>
-          <button className="btn btn-outline" onClick={logout}>Logout</button>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <LiveClock />
+            <AccountMenu />
+          </div>
         </div>
       </div>
 
@@ -110,7 +115,7 @@ const SearchSchools = () => {
 
             {schools.length === 0 ? (
               <div className="empty-state">
-                No schools found{userLocation ? ' within 50km of your location' : ''}. Try a different city or check back soon.
+                No schools found{userLocation ? ' within 500km of your location' : ''}. Try a different city or check back soon.
               </div>
             ) : (
               schools.map((s) => (

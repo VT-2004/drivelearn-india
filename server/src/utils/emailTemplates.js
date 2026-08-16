@@ -100,4 +100,29 @@ const bookingCancelledEmail = ({ learnerName, courseName, schoolName, bookedDate
   `,
 });
 
-module.exports = { bookingConfirmationEmail, subscriptionReceiptEmail, schoolPendingEmail, schoolVerifiedEmail, bookingCancelledEmail };
+const welcomeEmail = ({ name, role }) => {
+  const roleLabels = {
+    learner: 'Learner',
+    school_owner: 'Driving School Owner',
+    instructor: 'Instructor',
+    admin: 'Admin',
+  };
+  return {
+    subject: `Welcome to DriveLearn India, ${name}!`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #eee;">
+        <h2 style="color: #1C1F22;">Welcome to DriveLearn India 🎉</h2>
+        <p>Hi ${name},</p>
+        <p>
+          Your account has been created successfully as a <strong>${roleLabels[role] || role}</strong>.
+          We're glad to have you on board!
+        </p>
+        <p style="color: #6B7680; font-size: 13px;">
+          If you didn't create this account, please contact our support team immediately.
+        </p>
+      </div>
+    `,
+  };
+};
+
+module.exports = { bookingConfirmationEmail, subscriptionReceiptEmail, schoolPendingEmail, schoolVerifiedEmail, bookingCancelledEmail, welcomeEmail };

@@ -183,4 +183,34 @@ const getSchoolDetailForAdmin = async (req, res) => {
   }
 };
 
-module.exports = { getAdminAnalytics, getSchoolAnalytics, getSchoolDetailForAdmin };
+// ADMIN: Get all users across every role, with role-specific context
+const getAllUsers = async (req, res) => {
+  try {
+    const { role } = req.query;
+    const where = role ? { role } : {};
+
+    const users = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        walletBalance: true,
+        createdAt: true,
+        drivingSchool: { select: { name: true, verificationStatus: true } },
+        instructor: { select: { specialization: true, school: { select: { name: true } } } },
+        _count: { select: { bookings: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ users });
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+module.exports = { getAdminAnalytics, getSchoolAnalytics, getSchoolDetailForAdmin, getAllUsers };

@@ -71,8 +71,8 @@ const SchoolProfile = () => {
       <div className="profile-hero">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <Link to="/learner" style={{ color: '#F2B705', fontSize: '13px', textDecoration: 'none' }}>← Back to search</Link>
-            <span className="verified-tag" style={{ marginTop: '16px' }}>Verified School</span>
+            <Link to="/learner" style={{ display: 'block', marginBottom: '16px', color: '#F2B705', fontSize: '13px', textDecoration: 'none' }}>← Back to search</Link>
+            <span className="verified-tag">Verified School</span>
             {school.avgRating && (
               <span style={{ marginLeft: '10px', color: '#F2B705', fontWeight: 600, fontSize: '14px' }}>
                 ★ {school.avgRating} ({school.reviewCount} review{school.reviewCount !== 1 ? 's' : ''})

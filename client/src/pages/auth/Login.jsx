@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
 import '../../styles/auth.css';
 
 const Login = () => {
@@ -60,6 +61,14 @@ const Login = () => {
         <div className="auth-form-box">
           <h2>Log In</h2>
           <p className="auth-subtext">Enter your credentials to continue</p>
+
+          <GoogleSignInButton onError={setError} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: '#E4E1D9' }} />
+            <span style={{ fontSize: '12px', color: '#8B929A' }}>OR</span>
+            <div style={{ flex: 1, height: '1px', background: '#E4E1D9' }} />
+          </div>
 
           <form onSubmit={handleSubmit}>
             <label>Email</label>

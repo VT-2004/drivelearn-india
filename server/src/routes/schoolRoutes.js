@@ -13,6 +13,7 @@ const {
   getSchoolStats,
   cancelSchoolRegistration,
 } = require('../controllers/schoolController');
+const { getMyStudents } = require('../controllers/studentController');
 const { addBranch, getMyBranches, deleteBranch } = require('../controllers/branchController');
 const { addInstructor, getInstructors, deleteInstructor } = require('../controllers/instructorController');
 
@@ -28,6 +29,7 @@ router.get('/my-school', authenticate, authorize('school_owner'), getMySchool);
 router.put('/my-school', authenticate, authorize('school_owner'), updateSchool);
 router.delete('/my-school', authenticate, authorize('school_owner'), cancelSchoolRegistration);
 router.get('/stats', authenticate, authorize('school_owner'), getSchoolStats);
+router.get('/students', authenticate, authorize('school_owner'), getMyStudents);
 
 // Branch routes (School Owner)
 router.post('/branches', authenticate, authorize('school_owner'), addBranch);

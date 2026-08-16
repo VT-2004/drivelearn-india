@@ -10,9 +10,15 @@ const {
   clockIn,
   clockOut,
   getMyCalendar,
+  getMyCourses,
+  getCourseStudents,
+  getMyWorkplace,
 } = require('../controllers/instructorPortalController');
 
 router.get('/bookings', authenticate, authorize('instructor'), getMyAssignedBookings);
+router.get('/workplace', authenticate, authorize('instructor'), getMyWorkplace);
+router.get('/courses', authenticate, authorize('instructor'), getMyCourses);
+router.get('/courses/:courseId/students', authenticate, authorize('instructor'), getCourseStudents);
 router.post('/attendance', authenticate, authorize('instructor'), markAttendance);
 router.get('/attendance/:bookingId', authenticate, authorize('instructor', 'learner'), getBookingAttendance);
 router.patch('/bookings/:id/complete', authenticate, authorize('instructor'), markBookingComplete);

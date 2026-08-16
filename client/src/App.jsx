@@ -16,6 +16,10 @@ import SearchSchools from './pages/learner/SearchSchools';
 import SchoolProfile from './pages/learner/SchoolProfile';
 import MyBookings from './pages/learner/MyBookings';
 import AdminSchoolDetail from './pages/admin/AdminSchoolDetail';
+import Profile from './pages/shared/Profile';
+import Students from './pages/school/Students';
+import UserDirectory from './pages/admin/UserDirectory';
+import InstructorCourseDetail from './pages/instructor/InstructorCourseDetail';
 
 // Placeholder simple components for other roles - build these out fully in later parts
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
@@ -90,10 +94,42 @@ function App() {
             }
           />
           <Route
+            path="/instructor/course/:id"
+            element={
+              <ProtectedRoute allowedRoles={['instructor']}>
+                <InstructorCourseDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/school/:id"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSchoolDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school/students"
+            element={
+              <ProtectedRoute allowedRoles={['school_owner']}>
+                <Students />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserDirectory />
               </ProtectedRoute>
             }
           />
