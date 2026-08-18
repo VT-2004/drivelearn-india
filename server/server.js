@@ -14,6 +14,8 @@ const reviewRoutes = require('./src/routes/reviewRoutes');
 const analyticsRoutes = require('./src/routes/analyticsRoutes');
 const instructorPortalRoutes = require('./src/routes/instructorPortalRoutes');
 const updateRoutes = require('./src/routes/updateRoutes');
+const availabilityRoutes = require('./src/routes/availabilityRoutes');
+const certificateRoutes = require('./src/routes/certificateRoutes');
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/instructor', instructorPortalRoutes);
 app.use('/api/updates', updateRoutes);
+app.use('/api/availability', availabilityRoutes);
+app.use('/api/certificates', certificateRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

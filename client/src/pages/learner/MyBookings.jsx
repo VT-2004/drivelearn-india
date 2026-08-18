@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyBookings, cancelBooking, createBookingOrder, confirmBookingWithWallet, verifyBookingPayment, getBookingAttendance, getReviewableSchools, createReview, getLearnerCalendar, postUpdate, getUpdates, getMe, downloadReceipt } from '../../services/api';
+import { getMyBookings, cancelBooking, createBookingOrder, confirmBookingWithWallet, verifyBookingPayment, getBookingAttendance, getReviewableSchools, createReview, getLearnerCalendar, postUpdate, getUpdates, getMe, downloadReceipt, downloadCertificate } from '../../services/api';
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
 import LiveClock from '../../components/LiveClock';
@@ -148,6 +148,14 @@ const MyBookings = () => {
     }
   };
 
+  const handleDownloadCertificate = async (bookingId) => {
+    try {
+      await downloadCertificate(bookingId);
+    } catch (err) {
+      alert('Failed to download certificate');
+    }
+  };
+
   return (
     <div className="dash-page">
       <div className="dash-header">
@@ -214,6 +222,7 @@ const MyBookings = () => {
                 </p>
                 <p style={{ margin: '0 0 4px', fontSize: '14px' }}>
                   <strong>Date:</strong> {new Date(b.bookedDate).toLocaleDateString('en-IN')}
+                  {b.startTime && b.endTime && ` · ${b.startTime} – ${b.endTime}`}
                 </p>
                 <p style={{ margin: '0 0 4px', fontSize: '14px' }}>
                   <strong>Instructor:</strong> {b.instructor.user.name}
@@ -242,6 +251,15 @@ const MyBookings = () => {
                       >
                         🧾 Download Receipt
                       </button>
+                      {b.status === 'completed' && (
+                        <button
+                          className="btn btn-outline"
+                          style={{ fontSize: '13px', padding: '6px 14px', color: '#1C1F22', border: '1.5px solid #F2B705', background: '#FFF8E1' }}
+                          onClick={() => handleDownloadCertificate(b.id)}
+                        >
+                          🎓 Download Certificate
+                        </button>
+                      )}
                       <button
                         className="btn btn-primary"
                         style={{ fontSize: '13px', padding: '6px 14px' }}

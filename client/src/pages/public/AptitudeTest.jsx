@@ -1,20 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import testQuestions from '../../data/testQuestions';
+import testQuestionsByTier from '../../data/testQuestions';
 import '../../styles/test.css';
 
-const TEST_DURATION_SECONDS = 10 * 60; // 10 minute mock test
+const TEST_DURATION_SECONDS = 10 * 60;
+
+const difficultyInfo = {
+  easy: { label: 'Easy', desc: 'Basic road signs and rules — great for first-timers.' },
+  moderate: { label: 'Moderate', desc: 'Right-of-way, safe distances, and practical scenarios.' },
+  difficult: { label: 'Difficult', desc: 'In-depth vehicle dynamics, law specifics, and edge cases.' },
+};
 
 const AptitudeTest = () => {
-  const [started, setStarted] = useState(false);
+  const [difficulty, setDifficulty] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION_SECONDS);
   const timerRef = useRef(null);
 
+  const testQuestions = difficulty ? testQuestionsByTier[difficulty] : [];
+
   useEffect(() => {
-    if (started && !submitted) {
+    if (difficulty && !submitted) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -27,7 +35,7 @@ const AptitudeTest = () => {
       }, 1000);
     }
     return () => clearInterval(timerRef.current);
-  }, [started, submitted]);
+  }, [difficulty, submitted]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -53,7 +61,7 @@ const AptitudeTest = () => {
   };
 
   const handleRestart = () => {
-    setStarted(false);
+    setDifficulty(null);
     setCurrentIndex(0);
     setAnswers({});
     setSubmitted(false);
@@ -65,7 +73,7 @@ const AptitudeTest = () => {
     0
   );
 
-  if (!started) {
+  if (!difficulty) {
     return (
       <div className="test-page">
         <div className="test-header">
@@ -74,15 +82,31 @@ const AptitudeTest = () => {
         </div>
         <div className="test-body">
           <div className="test-intro">
-            <h2>Test Your Road Knowledge</h2>
+            <h2>Choose Your Difficulty</h2>
             <p>
-              {testQuestions.length} questions covering Indian traffic rules, road signs, and safe driving practices.
-              You'll have {TEST_DURATION_SECONDS / 60} minutes to complete it. This is a free practice test —
-              no login required, and it isn't an official RTO exam.
+              15 questions per level covering Indian traffic rules, road signs, and safe driving practices.
+              You'll have {TEST_DURATION_SECONDS / 60} minutes. This is a free practice test — no login required,
+              and it isn't an official RTO exam.
             </p>
-            <button className="btn btn-primary btn-lg" onClick={() => setStarted(true)}>
-              Start Test
-            </button>
+            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '20px' }}>
+              {Object.keys(difficultyInfo).map((key) => (
+                <div
+                  key={key}
+                  onClick={() => setDifficulty(key)}
+                  style={{
+                    cursor: 'pointer', border: '1.5px solid #E4E1D9', borderRadius: '10px',
+                    padding: '20px', width: '220px', textAlign: 'left', transition: 'border-color 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#F2B705')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E4E1D9')}
+                >
+                  <h3 style={{ margin: '0 0 8px', fontFamily: 'var(--font-display)', textTransform: 'uppercase' }}>
+                    {difficultyInfo[key].label}
+                  </h3>
+                  <p style={{ fontSize: '13px', color: '#6B7680', margin: 0 }}>{difficultyInfo[key].desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -93,7 +117,7 @@ const AptitudeTest = () => {
     return (
       <div className="test-page">
         <div className="test-header">
-          <h1>Test Results</h1>
+          <h1>Test Results — {difficultyInfo[difficulty].label}</h1>
           <Link to="/" style={{ color: '#F2B705', fontSize: '13px', textDecoration: 'none' }}>← Back to home</Link>
         </div>
         <div className="test-body">
@@ -105,10 +129,10 @@ const AptitudeTest = () => {
                 ? "Excellent! You're well prepared."
                 : score >= testQuestions.length * 0.5
                 ? 'Good effort — a bit more practice will help.'
-                : 'Consider brushing up on traffic rules before your real test.'}
+                : 'Consider brushing up before your real test.'}
             </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button className="btn btn-primary" onClick={handleRestart}>Retake Test</button>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button className="btn btn-primary" onClick={handleRestart}>Try Another Level</button>
               <Link to="/learner" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }}>
                 Find a Driving School
               </Link>
@@ -144,7 +168,7 @@ const AptitudeTest = () => {
   return (
     <div className="test-page">
       <div className="test-header">
-        <h1>Driving Aptitude Test</h1>
+        <h1>{difficultyInfo[difficulty].label} Test</h1>
         <div className="test-timer">⏱ {formatTime(timeLeft)}</div>
       </div>
       <div className="test-body">

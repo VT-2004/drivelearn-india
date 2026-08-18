@@ -107,6 +107,7 @@ model Instructor {
   experienceYears  Int?
 
   bookings         Booking[]
+  availabilitySlots AvailabilitySlot[]
 }
 
 model Course {
@@ -136,6 +137,10 @@ model Booking {
   payment       Payment?
   attendance    Attendance[]
   updates       LessonUpdate[]
+  slotId        Int?               @unique
+  slot          AvailabilitySlot?  @relation(fields: [slotId], references: [id])
+  startTime     String?
+  endTime       String?
 }
 
 model Payment {
@@ -190,4 +195,18 @@ model LessonUpdate {
   authorRole String
   message    String
   createdAt  DateTime @default(now())
+}
+
+
+model AvailabilitySlot {
+  id           Int         @id @default(autoincrement())
+  instructorId Int
+  instructor   Instructor  @relation(fields: [instructorId], references: [id])
+  date         DateTime
+  startTime    String
+  endTime      String
+  isBooked     Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+
+  booking      Booking?
 }

@@ -528,7 +528,10 @@ const SchoolDashboard = () => {
                 <td>{b.learner.name}<br /><span style={{ color: '#8B929A', fontSize: '12px' }}>{b.learner.phone}</span></td>
                 <td>{b.course.title}</td>
                 <td>{b.instructor.user.name}</td>
-                <td>{new Date(b.bookedDate).toLocaleDateString('en-IN')}</td>
+                <td>
+                  {new Date(b.bookedDate).toLocaleDateString('en-IN')}
+                  {b.startTime && b.endTime && <><br /><span style={{ fontSize: '12px', color: '#8B929A' }}>{b.startTime} – {b.endTime}</span></>}
+                </td>
                 <td><span className={`status-badge ${b.status === 'cancelled' ? 'status-rejected' : b.status === 'pending' ? 'status-pending' : 'status-verified'}`}>{b.status}</span></td>
                 <td>
                   {(b.status === 'pending' || b.status === 'confirmed') && (

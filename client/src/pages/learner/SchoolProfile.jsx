@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getSchoolProfile, createBooking } from '../../services/api';
+import { getSchoolProfile, createBooking, getAvailableSlotsForInstructor } from '../../services/api';
 import '../../styles/search.css';
 
 const SchoolProfile = () => {
@@ -10,8 +10,10 @@ const SchoolProfile = () => {
   const [error, setError] = useState('');
 
   const [bookingCourse, setBookingCourse] = useState(null); // course being booked
-  const [bookingDate, setBookingDate] = useState('');
   const [bookingInstructorId, setBookingInstructorId] = useState('');
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState('');
   const [bookingError, setBookingError] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -35,21 +37,42 @@ const SchoolProfile = () => {
 
   const openBookingForm = (course) => {
     setBookingCourse(course);
-    setBookingDate('');
     setBookingInstructorId('');
+    setAvailableSlots([]);
+    setSelectedSlotId('');
     setBookingError('');
     setBookingSuccess('');
+  };
+
+  const handleInstructorSelect = async (instructorId) => {
+    setBookingInstructorId(instructorId);
+    setSelectedSlotId('');
+    setAvailableSlots([]);
+    if (!instructorId) return;
+
+    setLoadingSlots(true);
+    try {
+      const res = await getAvailableSlotsForInstructor(instructorId);
+      setAvailableSlots(res.data.slots);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingSlots(false);
+    }
   };
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     setBookingError('');
+    if (!selectedSlotId) {
+      setBookingError('Please select a time slot');
+      return;
+    }
     setSubmitting(true);
     try {
       await createBooking({
         courseId: bookingCourse.id,
-        instructorId: bookingInstructorId || undefined,
-        bookedDate: bookingDate,
+        slotId: selectedSlotId,
       });
       setBookingSuccess('Booking created successfully! View it under "My Bookings".');
       setBookingCourse(null);
@@ -131,31 +154,47 @@ const SchoolProfile = () => {
                     <form className="form-card" onSubmit={handleBookingSubmit} style={{ marginBottom: '20px' }}>
                       <h4 style={{ marginTop: 0 }}>Book: {c.title}</h4>
 
-                      <label>Preferred Date</label>
-                      <input
-                        type="date"
-                        min={today}
-                        value={bookingDate}
-                        onChange={(e) => setBookingDate(e.target.value)}
-                        required
-                      />
+                      <label>Select Instructor</label>
+                      <select value={bookingInstructorId} onChange={(e) => handleInstructorSelect(e.target.value)} required>
+                        <option value="">Choose an instructor...</option>
+                        {school.instructors.map((i) => (
+                          <option key={i.id} value={i.id}>{i.user.name}{i.specialization ? ` — ${i.specialization}` : ''}</option>
+                        ))}
+                      </select>
 
-                      {school.instructors.length > 1 && (
+                      {bookingInstructorId && (
                         <>
-                          <label>Instructor (optional)</label>
-                          <select value={bookingInstructorId} onChange={(e) => setBookingInstructorId(e.target.value)}>
-                            <option value="">Auto-assign available instructor</option>
-                            {school.instructors.map((i) => (
-                              <option key={i.id} value={i.id}>{i.user.name}{i.specialization ? ` — ${i.specialization}` : ''}</option>
-                            ))}
-                          </select>
+                          <label>Available Time Slots</label>
+                          {loadingSlots ? (
+                            <p style={{ fontSize: '13px', color: '#8B929A' }}>Loading slots...</p>
+                          ) : availableSlots.length === 0 ? (
+                            <p style={{ fontSize: '13px', color: '#B3261E' }}>
+                              This instructor has no available slots right now. Try another instructor.
+                            </p>
+                          ) : (
+                            <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1.5px solid #D8D4C9', borderRadius: '5px', marginBottom: '10px' }}>
+                              {availableSlots.map((s) => (
+                                <div
+                                  key={s.id}
+                                  onClick={() => setSelectedSlotId(s.id)}
+                                  style={{
+                                    padding: '10px 14px', cursor: 'pointer', fontSize: '14px',
+                                    background: selectedSlotId === s.id ? '#FFF8E1' : 'white',
+                                    borderBottom: '1px solid #F0EEE7',
+                                  }}
+                                >
+                                  {new Date(s.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })} · {s.startTime} – {s.endTime}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </>
                       )}
 
                       {bookingError && <p style={{ color: 'red', fontSize: '14px' }}>{bookingError}</p>}
 
                       <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                        <button type="submit" className="btn btn-primary" disabled={submitting}>
+                        <button type="submit" className="btn btn-primary" disabled={submitting || !selectedSlotId}>
                           {submitting ? 'Booking...' : 'Confirm Booking'}
                         </button>
                         <button type="button" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }} onClick={() => setBookingCourse(null)}>

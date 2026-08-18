@@ -20,6 +20,7 @@ import Profile from './pages/shared/Profile';
 import Students from './pages/school/Students';
 import UserDirectory from './pages/admin/UserDirectory';
 import InstructorCourseDetail from './pages/instructor/InstructorCourseDetail';
+import InstructorAvailability from './pages/instructor/InstructorAvailability';
 
 // Placeholder simple components for other roles - build these out fully in later parts
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
@@ -98,6 +99,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['instructor']}>
                 <InstructorCourseDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/instructor/availability"
+            element={
+              <ProtectedRoute allowedRoles={['instructor']}>
+                <InstructorAvailability />
               </ProtectedRoute>
             }
           />

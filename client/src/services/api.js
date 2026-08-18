@@ -60,6 +60,12 @@ export const getSchoolProfile = (id) => api.get(`/public/schools/${id}`);
 
 // ===== Bookings =====
 export const createBooking = (data) => api.post('/bookings', data);
+
+// ===== Availability =====
+export const addAvailability = (data) => api.post('/availability', data);
+export const getMyAvailability = () => api.get('/availability/my');
+export const deleteAvailability = (id) => api.delete(`/availability/${id}`);
+export const getAvailableSlotsForInstructor = (instructorId) => api.get(`/availability/instructor/${instructorId}`);
 export const getMyBookings = () => api.get('/bookings/my');
 export const getSchoolBookings = () => api.get('/bookings/school');
 export const cancelBooking = (id) => api.patch(`/bookings/${id}/cancel`);
@@ -74,6 +80,17 @@ export const downloadReceipt = async (bookingId) => {
   const link = document.createElement('a');
   link.href = url;
   link.setAttribute('download', `receipt-booking-${bookingId}.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
+export const downloadCertificate = async (bookingId) => {
+  const response = await api.get(`/certificates/${bookingId}`, { responseType: 'blob' });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `certificate-${bookingId}.pdf`);
   document.body.appendChild(link);
   link.click();
   link.remove();

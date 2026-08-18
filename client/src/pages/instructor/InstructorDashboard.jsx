@@ -38,6 +38,9 @@ const InstructorDashboard = () => {
       <div className="dash-header">
         <h1>My Courses</h1>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <Link to="/instructor/availability" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }}>
+            📅 Manage Availability
+          </Link>
           <LiveClock />
           <AccountMenu />
         </div>

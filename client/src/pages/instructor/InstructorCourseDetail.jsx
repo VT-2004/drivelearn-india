@@ -165,6 +165,7 @@ const InstructorCourseDetail = () => {
                 <p style={{ margin: '0 0 4px', color: '#6B7680', fontSize: '14px' }}>{b.learner.phone}</p>
                 <p style={{ margin: 0, fontSize: '14px' }}>
                   <strong>Booked Date:</strong> {new Date(b.bookedDate).toLocaleDateString('en-IN')}
+                  {b.startTime && b.endTime && ` · ${b.startTime} – ${b.endTime}`}
                 </p>
               </div>
               <span className={`status-badge ${b.status === 'completed' ? 'status-verified' : b.status === 'cancelled' ? 'status-rejected' : 'status-pending'}`}>

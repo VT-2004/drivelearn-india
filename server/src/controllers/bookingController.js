@@ -6,13 +6,12 @@ const { bookingCancelledEmail } = require('../utils/emailTemplates');
 const createBooking = async (req, res) => {
   try {
     const learnerId = req.user.id;
-    const { courseId, instructorId, bookedDate } = req.body;
+    const { courseId, slotId } = req.body;
 
-    if (!courseId || !bookedDate) {
-      return res.status(400).json({ error: 'Course and booking date are required' });
+    if (!courseId || !slotId) {
+      return res.status(400).json({ error: 'Course and a selected time slot are required' });
     }
 
-    // Confirm course exists and belongs to a verified school
     const course = await prisma.course.findUnique({
       where: { id: parseInt(courseId) },
       include: { school: true },
@@ -22,57 +21,59 @@ const createBooking = async (req, res) => {
       return res.status(404).json({ error: 'Course not found or unavailable' });
     }
 
-    // Determine which instructor to assign
-    let finalInstructorId = instructorId ? parseInt(instructorId) : null;
-
-    if (!finalInstructorId) {
-      // Auto-assign the first available instructor at this school
-      const firstInstructor = await prisma.instructor.findFirst({
-        where: { schoolId: course.schoolId },
-      });
-      if (!firstInstructor) {
-        return res.status(400).json({ error: 'This school has no instructors available yet' });
-      }
-      finalInstructorId = firstInstructor.id;
-    } else {
-      // Confirm the chosen instructor actually belongs to this school
-      const instructor = await prisma.instructor.findUnique({ where: { id: finalInstructorId } });
-      if (!instructor || instructor.schoolId !== course.schoolId) {
-        return res.status(400).json({ error: 'Invalid instructor for this school' });
-      }
-    }
-
-    const parsedDate = new Date(bookedDate);
-
-    // Prevent double-booking: same instructor, same date, not cancelled
-    const conflict = await prisma.booking.findFirst({
-      where: {
-        instructorId: finalInstructorId,
-        bookedDate: parsedDate,
-        status: { in: ['pending', 'confirmed'] },
-      },
+    const slot = await prisma.availabilitySlot.findUnique({
+      where: { id: parseInt(slotId) },
+      include: { instructor: true },
     });
 
-    if (conflict) {
-      return res.status(409).json({ error: 'This instructor is already booked on that date. Please choose a different date.' });
+    if (!slot) {
+      return res.status(404).json({ error: 'Selected time slot not found' });
+    }
+    if (slot.isBooked) {
+      return res.status(409).json({ error: 'This slot was just booked by someone else. Please pick another.' });
+    }
+    if (slot.instructor.schoolId !== course.schoolId) {
+      return res.status(400).json({ error: 'This instructor does not belong to the selected course\'s school' });
     }
 
-    const booking = await prisma.booking.create({
-      data: {
-        learnerId,
-        courseId: course.id,
-        instructorId: finalInstructorId,
-        bookedDate: parsedDate,
-        status: 'pending',
-      },
-      include: {
-        course: { include: { school: true } },
-        instructor: { include: { user: { select: { name: true } } } },
-      },
+    // Atomic transaction: lock the slot and create the booking together,
+    // so two learners can never both book the same slot in a race condition
+    const booking = await prisma.$transaction(async (tx) => {
+      const freshSlot = await tx.availabilitySlot.findUnique({ where: { id: slot.id } });
+      if (freshSlot.isBooked) {
+        throw new Error('SLOT_ALREADY_BOOKED');
+      }
+
+      const newBooking = await tx.booking.create({
+        data: {
+          learnerId,
+          courseId: course.id,
+          instructorId: slot.instructorId,
+          bookedDate: slot.date,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          slotId: slot.id,
+          status: 'pending',
+        },
+        include: {
+          course: { include: { school: true } },
+          instructor: { include: { user: { select: { name: true } } } },
+        },
+      });
+
+      await tx.availabilitySlot.update({
+        where: { id: slot.id },
+        data: { isBooked: true },
+      });
+
+      return newBooking;
     });
 
     res.status(201).json({ message: 'Booking created successfully', booking });
   } catch (error) {
+    if (error.message === 'SLOT_ALREADY_BOOKED') {
+      return res.status(409).json({ error: 'This slot was just booked by someone else. Please pick another.' });
+    }
     console.error('Create booking error:', error);
     res.status(500).json({ error: 'Something went wrong' });
   }
@@ -157,6 +158,14 @@ const cancelBooking = async (req, res) => {
       where: { id: parseInt(id) },
       data: { status: 'cancelled' },
     });
+
+    // Free up the time slot so it can be booked again
+    if (booking.slotId) {
+      await prisma.availabilitySlot.update({
+        where: { id: booking.slotId },
+        data: { isBooked: false },
+      });
+    }
 
     res.json({ message: 'Booking cancelled', booking: updated });
 
