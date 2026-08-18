@@ -1,6 +1,13 @@
 const prisma = require('../utils/prismaClient');
 const { sendEmail } = require('../utils/emailService');
-const { schoolPendingEmail, schoolVerifiedEmail } = require('../utils/emailTemplates');
+const {
+  schoolPendingEmail,
+  schoolVerifiedEmail,
+  schoolRejectedEmail,
+  schoolWarningEmail,
+  schoolSuspendedEmail,
+  schoolReinstatedEmail,
+} = require('../utils/emailTemplates');
 
 // SCHOOL OWNER: Register a new school
 const registerSchool = async (req, res) => {
@@ -65,7 +72,15 @@ const getMySchool = async (req, res) => {
 
     const school = await prisma.drivingSchool.findUnique({
       where: { ownerId },
-      include: { branches: true },
+      include: {
+        branches: true,
+        reviews: {
+          include: {
+            learner: { select: { name: true, email: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!school) {
@@ -88,7 +103,10 @@ const getAllSchools = async (req, res) => {
 
     const schools = await prisma.drivingSchool.findMany({
       where,
-      include: { owner: { select: { name: true, email: true, phone: true } } },
+      include: {
+        owner: { select: { name: true, email: true, phone: true } },
+        courses: { select: { title: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -129,13 +147,29 @@ const approveSchool = async (req, res) => {
 const rejectSchool = async (req, res) => {
   try {
     const { id } = req.params;
+    const { reason } = req.body || {};
 
     const school = await prisma.drivingSchool.update({
       where: { id: parseInt(id) },
       data: { verificationStatus: 'rejected' },
+      include: { owner: true },
     });
 
-    res.json({ message: 'School rejected', school });
+    res.json({ message: 'School rejected successfully', school });
+
+    // Send rejection email notification to owner (non-blocking)
+    try {
+      if (school.owner?.email) {
+        const emailContent = schoolRejectedEmail({
+          ownerName: school.owner.name,
+          schoolName: school.name,
+          reason: reason || 'Submitted RTO documentation was insufficient or did not match registered details.',
+        });
+        sendEmail({ to: school.owner.email, ...emailContent });
+      }
+    } catch (emailErr) {
+      console.error('Failed to send rejection email (non-blocking):', emailErr.message);
+    }
   } catch (error) {
     console.error('Reject school error:', error);
     res.status(500).json({ error: 'Something went wrong' });
@@ -237,13 +271,221 @@ const cancelSchoolRegistration = async (req, res) => {
   }
 };
 
+// ADMIN: Send formal warning notice to a driving school
+const warnSchool = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subject, message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: 'Warning message is required' });
+    }
+
+    const school = await prisma.drivingSchool.findUnique({
+      where: { id: parseInt(id) },
+      include: { owner: true },
+    });
+
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+    // Save notification to database for the school owner
+    const notification = await prisma.notification.create({
+      data: {
+        userId: school.ownerId,
+        schoolId: school.id,
+        title: subject || '⚠️ Official Compliance Warning Notice',
+        message,
+        type: 'warning',
+      },
+    });
+
+    // Send email notification to school owner
+    try {
+      if (school.owner?.email) {
+        const emailContent = schoolWarningEmail({
+          ownerName: school.owner.name,
+          schoolName: school.name,
+          subject,
+          message,
+        });
+        sendEmail({ to: school.owner.email, ...emailContent });
+      }
+    } catch (emailErr) {
+      console.error('Failed to send warning email:', emailErr.message);
+    }
+
+    res.json({ message: 'Warning notice issued and dispatched successfully', notification });
+  } catch (error) {
+    console.error('Warn school error:', error);
+    res.status(500).json({ error: 'Failed to issue warning notice' });
+  }
+};
+
+// ADMIN: Suspend a verified driving school
+const suspendSchool = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const school = await prisma.drivingSchool.update({
+      where: { id: parseInt(id) },
+      data: {
+        verificationStatus: 'suspended',
+        suspensionReason: reason || 'Temporary suspension due to compliance review or safety complaint.',
+      },
+      include: { owner: true },
+    });
+
+    // Create suspension notification in DB
+    await prisma.notification.create({
+      data: {
+        userId: school.ownerId,
+        schoolId: school.id,
+        title: '🛑 Academy License Temporarily Suspended',
+        message: reason || 'Your academy license has been temporarily suspended pending compliance review.',
+        type: 'suspension',
+      },
+    });
+
+    // Send suspension email
+    try {
+      if (school.owner?.email) {
+        const emailContent = schoolSuspendedEmail({
+          ownerName: school.owner.name,
+          schoolName: school.name,
+          reason,
+        });
+        sendEmail({ to: school.owner.email, ...emailContent });
+      }
+    } catch (emailErr) {
+      console.error('Failed to send suspension email:', emailErr.message);
+    }
+
+    res.json({ message: 'Driving school suspended successfully', school });
+  } catch (error) {
+    console.error('Suspend school error:', error);
+    res.status(500).json({ error: 'Failed to suspend school' });
+  }
+};
+
+// ADMIN: Unsuspend / Reinstate a suspended driving school
+const unsuspendSchool = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const school = await prisma.drivingSchool.update({
+      where: { id: parseInt(id) },
+      data: {
+        verificationStatus: 'verified',
+        suspensionReason: null,
+      },
+      include: { owner: true },
+    });
+
+    // Create reinstatement notification in DB
+    await prisma.notification.create({
+      data: {
+        userId: school.ownerId,
+        schoolId: school.id,
+        title: '✓ Academy License Reinstated & Verified',
+        message: 'Your driving academy has been reinstated to full Verified RTO Partner status.',
+        type: 'success',
+      },
+    });
+
+    // Send reinstatement email
+    try {
+      if (school.owner?.email) {
+        const emailContent = schoolReinstatedEmail({
+          ownerName: school.owner.name,
+          schoolName: school.name,
+        });
+        sendEmail({ to: school.owner.email, ...emailContent });
+      }
+    } catch (emailErr) {
+      console.error('Failed to send reinstated email:', emailErr.message);
+    }
+
+    res.json({ message: 'Driving school reinstated successfully', school });
+  } catch (error) {
+    console.error('Unsuspend school error:', error);
+    res.status(500).json({ error: 'Failed to reinstate school' });
+  }
+};
+
+// SCHOOL OWNER: Get all notifications & compliance notices
+const getSchoolNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const notifications = await prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ notifications });
+  } catch (error) {
+    console.error('Get school notifications error:', error);
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+};
+
+// SCHOOL OWNER: Mark notification as read
+const markNotificationRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const notification = await prisma.notification.updateMany({
+      where: { id: parseInt(id), userId },
+      data: { isRead: true },
+    });
+
+    res.json({ message: 'Notification marked as read', notification });
+  } catch (error) {
+    console.error('Mark notification read error:', error);
+    res.status(500).json({ error: 'Failed to update notification' });
+  }
+};
+
+// SCHOOL OWNER: Get all reviews for my school
+const getMySchoolReviews = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const school = await prisma.drivingSchool.findUnique({ where: { ownerId } });
+    if (!school) {
+      return res.status(404).json({ error: 'No school registered yet' });
+    }
+
+    const reviews = await prisma.review.findMany({
+      where: { schoolId: school.id },
+      include: {
+        learner: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ reviews });
+  } catch (error) {
+    console.error('Get my school reviews error:', error);
+    res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
+};
+
 module.exports = {
   registerSchool,
   getMySchool,
   getAllSchools,
   approveSchool,
   rejectSchool,
+  warnSchool,
+  suspendSchool,
+  unsuspendSchool,
   updateSchool,
   getSchoolStats,
   cancelSchoolRegistration,
+  getSchoolNotifications,
+  markNotificationRead,
+  getMySchoolReviews,
 };

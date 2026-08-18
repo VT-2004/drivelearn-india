@@ -32,13 +32,19 @@ export const registerSchool = (formData) =>
 export const getMySchool = () => api.get('/schools/my-school');
 export const updateSchool = (data) => api.put('/schools/my-school', data);
 export const getSchoolStats = () => api.get('/schools/stats');
+export const getMySchoolReviews = () => api.get('/schools/my-reviews');
 export const cancelSchoolRegistration = () => api.delete('/schools/my-school');
 
 // ===== School (Admin) =====
 export const getAllSchools = (status) =>
   api.get('/schools', { params: status ? { status } : {} });
 export const approveSchool = (id) => api.patch(`/schools/${id}/approve`);
-export const rejectSchool = (id) => api.patch(`/schools/${id}/reject`);
+export const rejectSchool = (id, reason) => api.patch(`/schools/${id}/reject`, { reason });
+export const warnSchool = (id, data) => api.post(`/schools/${id}/warn`, data);
+export const suspendSchool = (id, data) => api.post(`/schools/${id}/suspend`, data);
+export const unsuspendSchool = (id) => api.post(`/schools/${id}/unsuspend`);
+export const getSchoolNotifications = () => api.get('/schools/notifications');
+export const markNotificationRead = (id) => api.patch(`/schools/notifications/${id}/read`);
 
 // ===== Branches =====
 export const addBranch = (data) => api.post('/schools/branches', data);
@@ -63,11 +69,15 @@ export const getSchoolProfile = (id) => api.get(`/public/schools/${id}`);
 // ===== Bookings =====
 export const createBooking = (data) => api.post('/bookings', data);
 
-// ===== Availability =====
+// ===== Availability & Leave =====
 export const addAvailability = (data) => api.post('/availability', data);
 export const generateAvailability = (data) => api.post('/availability/generate', data);
+export const generateAvailabilitySlots = (data) => api.post('/availability/generate', data);
 export const getMyAvailability = () => api.get('/availability/my');
 export const deleteAvailability = (id) => api.delete(`/availability/${id}`);
+export const markInstructorLeave = (data) => api.post('/availability/leave', data);
+export const getMyLeaves = () => api.get('/availability/leaves');
+export const cancelInstructorLeave = (id) => api.delete(`/availability/leave/${id}`);
 export const getAvailableSlotsForInstructor = (instructorId) => api.get(`/availability/instructor/${instructorId}`);
 export const getSchoolSchedule = (params) => api.get('/availability/school', { params });
 export const getMyBookings = () => api.get('/bookings/my');
@@ -76,6 +86,7 @@ export const cancelBooking = (id) => api.patch(`/bookings/${id}/cancel`);
 export const rescheduleBooking = (id, slotId) => api.patch(`/bookings/${id}/reschedule`, { slotId });
 
 // ===== Payments (Course Booking) =====
+export const getMyPayments = () => api.get('/payments/my');
 export const createBookingOrder = (bookingId) => api.post('/payments/booking/create-order', { bookingId });
 export const confirmBookingWithWallet = (bookingId) => api.post('/payments/booking/confirm-wallet', { bookingId });
 export const verifyBookingPayment = (data) => api.post('/payments/booking/verify', data);
@@ -105,6 +116,13 @@ export const downloadCertificate = async (bookingId) => {
 export const createSubscriptionOrder = (plan) => api.post('/payments/subscription/create-order', { plan });
 export const verifySubscriptionPayment = (data) => api.post('/payments/subscription/verify', data);
 export const getMySubscription = () => api.get('/payments/subscription/my');
+export const adminOverrideSchoolSubscription = (schoolId, data) => api.put(`/payments/subscription/admin-override/${schoolId}`, data);
+
+// ===== Vehicles Fleet =====
+export const getVehicles = () => api.get('/vehicles');
+export const addVehicle = (data) => api.post('/vehicles', data);
+export const updateVehicle = (id, data) => api.put(`/vehicles/${id}`, data);
+export const deleteVehicle = (id) => api.delete(`/vehicles/${id}`);
 
 // ===== Instructor Portal =====
 export const getMyAssignedBookings = () => api.get('/instructor/bookings');
@@ -133,5 +151,11 @@ export const getSchoolAnalytics = () => api.get('/analytics/school');
 export const getSchoolDetailForAdmin = (id) => api.get(`/analytics/admin/school/${id}`);
 export const getAllUsers = (role) => api.get('/analytics/admin/users', { params: role ? { role } : {} });
 export const getMyStudents = () => api.get('/schools/students');
+
+// ===== Notifications (Generic User / Instructor / Learner) =====
+export const getMyNotifications = () => api.get('/notifications');
+export const markMyNotificationRead = (id) => api.patch(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () => api.patch('/notifications/read-all');
+export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
 
 export default api;

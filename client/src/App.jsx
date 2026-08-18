@@ -13,6 +13,7 @@ import AptitudeTest from './pages/public/AptitudeTest';
 import RegisterSchool from './pages/school/RegisterSchool';
 import SchoolDashboard from './pages/school/SchoolDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import LearnerDashboard from './pages/learner/LearnerDashboard';
 import SearchSchools from './pages/learner/SearchSchools';
 import SchoolProfile from './pages/learner/SchoolProfile';
 import MyBookings from './pages/learner/MyBookings';
@@ -44,7 +45,7 @@ function App() {
             path="/learner"
             element={
               <ProtectedRoute allowedRoles={['learner']}>
-                <SearchSchools />
+                <LearnerDashboard />
               </ProtectedRoute>
             }
           />
@@ -58,11 +59,7 @@ function App() {
           />
           <Route
             path="/learner/school/:id"
-            element={
-              <ProtectedRoute allowedRoles={['learner']}>
-                <SchoolProfile />
-              </ProtectedRoute>
-            }
+            element={<SchoolProfile />}
           />
           <Route
             path="/admin"

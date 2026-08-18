@@ -1,4 +1,6 @@
 const prisma = require('../utils/prismaClient');
+const { sendEmail } = require('../utils/emailService');
+const { courseCompletedCertificateEmail } = require('../utils/emailTemplates');
 
 // Helper: get the Instructor record for the logged-in instructor user
 const getInstructorRecord = async (userId) => {
@@ -91,12 +93,31 @@ const getMyAssignedBookings = async (req, res) => {
     const bookings = await prisma.booking.findMany({
       where: {
         instructorId: instructor.id,
-        status: { in: ['confirmed', 'completed'] },
+        status: { in: ['confirmed', 'completed', 'pending'] },
       },
       include: {
-        course: { select: { title: true } },
-        learner: { select: { name: true, phone: true, email: true, createdAt: true } },
+        course: {
+          select: {
+            id: true,
+            title: true,
+            durationDays: true,
+            school: {
+              select: {
+                id: true,
+                name: true,
+                city: true,
+                address: true,
+                vehicles: true,
+              },
+            },
+          },
+        },
+        learner: { select: { id: true, name: true, phone: true, email: true, createdAt: true } },
         attendance: { orderBy: { date: 'desc' } },
+        updates: {
+          include: { author: { select: { id: true, name: true, role: true } } },
+          orderBy: { createdAt: 'asc' },
+        },
       },
       orderBy: { bookedDate: 'asc' },
     });
@@ -135,6 +156,59 @@ const markAttendance = async (req, res) => {
         notes: notes || null,
       },
     });
+
+    // Check if total attended sessions now fulfills the course duration
+    if (status === 'present') {
+      try {
+        const allPresentAttendance = await prisma.attendance.findMany({
+          where: { bookingId: booking.id, status: 'present' },
+        });
+        const course = await prisma.course.findUnique({ where: { id: booking.courseId } });
+
+        if (course && allPresentAttendance.length >= course.durationDays && booking.status !== 'completed') {
+          await prisma.booking.update({
+            where: { id: booking.id },
+            data: { status: 'completed' },
+          });
+
+          const certificateId = `DLI-RTO-${new Date().getFullYear()}-${String(booking.id).padStart(6, '0')}`;
+
+          // Create notification for learner
+          await prisma.notification.create({
+            data: {
+              userId: booking.learnerId,
+              schoolId: course.schoolId,
+              title: '🎓 Congratulations! Your Driving Certificate is Ready',
+              message: `You have completed all ${course.durationDays} practical sessions for "${course.title}". Your verified digital certificate (${certificateId}) is now available for download!`,
+              type: 'certificate',
+            },
+          });
+
+          // Send congratulatory certificate email
+          const fullBooking = await prisma.booking.findUnique({
+            where: { id: booking.id },
+            include: {
+              learner: true,
+              course: { include: { school: true } },
+              instructor: { include: { user: true } },
+            },
+          });
+
+          if (fullBooking?.learner?.email) {
+            const mailContent = courseCompletedCertificateEmail({
+              learnerName: fullBooking.learner.name,
+              courseName: fullBooking.course.title,
+              schoolName: fullBooking.course.school.name,
+              instructorName: fullBooking.instructor?.user?.name || 'Authorized Instructor',
+              certificateId,
+            });
+            sendEmail({ to: fullBooking.learner.email, ...mailContent });
+          }
+        }
+      } catch (completionErr) {
+        console.error('Course completion trigger error:', completionErr);
+      }
+    }
 
     res.status(201).json({ message: 'Attendance marked', attendance });
   } catch (error) {
@@ -348,15 +422,12 @@ const getMyWorkplace = async (req, res) => {
     const instructor = await prisma.instructor.findUnique({
       where: { userId: req.user.id },
       include: {
+        user: { select: { name: true, email: true, phone: true } },
         school: {
-          select: {
-            name: true,
-            description: true,
-            city: true,
-            state: true,
-            address: true,
-            verificationStatus: true,
+          include: {
+            owner: { select: { name: true, email: true, phone: true } },
             courses: { select: { id: true, title: true, durationDays: true } },
+            vehicles: true,
           },
         },
       },
@@ -368,14 +439,17 @@ const getMyWorkplace = async (req, res) => {
 
     res.json({
       workplace: {
-        schoolName: instructor.school.name,
-        description: instructor.school.description,
-        city: instructor.school.city,
-        state: instructor.school.state,
-        address: instructor.school.address,
+        school: instructor.school,
+        schoolName: instructor.school?.name,
+        description: instructor.school?.description,
+        city: instructor.school?.city,
+        state: instructor.school?.state,
+        address: instructor.school?.address,
+        owner: instructor.school?.owner,
+        vehicles: instructor.school?.vehicles || [],
         specialization: instructor.specialization,
         experienceYears: instructor.experienceYears,
-        allCourses: instructor.school.courses,
+        allCourses: instructor.school?.courses || [],
       },
     });
   } catch (error) {

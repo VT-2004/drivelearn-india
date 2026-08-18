@@ -94,7 +94,13 @@ const getMyBookings = async (req, res) => {
       where: { learnerId },
       include: {
         course: { include: { school: { select: { name: true, city: true } } } },
-        instructor: { include: { user: { select: { name: true } } } },
+        instructor: { include: { user: { select: { name: true, phone: true } } } },
+        payment: true,
+        attendance: { orderBy: { date: 'desc' } },
+        updates: {
+          include: { author: { select: { id: true, name: true, role: true } } },
+          orderBy: { createdAt: 'asc' },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

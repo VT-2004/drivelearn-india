@@ -16,6 +16,8 @@ const instructorPortalRoutes = require('./src/routes/instructorPortalRoutes');
 const updateRoutes = require('./src/routes/updateRoutes');
 const availabilityRoutes = require('./src/routes/availabilityRoutes');
 const certificateRoutes = require('./src/routes/certificateRoutes');
+const vehicleRoutes = require('./src/routes/vehicleRoutes');
+const notificationRoutes = require('./src/routes/notificationRoutes');
 
 const app = express();
 
@@ -43,6 +45,8 @@ app.use('/api/instructor', instructorPortalRoutes);
 app.use('/api/updates', updateRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/certificates', certificateRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

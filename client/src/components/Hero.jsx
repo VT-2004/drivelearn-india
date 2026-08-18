@@ -1,145 +1,130 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-
-const MAHARASHTRA_CITIES = [
-  'Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane', 'Navi Mumbai', 'Chhatrapati Sambhaji Nagar', 'Kolhapur', 'Solapur'
-];
+import { useNavigate, Link } from 'react-router-dom';
 
 const Hero = () => {
-  const [cityInput, setCityInput] = useState('');
+  const [filters, setFilters] = useState({
+    state: 'Maharashtra',
+    city: 'Mumbai',
+    locality: '',
+    course: '4-Wheeler Basic',
+  });
+
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (cityInput.trim()) {
-      navigate(`/learner?city=${encodeURIComponent(cityInput.trim())}`);
-    } else {
-      navigate('/learner');
-    }
-  };
-
-  const handleCityClick = (city) => {
-    navigate(`/learner?city=${encodeURIComponent(city)}`);
+    navigate(`/learner?city=${encodeURIComponent(filters.city)}&category=${filters.course.includes('2-Wheeler') ? '2-wheeler' : '4-wheeler'}`);
   };
 
   return (
-    <section className="hero" style={{ background: '#121314', color: '#FFFFFF', padding: '60px 48px 70px' }}>
-      {/* Promotional Top Bar */}
-      <div style={{
-        background: '#D32F2F',
-        color: '#FFFFFF',
-        padding: '10px 20px',
-        borderRadius: '8px',
-        marginBottom: '28px',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '10px',
-        fontWeight: 700,
-        fontSize: '14px',
-        boxShadow: '0 4px 14px rgba(211, 47, 47, 0.4)',
-      }}>
-        <span>🎁 Launch Special:</span>
-        <span>Get ₹15 Instant Welcome Bonus in Your Wallet on Signup! 2-Wheeler Training starting at ₹499/₹999.</span>
-      </div>
+    <div>
+      {/* Hero Header */}
+      <section className="hero">
+        <div className="hero-inner">
+          <div className="hero-eyebrow">
+            <span>🛡️</span> 3,200+ RTO-verified driving schools across India
+          </div>
+          <h1>
+            Learn Driving.<br />
+            Drive Confidently.
+          </h1>
+          <p className="sub">
+            Find verified driving schools, compare courses, book lessons and track your driving journey — all in one place.
+          </p>
+        </div>
+      </section>
 
-      <div className="hero-eyebrow" style={{ color: '#FF5252', fontWeight: 700, letterSpacing: '2px', fontSize: '13px' }}>
-        🏍️ MAHARASHTRA'S #1 TWO-WHEELER & DRIVING TRAINING PLATFORM
-      </div>
+      {/* Floating Overlapping Search Card */}
+      <div style={{ padding: '0 24px' }}>
+        <div className="search-card">
+          <div className="sc-title">WHERE DO YOU WANT TO LEARN DRIVING?</div>
+          <form onSubmit={handleSearch} className="search-grid">
+            <div className="field">
+              <label>State</label>
+              <select
+                value={filters.state}
+                onChange={(e) => setFilters({ ...filters, state: e.target.value })}
+              >
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Delhi">Delhi</option>
+                <option value="West Bengal">West Bengal</option>
+                <option value="Odisha">Odisha</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+              </select>
+            </div>
 
-      <div className="hero-content" style={{ maxWidth: '820px' }}>
-        <h1 style={{ color: '#FFFFFF', fontSize: '64px', lineHeight: 1.05, textTransform: 'uppercase', margin: '0 0 20px', fontWeight: 800 }}>
-          Master <em>2-Wheeler Riding</em> & Driving With Top Academies
-        </h1>
+            <div className="field">
+              <label>City</label>
+              <select
+                value={filters.city}
+                onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+              >
+                <option value="Mumbai">Mumbai</option>
+                <option value="Pune">Pune</option>
+                <option value="Nagpur">Nagpur</option>
+                <option value="Nashik">Nashik</option>
+                <option value="Thane">Thane</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="New Delhi">New Delhi</option>
+                <option value="Kolkata">Kolkata</option>
+                <option value="Bhubaneswar">Bhubaneswar</option>
+                <option value="Patna">Patna</option>
+              </select>
+            </div>
 
-        <p className="subhead" style={{ color: '#E0E0E0', fontSize: '18px', lineHeight: 1.6, maxWidth: '680px', marginBottom: '32px' }}>
-          Affordable, step-by-step training for middle-class riders and drivers across Maharashtra. Learn scooter balance, motorcycle gear shifting, RTO 8-track maneuvers, and road safety with certified instructors.
-        </p>
+            <div className="field">
+              <label>Locality</label>
+              <input
+                type="text"
+                placeholder="e.g. Andheri, Kothrud, Bandra"
+                value={filters.locality}
+                onChange={(e) => setFilters({ ...filters, locality: e.target.value })}
+              />
+            </div>
 
-        {/* Quick City Search Box */}
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', maxWidth: '560px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <input
-            type="text"
-            placeholder="Search your city in Maharashtra (e.g. Pune, Mumbai, Nagpur)..."
-            value={cityInput}
-            onChange={(e) => setCityInput(e.target.value)}
-            style={{
-              flex: 1,
-              minWidth: '260px',
-              padding: '14px 18px',
-              borderRadius: '6px',
-              border: '2px solid #D32F2F',
-              fontSize: '15px',
-              background: '#FFFFFF',
-              color: '#1C1F22',
-            }}
-          />
-          <button type="submit" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '15px', fontWeight: 700 }}>
-            Find Training Schools →
-          </button>
-        </form>
+            <div className="field">
+              <label>Course</label>
+              <select
+                value={filters.course}
+                onChange={(e) => setFilters({ ...filters, course: e.target.value })}
+              >
+                <option value="4-Wheeler Basic">4-Wheeler Basic</option>
+                <option value="2-Wheeler Course">2-Wheeler (Scooter/Bike)</option>
+                <option value="Highway Driving">Highway Driving</option>
+                <option value="Commercial License">Commercial Vehicle</option>
+                <option value="Refresher Course">Refresher Course</option>
+              </select>
+            </div>
 
-        {/* Quick City Chips */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '40px' }}>
-          <span style={{ fontSize: '13px', color: '#BDBDBD', fontWeight: 600 }}>📍 Popular Maharashtra Cities:</span>
-          {MAHARASHTRA_CITIES.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => handleCityClick(c)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.12)',
-                border: '1px solid rgba(255, 255, 255, 0.25)',
-                color: '#FFFFFF',
-                padding: '4px 12px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = '#D32F2F'; e.currentTarget.style.borderColor = '#D32F2F'; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'; }}
-            >
-              {c}
+            <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px', height: '45px' }}>
+              🔍 Search
             </button>
-          ))}
-        </div>
-
-        {/* Quick CTAs */}
-        <div className="hero-ctas" style={{ flexWrap: 'wrap', gap: '14px', marginBottom: '44px' }}>
-          <Link to="/learner" className="btn btn-primary btn-lg" style={{ background: '#D32F2F', color: '#FFFFFF', fontWeight: 700 }}>
-            🏍️ Explore 2-Wheeler Courses
-          </Link>
-          <Link to="/aptitude-test" className="btn btn-outline btn-lg" style={{ borderColor: '#FFFFFF', color: '#FFFFFF' }}>
-            📝 Free RTO Mock Test
-          </Link>
-          <a
-            href="https://parivahan.gov.in/parivahan/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-outline btn-lg"
-            style={{ borderColor: 'rgba(255,255,255,0.6)', color: '#FFFFFF' }}
-          >
-            🪪 Parivahan RTO Portal
-          </a>
-        </div>
-
-        {/* Stats */}
-        <div className="hero-stats" style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '24px' }}>
-          <div>
-            <div className="hero-stat-value" style={{ color: '#FF5252', fontWeight: 800 }}>500+</div>
-            <div className="hero-stat-label" style={{ color: '#E0E0E0' }}>Certified Instructors</div>
-          </div>
-          <div>
-            <div className="hero-stat-value" style={{ color: '#FF5252', fontWeight: 800 }}>98%</div>
-            <div className="hero-stat-label" style={{ color: '#E0E0E0' }}>RTO First-Attempt Pass</div>
-          </div>
-          <div>
-            <div className="hero-stat-value" style={{ color: '#FF5252', fontWeight: 800 }}>₹499*</div>
-            <div className="hero-stat-label" style={{ color: '#E0E0E0' }}>2-Wheeler Special Starting Fee</div>
-          </div>
+          </form>
         </div>
       </div>
-    </section>
+
+      {/* 2-Wheeler Course Launch Offer Banner */}
+      <div className="promo-banner">
+        <div className="promo-banner-inner">
+          <div>
+            <h3>
+              <span>🏍️</span> 2-Wheeler Course Launch Offer
+            </h3>
+            <p>
+              Just <strong>₹999</strong> <span className="promo-strike">₹2,499</span> for the first 2 months — scooter & motorcycle training, 10 lessons in 7 days.
+            </p>
+          </div>
+          <Link
+            to="/learner?category=2-wheeler"
+            className="btn btn-white"
+          >
+            Book 2-Wheeler Course →
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 };
 

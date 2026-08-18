@@ -18,6 +18,7 @@ enum VerificationStatus {
   pending
   verified
   rejected
+  suspended
 }
 
 enum BookingStatus {
@@ -63,6 +64,7 @@ model User {
   bookings      Booking[]
   reviews       Review[]
   lessonUpdates LessonUpdate[]
+  notifications Notification[]
   walletBalance Float          @default(0)
   googleId      String?        @unique
 }
@@ -79,6 +81,7 @@ model DrivingSchool {
   latitude            Float?
   longitude           Float?
   verificationStatus  VerificationStatus @default(pending)
+  suspensionReason    String?
   documentsUrl        String?
   createdAt           DateTime           @default(now())
 
@@ -87,6 +90,7 @@ model DrivingSchool {
   courses             Course[]
   subscriptions       Subscription[]
   reviews             Review[]
+  vehicles            Vehicle[]
 }
 
 model Branch {
@@ -110,6 +114,19 @@ model Instructor {
   bookings         Booking[]
   availabilitySlots AvailabilitySlot[]
   courses          Course[]
+  vehicles         Vehicle[]
+  leaves           InstructorLeave[]
+}
+
+model InstructorLeave {
+  id           Int        @id @default(autoincrement())
+  instructorId Int
+  instructor   Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  date         DateTime
+  reason       String?
+  createdAt    DateTime   @default(now())
+
+  @@unique([instructorId, date])
 }
 
 model Course {
@@ -213,4 +230,37 @@ model AvailabilitySlot {
   createdAt    DateTime    @default(now())
 
   booking      Booking?
+}
+
+model Vehicle {
+  id                  Int           @id @default(autoincrement())
+  schoolId            Int
+  school              DrivingSchool @relation(fields: [schoolId], references: [id])
+  instructorId        Int?
+  instructor          Instructor?   @relation(fields: [instructorId], references: [id])
+  regNumber           String        // e.g. "OD-02-AB-4471"
+  type                String        @default("4-Wheeler") // "4-Wheeler" | "2-Wheeler"
+  model               String        // "Maruti Suzuki Swift"
+  transmission        String        @default("Manual") // "Manual" | "Automatic"
+  fuelType            String        @default("Petrol") // "Petrol" | "CNG" | "Diesel" | "EV"
+  dualControlStatus   String        @default("Certified Dual-Control") // "Certified Dual-Control" | "Standard Dual-Pedal" | "N/A (2-Wheeler)"
+  insuranceValidity   DateTime?
+  insurancePolicyNo   String?
+  fitnessValidity     DateTime?
+  pucValidity         DateTime?
+  status              String        @default("In Service") // "In Service" | "Maintenance" | "Out of Service"
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  schoolId  Int?
+  title     String
+  message   String
+  type      String   @default("info") // "warning" | "suspension" | "info" | "success"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

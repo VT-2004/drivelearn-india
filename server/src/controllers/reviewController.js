@@ -14,17 +14,17 @@ const createReview = async (req, res) => {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
 
-    // Confirm the learner has at least one completed booking with this school
-    const completedBooking = await prisma.booking.findFirst({
+    // Confirm the learner has at least one completed or confirmed booking with this school
+    const validBooking = await prisma.booking.findFirst({
       where: {
         learnerId,
-        status: 'completed',
+        status: { in: ['completed', 'confirmed'] },
         course: { schoolId: parseInt(schoolId) },
       },
     });
 
-    if (!completedBooking) {
-      return res.status(403).json({ error: 'You can only review a school after completing a course with them' });
+    if (!validBooking) {
+      return res.status(403).json({ error: 'You can only review a school after enrolling in or completing a course with them' });
     }
 
     // Prevent duplicate reviews for the same school by the same learner

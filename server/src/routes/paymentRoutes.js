@@ -10,9 +10,12 @@ const {
   createSubscriptionOrder,
   verifySubscriptionPayment,
   getMySubscription,
+  getMyPayments,
+  adminOverrideSchoolSubscription,
 } = require('../controllers/paymentController');
 
 // Course payment (learner)
+router.get('/my', authenticate, authorize('learner'), getMyPayments);
 router.post('/booking/create-order', authenticate, authorize('learner'), createBookingOrder);
 router.post('/booking/confirm-wallet', authenticate, authorize('learner'), confirmBookingWithWallet);
 router.post('/booking/verify', authenticate, authorize('learner'), verifyBookingPayment);
@@ -22,5 +25,8 @@ router.get('/booking/:bookingId/receipt', authenticate, authorize('learner'), do
 router.post('/subscription/create-order', authenticate, authorize('school_owner'), createSubscriptionOrder);
 router.post('/subscription/verify', authenticate, authorize('school_owner'), verifySubscriptionPayment);
 router.get('/subscription/my', authenticate, authorize('school_owner'), getMySubscription);
+
+// Admin subscription management (admin)
+router.put('/subscription/admin-override/:schoolId', authenticate, authorize('admin'), adminOverrideSchoolSubscription);
 
 module.exports = router;

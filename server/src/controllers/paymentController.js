@@ -19,20 +19,23 @@ const createBookingOrder = async (req, res) => {
 
     const booking = await prisma.booking.findUnique({
       where: { id: parseInt(bookingId) },
-      include: { course: true },
+      include: { course: true, payment: true },
     });
 
     if (!booking || booking.learnerId !== learnerId) {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    if (booking.status !== 'pending') {
-      return res.status(400).json({ error: 'This booking is not awaiting payment' });
+    if (booking.payment && (booking.payment.status === 'success' || booking.payment.status === 'paid')) {
+      return res.status(400).json({ error: 'This booking has already been paid for' });
+    }
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({ error: 'Cannot pay for a cancelled booking' });
     }
 
     const learner = await prisma.user.findUnique({ where: { id: learnerId } });
-    const coursePrice = Number(booking.course.price);
-    const walletToApply = Math.min(Number(learner.walletBalance), coursePrice);
+    const coursePrice = Number(booking.course?.price || 0);
+    const walletToApply = Math.min(Number(learner?.walletBalance || 0), coursePrice);
     const amountDue = coursePrice - walletToApply;
 
     // Fully covered by wallet - no Razorpay needed at all
@@ -79,14 +82,18 @@ const confirmBookingWithWallet = async (req, res) => {
         course: { include: { school: true } },
         learner: true,
         instructor: { include: { user: { select: { name: true } } } },
+        payment: true,
       },
     });
 
     if (!booking || booking.learnerId !== learnerId) {
       return res.status(404).json({ error: 'Booking not found' });
     }
-    if (booking.status !== 'pending') {
-      return res.status(400).json({ error: 'This booking is not awaiting payment' });
+    if (booking.payment && (booking.payment.status === 'success' || booking.payment.status === 'paid')) {
+      return res.status(400).json({ error: 'This booking has already been paid for' });
+    }
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({ error: 'Cannot pay for a cancelled booking' });
     }
 
     const coursePrice = Number(booking.course.price);
@@ -116,19 +123,23 @@ const confirmBookingWithWallet = async (req, res) => {
     });
 
     const emailContent = bookingConfirmationEmail({
-      learnerName: booking.learner.name,
-      courseName: booking.course.title,
-      schoolName: booking.course.school.name,
-      bookedDate: new Date(booking.bookedDate).toLocaleDateString('en-IN'),
-      instructorName: booking.instructor.user.name,
+      learnerName: booking.learner?.name || 'Learner',
+      courseName: booking.course?.title || 'Driving Course',
+      schoolName: booking.course?.school?.name || 'Driving School',
+      bookedDate: booking.bookedDate ? new Date(booking.bookedDate).toLocaleDateString('en-IN') : 'Upcoming Batch',
+      instructorName: booking.instructor?.user?.name || 'Assigned Instructor',
       amount: `0 (fully paid via wallet)`,
     });
-    sendEmail({ to: booking.learner.email, ...emailContent });
+    try {
+      sendEmail({ to: booking.learner?.email, ...emailContent });
+    } catch (e) {
+      console.warn('Confirmation email failed to send:', e);
+    }
 
     res.json({ message: 'Booking confirmed using wallet balance', booking: updatedBooking });
   } catch (error) {
     console.error('Confirm booking with wallet error:', error);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: error.message || 'Something went wrong' });
   }
 };
 
@@ -159,8 +170,8 @@ const verifyBookingPayment = async (req, res) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    const coursePrice = Number(booking.course.price);
-    const walletToApply = Math.min(Number(booking.learner.walletBalance), coursePrice);
+    const coursePrice = Number(booking.course?.price || 0);
+    const walletToApply = Math.min(Number(booking.learner?.walletBalance || 0), coursePrice);
 
     // Create payment record and confirm booking
     await prisma.payment.create({
@@ -188,14 +199,18 @@ const verifyBookingPayment = async (req, res) => {
 
     // Send confirmation email (non-blocking - won't fail the request if email fails)
     const emailContent = bookingConfirmationEmail({
-      learnerName: booking.learner.name,
-      courseName: booking.course.title,
-      schoolName: booking.course.school.name,
-      bookedDate: new Date(booking.bookedDate).toLocaleDateString('en-IN'),
-      instructorName: booking.instructor.user.name,
-      amount: Number(booking.course.price).toLocaleString('en-IN'),
+      learnerName: booking.learner?.name || 'Learner',
+      courseName: booking.course?.title || 'Driving Course',
+      schoolName: booking.course?.school?.name || 'Driving School',
+      bookedDate: booking.bookedDate ? new Date(booking.bookedDate).toLocaleDateString('en-IN') : 'Upcoming Batch',
+      instructorName: booking.instructor?.user?.name || 'Assigned Instructor',
+      amount: Number(booking.course?.price || 0).toLocaleString('en-IN'),
     });
-    sendEmail({ to: booking.learner.email, ...emailContent });
+    try {
+      sendEmail({ to: booking.learner?.email, ...emailContent });
+    } catch (e) {
+      console.warn('Confirmation email failed to send:', e);
+    }
 
     res.json({ message: 'Payment verified successfully', booking: updatedBooking });
   } catch (error) {
@@ -403,6 +418,75 @@ const getMySubscription = async (req, res) => {
   }
 };
 
+// LEARNER: Get all payment transactions from database
+const getMyPayments = async (req, res) => {
+  try {
+    const learnerId = req.user.id;
+    const payments = await prisma.payment.findMany({
+      where: {
+        booking: {
+          learnerId,
+        },
+      },
+      include: {
+        booking: {
+          include: {
+            course: {
+              include: {
+                school: {
+                  select: { name: true, city: true },
+                },
+              },
+            },
+            instructor: {
+              include: {
+                user: { select: { name: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { id: 'desc' },
+    });
+
+    res.json({ payments });
+  } catch (error) {
+    console.error('Get my payments error:', error);
+    res.status(500).json({ error: 'Something went wrong fetching payments' });
+  }
+};
+
+// ADMIN: Override or set school subscription status & plan
+const adminOverrideSchoolSubscription = async (req, res) => {
+  try {
+    const { schoolId } = req.params;
+    const { plan, durationMonths, status } = req.body;
+
+    const targetSchoolId = parseInt(schoolId);
+    const months = parseInt(durationMonths) || (plan === 'yearly' ? 12 : 1);
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+
+    const subscription = await prisma.subscription.create({
+      data: {
+        schoolId: targetSchoolId,
+        plan: plan || 'yearly',
+        status: status || 'active',
+        startDate,
+        endDate,
+        amount: plan === 'yearly' ? 8999 : 999,
+        paymentId: `admin_grant_${Date.now()}`,
+      },
+    });
+
+    res.json({ message: 'School subscription updated successfully by Admin', subscription });
+  } catch (error) {
+    console.error('Admin override subscription error:', error);
+    res.status(500).json({ error: 'Failed to update school subscription' });
+  }
+};
+
 module.exports = {
   createBookingOrder,
   confirmBookingWithWallet,
@@ -411,4 +495,6 @@ module.exports = {
   createSubscriptionOrder,
   verifySubscriptionPayment,
   getMySubscription,
+  getMyPayments,
+  adminOverrideSchoolSubscription,
 };

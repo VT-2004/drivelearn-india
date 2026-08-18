@@ -9,9 +9,15 @@ const {
   getAllSchools,
   approveSchool,
   rejectSchool,
+  warnSchool,
+  suspendSchool,
+  unsuspendSchool,
   updateSchool,
   getSchoolStats,
   cancelSchoolRegistration,
+  getSchoolNotifications,
+  markNotificationRead,
+  getMySchoolReviews,
 } = require('../controllers/schoolController');
 const { getMyStudents } = require('../controllers/studentController');
 const { addBranch, getMyBranches, deleteBranch } = require('../controllers/branchController');
@@ -30,6 +36,9 @@ router.put('/my-school', authenticate, authorize('school_owner'), updateSchool);
 router.delete('/my-school', authenticate, authorize('school_owner'), cancelSchoolRegistration);
 router.get('/stats', authenticate, authorize('school_owner'), getSchoolStats);
 router.get('/students', authenticate, authorize('school_owner'), getMyStudents);
+router.get('/notifications', authenticate, authorize('school_owner'), getSchoolNotifications);
+router.patch('/notifications/:id/read', authenticate, authorize('school_owner'), markNotificationRead);
+router.get('/my-reviews', authenticate, authorize('school_owner'), getMySchoolReviews);
 
 // Branch routes (School Owner)
 router.post('/branches', authenticate, authorize('school_owner'), addBranch);
@@ -45,5 +54,8 @@ router.delete('/instructors/:id', authenticate, authorize('school_owner'), delet
 router.get('/', authenticate, authorize('admin'), getAllSchools);
 router.patch('/:id/approve', authenticate, authorize('admin'), approveSchool);
 router.patch('/:id/reject', authenticate, authorize('admin'), rejectSchool);
+router.post('/:id/warn', authenticate, authorize('admin'), warnSchool);
+router.post('/:id/suspend', authenticate, authorize('admin'), suspendSchool);
+router.post('/:id/unsuspend', authenticate, authorize('admin'), unsuspendSchool);
 
 module.exports = router;
