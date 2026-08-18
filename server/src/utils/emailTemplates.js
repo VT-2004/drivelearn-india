@@ -188,6 +188,22 @@ const schoolRejectedEmail = ({ ownerName, schoolName, reason }) => ({
   `,
 });
 
+const schoolReinstatedEmail = ({ ownerName, schoolName }) => ({
+  subject: `✓ Academy License Reinstated - ${schoolName}`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #eee; border-top: 4px solid #2E7D32;">
+      <h2 style="color: #2E7D32; margin-top: 0;">✓ License Reinstated</h2>
+      <p>Dear ${ownerName},</p>
+      <p>
+        We are pleased to inform you that <strong>${schoolName}</strong> has been successfully <strong>reinstated</strong> to full Verified RTO Partner status.
+      </p>
+      <p style="color: #6B7680; font-size: 13px;">
+        Your driving school is once again fully visible and bookable by learners across India. Thank you for your cooperation with our compliance standards.
+      </p>
+    </div>
+  `,
+});
+
 const courseCompletedCertificateEmail = ({ learnerName, courseName, schoolName, instructorName, certificateId }) => ({
   subject: `🎓 Congratulations! Your Driving Certificate is Ready - ${courseName}`,
   html: `
