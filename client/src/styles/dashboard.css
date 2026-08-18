@@ -113,11 +113,17 @@
 
 .status-pending { background: #FFF3CD; color: #856404; }
 .status-verified { background: #D4EDDA; color: #155724; }
-.status-rejected { background: #F8D7DA; color: #721C24; }
+/* ===== Table & Scroll Wrapper ===== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 24px;
+}
 
-/* ===== Table ===== */
 .dash-table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
   background: white;
   border-radius: 10px;
@@ -179,4 +185,35 @@
   text-align: center;
   padding: 60px 20px;
   color: #8B929A;
+}
+
+/* ===== Responsive Breakpoints ===== */
+@media (max-width: 1024px) {
+  .dash-page { padding: 28px 24px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+}
+
+@media (max-width: 768px) {
+  .dash-page { padding: 20px 16px; }
+  .dash-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .dash-header > div {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+  .stat-card { padding: 16px 18px; }
+  .form-card { padding: 20px 16px; }
+  .branch-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }

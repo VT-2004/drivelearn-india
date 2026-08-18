@@ -83,14 +83,24 @@ const searchSchools = async (req, res) => {
 const getSchoolProfile = async (req, res) => {
   try {
     const { id } = req.params;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const school = await prisma.drivingSchool.findUnique({
       where: { id: parseInt(id) },
       include: {
-        courses: true,
+        courses: {
+          orderBy: { id: 'asc' },
+        },
         branches: true,
         instructors: {
-          include: { user: { select: { name: true } } },
+          include: {
+            user: { select: { name: true, phone: true } },
+            availabilitySlots: {
+              where: { isBooked: false, date: { gte: today } },
+              orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+            },
+          },
         },
         reviews: {
           include: { learner: { select: { name: true } } },
@@ -103,14 +113,44 @@ const getSchoolProfile = async (req, res) => {
       return res.status(404).json({ error: 'School not found' });
     }
 
-    const avgRating = school.reviews.length > 0
+    const now = new Date();
+    const nowTimeStr = now.toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+
+    const instructorsWithActiveSlots = school.instructors.map((inst) => {
+      const activeSlots = (inst.availabilitySlots || []).filter((s) => {
+        const sDate = new Date(s.date);
+        sDate.setHours(0, 0, 0, 0);
+        if (sDate < todayStart) return false;
+        if (sDate.getTime() === todayStart.getTime()) {
+          return (s.endTime || s.startTime) > nowTimeStr;
+        }
+        return true;
+      });
+      return { ...inst, availabilitySlots: activeSlots };
+    });
+
+    const avgRating = (school.reviews && school.reviews.length > 0)
       ? (school.reviews.reduce((sum, r) => sum + r.rating, 0) / school.reviews.length).toFixed(1)
       : null;
 
-    res.json({ school: { ...school, avgRating, reviewCount: school.reviews.length } });
+    res.json({
+      school: {
+        ...school,
+        instructors: instructorsWithActiveSlots,
+        avgRating,
+        reviewCount: (school.reviews || []).length,
+      },
+    });
   } catch (error) {
     console.error('Get school profile error:', error);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: error.message || 'Something went wrong fetching school' });
   }
 };
 

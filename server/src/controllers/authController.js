@@ -44,7 +44,7 @@ const signup = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user - learners get a ₹10 signup bonus credited to their wallet
+    // Create user - learners get an introductory ₹15 signup bonus credited to their wallet
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -52,7 +52,7 @@ const signup = async (req, res) => {
         password: hashedPassword,
         phone,
         role,
-        walletBalance: role === 'learner' ? 10 : 0,
+        walletBalance: role === 'learner' ? 15 : 0,
       },
     });
 
@@ -61,7 +61,7 @@ const signup = async (req, res) => {
 
     res.status(201).json({
       message: role === 'learner'
-        ? 'Signup successful! ₹10 welcome bonus added to your wallet.'
+        ? 'Signup successful! ₹15 introductory offer credited to your wallet.'
         : 'Signup successful!',
       user: userWithoutPassword,
     });
@@ -184,7 +184,7 @@ const googleAuth = async (req, res) => {
           phone: '',
           role: 'learner',
           googleId,
-          walletBalance: 10,
+          walletBalance: 15,
         },
       });
     }
@@ -198,7 +198,7 @@ const googleAuth = async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
 
     res.status(200).json({
-      message: isNewUser ? 'Account created with Google. ₹10 welcome bonus added!' : 'Login successful',
+      message: isNewUser ? 'Account created with Google. ₹15 introductory bonus credited!' : 'Login successful',
       token,
       user: userWithoutPassword,
       isNewUser,
@@ -271,4 +271,68 @@ const changePassword = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, getMe, googleAuth, updateProfile, changePassword };
+// CHECK EMAIL (Step 1 of Password Reset)
+const checkEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    const trimmedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({
+      where: { email: trimmedEmail },
+      select: { id: true, name: true, email: true, role: true },
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'No registered account found with this email. Please verify spelling or sign up.' });
+    }
+    res.json({
+      exists: true,
+      message: `Account confirmed for ${user.name}! You can now enter your new password.`,
+      user: { name: user.name, email: user.email },
+    });
+  } catch (error) {
+    console.error('Check email error:', error);
+    res.status(500).json({ error: 'Something went wrong verifying email' });
+  }
+};
+
+// FORGOT / RESET PASSWORD (Step 2 of Password Reset)
+const forgotPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ error: 'Email and new password are required' });
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({ where: { email: trimmedEmail } });
+    if (!user) {
+      return res.status(404).json({ error: 'No registered account found with this email address' });
+    }
+
+    // Password strength check
+    if (!isPasswordStrong(newPassword)) {
+      return res.status(400).json({ error: passwordStrengthMessage });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password in database
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    res.json({ message: 'Password has been reset successfully! You can now log in with your new password.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Something went wrong while resetting password' });
+  }
+};
+
+module.exports = { signup, login, getMe, googleAuth, updateProfile, changePassword, checkEmail, forgotPassword };

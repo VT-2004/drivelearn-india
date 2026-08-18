@@ -89,7 +89,30 @@ const Login = () => {
               required
             />
 
-            {error && <div className="auth-error">{error}</div>}
+            {error && (
+              <div className="auth-error" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 14px' }}>
+                <div style={{ fontWeight: 600 }}>{error}</div>
+                <Link
+                  to={`/forgot-password${formData.email ? `?email=${encodeURIComponent(formData.email)}` : ''}`}
+                  style={{
+                    color: '#D32F2F',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    fontSize: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: '#FFFFFF',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid #D32F2F',
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  🔑 Forgot Password? Click here to reset →
+                </Link>
+              </div>
+            )}
 
             <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>
               {loading ? 'Logging in...' : 'Log In'}

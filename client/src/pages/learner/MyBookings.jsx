@@ -1,6 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyBookings, cancelBooking, createBookingOrder, confirmBookingWithWallet, verifyBookingPayment, getBookingAttendance, getReviewableSchools, createReview, getLearnerCalendar, postUpdate, getUpdates, getMe, downloadReceipt, downloadCertificate } from '../../services/api';
+import {
+  getMyBookings,
+  cancelBooking,
+  createBookingOrder,
+  confirmBookingWithWallet,
+  verifyBookingPayment,
+  getBookingAttendance,
+  getReviewableSchools,
+  createReview,
+  getLearnerCalendar,
+  postUpdate,
+  getUpdates,
+  getMe,
+  downloadReceipt,
+  downloadCertificate,
+  getAvailableSlotsForInstructor,
+  rescheduleBooking,
+} from '../../services/api';
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
 import LiveClock from '../../components/LiveClock';
@@ -29,6 +46,15 @@ const MyBookings = () => {
   const [updateText, setUpdateText] = useState('');
   const [updatesMap, setUpdatesMap] = useState({});
   const [walletBalance, setWalletBalance] = useState(0);
+
+  // Reschedule state
+  const [rescheduleBookingId, setRescheduleBookingId] = useState(null);
+  const [rescheduleSlots, setRescheduleSlots] = useState([]);
+  const [loadingRescheduleSlots, setLoadingRescheduleSlots] = useState(false);
+  const [selectedNewSlotId, setSelectedNewSlotId] = useState('');
+  const [rescheduleError, setRescheduleError] = useState('');
+  const [rescheduling, setRescheduling] = useState(false);
+
   const { logout, user } = useAuth();
 
   const load = async () => {
@@ -47,9 +73,14 @@ const MyBookings = () => {
   }, []);
 
   const handleCancel = async (id) => {
-    if (!window.confirm('Cancel this booking?')) return;
-    await cancelBooking(id);
-    load();
+    if (!window.confirm('Cancel this booking? If you have paid for this lesson, the fee will be immediately refunded to your DriveLearn Wallet.')) return;
+    try {
+      const res = await cancelBooking(id);
+      alert(res.data.message || 'Booking cancelled successfully.');
+      load();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to cancel booking');
+    }
   };
 
   const toggleProgress = async (bookingId) => {
@@ -156,6 +187,44 @@ const MyBookings = () => {
     }
   };
 
+  const handleOpenReschedule = async (booking) => {
+    if (rescheduleBookingId === booking.id) {
+      setRescheduleBookingId(null);
+      return;
+    }
+    setRescheduleBookingId(booking.id);
+    setSelectedNewSlotId('');
+    setRescheduleError('');
+    setLoadingRescheduleSlots(true);
+    try {
+      const res = await getAvailableSlotsForInstructor(booking.instructorId);
+      setRescheduleSlots(res.data.slots);
+    } catch (err) {
+      setRescheduleError('Failed to load instructor slots');
+    } finally {
+      setLoadingRescheduleSlots(false);
+    }
+  };
+
+  const handleConfirmReschedule = async (bookingId) => {
+    if (!selectedNewSlotId) {
+      setRescheduleError('Please select a new time slot');
+      return;
+    }
+    setRescheduling(true);
+    setRescheduleError('');
+    try {
+      await rescheduleBooking(bookingId, selectedNewSlotId);
+      alert('Booking rescheduled successfully!');
+      setRescheduleBookingId(null);
+      load();
+    } catch (err) {
+      setRescheduleError(err.response?.data?.error || 'Failed to reschedule booking');
+    } finally {
+      setRescheduling(false);
+    }
+  };
+
   return (
     <div className="dash-page">
       <div className="dash-header">
@@ -240,7 +309,16 @@ const MyBookings = () => {
                     </button>
                   )}
                   {(b.status === 'pending' || b.status === 'confirmed') && (
-                    <button className="action-btn reject-btn" onClick={() => handleCancel(b.id)}>Cancel</button>
+                    <>
+                      <button
+                        className="btn btn-outline"
+                        style={{ fontSize: '13px', padding: '6px 14px', color: '#1C1F22', border: '1.5px solid #F2B705', background: '#FFF8E1' }}
+                        onClick={() => handleOpenReschedule(b)}
+                      >
+                        🔄 {rescheduleBookingId === b.id ? 'Close Reschedule' : 'Reschedule Slot'}
+                      </button>
+                      <button className="action-btn reject-btn" onClick={() => handleCancel(b.id)}>Cancel</button>
+                    </>
                   )}
                   {(b.status === 'confirmed' || b.status === 'completed') && (
                     <>
@@ -279,6 +357,76 @@ const MyBookings = () => {
                 </div>
               </div>
             </div>
+
+            {rescheduleBookingId === b.id && (
+              <div style={{ marginTop: '16px', borderTop: '1.5px solid #F2B705', paddingTop: '16px', background: '#FFFDF5', padding: '16px', borderRadius: '6px' }}>
+                <h4 style={{ margin: '0 0 8px', color: '#1C1F22' }}>Reschedule with {b.instructor.user.name}</h4>
+                <p style={{ fontSize: '13px', color: '#6B7680', margin: '0 0 12px' }}>
+                  Pick another open time slot. Your previous slot will be automatically released.
+                </p>
+
+                {loadingRescheduleSlots ? (
+                  <p style={{ fontSize: '13px', color: '#8B929A' }}>Loading available slots...</p>
+                ) : rescheduleSlots.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: '#B3261E' }}>
+                    No other open slots available for this instructor right now.
+                  </p>
+                ) : (
+                  <div style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid #D8D4C9', borderRadius: '4px', marginBottom: '12px', background: 'white' }}>
+                    {rescheduleSlots.map((s) => {
+                      const [sh, sm] = s.startTime.split(':').map(Number);
+                      const [eh, em] = s.endTime.split(':').map(Number);
+                      const diff = (eh * 60 + em) - (sh * 60 + sm);
+                      const durText = diff === 60 ? '1 hr' : diff > 60 ? `${Math.floor(diff / 60)}h ${diff % 60}m` : `${diff} min`;
+
+                      return (
+                        <div
+                          key={s.id}
+                          onClick={() => setSelectedNewSlotId(s.id)}
+                          style={{
+                            padding: '10px 12px',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            background: selectedNewSlotId === s.id ? '#FFF8E1' : 'white',
+                            borderBottom: '1px solid #F0EEE7',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <div>
+                            <strong>{new Date(s.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</strong>
+                            <span style={{ marginLeft: '10px' }}>{s.startTime} – {s.endTime}</span>
+                          </div>
+                          <span style={{ fontSize: '11px', background: '#ECEFF1', color: '#455A64', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                            {durText}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {rescheduleError && <p style={{ color: '#B3261E', fontSize: '13px', margin: '0 0 10px' }}>{rescheduleError}</p>}
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    className="btn btn-primary"
+                    disabled={rescheduling || !selectedNewSlotId}
+                    onClick={() => handleConfirmReschedule(b.id)}
+                  >
+                    {rescheduling ? 'Rescheduling...' : 'Confirm Reschedule'}
+                  </button>
+                  <button
+                    className="btn btn-outline"
+                    style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }}
+                    onClick={() => setRescheduleBookingId(null)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
 
             {updateFormFor === b.id && (
               <div style={{ marginTop: '16px', borderTop: '1px solid #EFEDE6', paddingTop: '16px' }}>

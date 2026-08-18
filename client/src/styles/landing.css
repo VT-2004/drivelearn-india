@@ -1,11 +1,14 @@
-/* ===== Design Tokens ===== */
+/* ===== Design Tokens (Red & White Brand Palette) ===== */
 :root {
-  --color-asphalt: #1C1F22;
-  --color-asphalt-light: #2A2E33;
-  --color-lane-yellow: #F2B705;
-  --color-signal-red: #E14B3C;
-  --color-offwhite: #F7F6F2;
-  --color-muted: #6B7680;
+  --color-asphalt: #181A1B;
+  --color-asphalt-light: #23272A;
+  --color-primary-red: #D32F2F;
+  --color-primary-red-hover: #B71C1C;
+  --color-lane-yellow: #D32F2F;
+  --color-signal-red: #D32F2F;
+  --color-offwhite: #FFFFFF;
+  --color-bg-subtle: #F8F9FA;
+  --color-muted: #5F6368;
   --color-white: #FFFFFF;
 
   --font-display: 'Barlow Condensed', sans-serif;
@@ -20,18 +23,18 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  color: var(--color-asphalt);
-  background: var(--color-offwhite);
+  color: #202124;
+  background: #FFFFFF;
 }
 
-/* ===== Lane Line Signature Element ===== */
+/* ===== Red Lane Signature Divider ===== */
 .lane-divider {
   height: 4px;
   width: 100%;
   background-image: repeating-linear-gradient(
     90deg,
-    var(--color-lane-yellow) 0px,
-    var(--color-lane-yellow) 32px,
+    var(--color-primary-red) 0px,
+    var(--color-primary-red) 32px,
     transparent 32px,
     transparent 56px
   );
@@ -106,60 +109,66 @@ body {
 }
 
 .btn-primary {
-  background: var(--color-lane-yellow);
-  color: var(--color-asphalt);
+  background: var(--color-primary-red);
+  color: var(--color-white);
+  font-weight: 700;
 }
 
 .btn-primary:hover {
-  box-shadow: 0 4px 14px rgba(242, 183, 5, 0.35);
+  background: var(--color-primary-red-hover);
+  box-shadow: 0 4px 14px rgba(211, 47, 47, 0.4);
+  color: var(--color-white);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--color-offwhite);
-  border: 1.5px solid var(--color-offwhite);
+  color: var(--color-white);
+  border: 1.5px solid var(--color-white);
 }
 
 .btn-outline:hover {
-  border-color: var(--color-lane-yellow);
-  color: var(--color-lane-yellow);
+  border-color: var(--color-primary-red);
+  color: var(--color-primary-red);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ===== Hero ===== */
 .hero {
-  background: var(--color-asphalt);
+  background: #121314;
   color: var(--color-white);
-  padding: 100px 48px 90px;
+  padding: 80px 48px 80px;
   position: relative;
   overflow: hidden;
 }
 
 .hero-eyebrow {
   font-family: var(--font-mono);
-  color: var(--color-lane-yellow);
+  color: #FF5252;
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-bottom: 18px;
+  font-weight: 700;
 }
 
 .hero-content {
-  max-width: 720px;
+  max-width: 760px;
 }
 
 .hero h1 {
   font-family: var(--font-display);
-  font-size: 76px;
-  line-height: 0.98;
+  font-size: 72px;
+  line-height: 1.02;
   font-weight: 700;
   text-transform: uppercase;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   letter-spacing: 0.5px;
+  color: #FFFFFF;
 }
 
 .hero h1 em {
   font-style: normal;
-  color: var(--color-lane-yellow);
+  color: #FF5252;
 }
 
 .hero p.subhead {
@@ -669,8 +678,88 @@ body {
   margin-bottom: 18px;
 }
 
-@media (max-width: 900px) {
-  .contact-body { grid-template-columns: 1fr; padding: 50px 24px; }
-  .contact-hero { padding: 50px 24px 40px; }
-  .contact-hero h1 { font-size: 36px; }
+@media (max-width: 1024px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .navbar { padding: 16px 28px; }
+  .hero { padding: 60px 28px 50px; }
+  .how { padding: 60px 28px; }
+  .features { padding: 60px 28px; }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 20px;
+  }
+  .navbar-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+  .navbar-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  .hero {
+    padding: 40px 20px 36px;
+  }
+  .hero-content h1 {
+    font-size: 38px;
+    line-height: 1.1;
+  }
+  .hero-ctas {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  .hero-ctas .btn {
+    width: 100%;
+    text-align: center;
+  }
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .how-steps {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .section-title {
+    font-size: 32px;
+    margin-bottom: 32px;
+  }
+  .cta-section {
+    padding: 50px 20px;
+  }
+  .cta-section h2 {
+    font-size: 32px;
+  }
+  .footer {
+    padding: 40px 20px 20px;
+  }
+  .contact-body {
+    grid-template-columns: 1fr;
+    padding: 36px 20px;
+  }
+  .contact-hero {
+    padding: 40px 20px 30px;
+  }
+  .contact-hero h1 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-stat-value {
+    font-size: 24px;
+  }
+  .btn-lg {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
 }

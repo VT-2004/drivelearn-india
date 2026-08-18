@@ -80,10 +80,10 @@
 
 .school-card-price .price-value {
   font-family: var(--font-mono, monospace);
-  font-size: 22px;
-  font-weight: 700;
-  color: #B8860B;
-  background: #FFF8E1;
+  font-size: 20px;
+  font-weight: 800;
+  color: #D32F2F;
+  background: #FFEBEE;
   padding: 6px 14px;
   border-radius: 6px;
   display: inline-block;
@@ -96,72 +96,74 @@
 
 .verified-tag {
   display: inline-block;
-  background: #D4EDDA;
-  color: #155724;
+  background: #E8F5E9;
+  color: #2E7D32;
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
-  text-transform: uppercase;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
   margin-bottom: 8px;
+  text-transform: uppercase;
 }
 
 /* ===== School Profile Page ===== */
 .profile-hero {
-  background: var(--color-asphalt, #1C1F22);
-  color: white;
-  padding: 60px 48px;
+  background: #181A1B;
+  color: #FFFFFF;
+  padding: 50px 48px;
 }
 
 .profile-hero h1 {
   font-family: var(--font-display, sans-serif);
-  font-size: 42px;
+  font-size: 38px;
   text-transform: uppercase;
-  margin: 10px 0;
+  margin: 10px 0 6px;
+  color: #FFFFFF;
 }
 
 .profile-body {
-  padding: 50px 48px 80px;
-  background: var(--color-offwhite, #F7F6F2);
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  padding: 40px 48px 80px;
+  background: #FFFFFF;
+  min-height: 60vh;
 }
 
 .profile-section {
   background: white;
-  border: 1px solid #E4E1D9;
+  border: 1px solid #ECEFF1;
   border-radius: 10px;
-  padding: 28px 28px 24px;
-  margin-bottom: 28px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .profile-section h2 {
   font-family: var(--font-display, sans-serif);
-  font-size: 22px;
+  font-size: 20px;
   text-transform: uppercase;
-  margin: 0 0 18px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid #F2B705;
-  display: inline-block;
+  margin: 0 0 16px;
+  color: #181A1B;
 }
 
 .course-card {
-  background: #FAFAF7;
-  border: 1px solid #E4E1D9;
-  border-radius: 8px;
-  padding: 18px 20px;
-  margin-bottom: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #F0ECE1;
+}
+
+.course-card:last-child {
+  border-bottom: none;
 }
 
 .course-price-tag {
   font-family: var(--font-mono, monospace);
-  font-size: 19px;
-  font-weight: 700;
-  color: #B8860B;
+  font-size: 18px;
+  font-weight: 800;
+  color: #D32F2F;
   background: #FFF8E1;
   padding: 5px 12px;
   border-radius: 6px;
@@ -202,8 +204,29 @@
 }
 
 @media (max-width: 900px) {
-  .profile-body { grid-template-columns: 1fr; padding: 40px 24px; }
-  .search-hero, .search-results { padding-left: 24px; padding-right: 24px; }
-  .school-card { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .school-card-price { text-align: left; }
+  .profile-body { grid-template-columns: 1fr; padding: 24px 20px; }
+  .search-hero, .search-results { padding-left: 20px; padding-right: 20px; }
+  .school-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .school-card-price { text-align: left; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .search-bar { max-width: 100%; flex-direction: column; }
+  .search-bar input, .search-bar button { width: 100%; }
+}
+
+@media (max-width: 600px) {
+  .search-hero { padding: 20px 16px 28px; }
+  .search-results { padding: 20px 16px 60px; }
+  .profile-hero { padding: 20px 16px 28px; }
+  .course-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .course-card > div:last-child {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .search-hero h1 { font-size: 26px; }
+  .profile-hero h1 { font-size: 26px; }
 }

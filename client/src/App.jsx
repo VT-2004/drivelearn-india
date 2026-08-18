@@ -4,6 +4,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
+import ForgotPassword from './pages/auth/ForgotPassword';
 import Home from './pages/public/Home';
 import ForSchools from './pages/public/ForSchools';
 import ForLearners from './pages/public/ForLearners';
@@ -33,6 +34,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/for-schools" element={<ForSchools />} />
           <Route path="/for-learners" element={<ForLearners />} />
           <Route path="/contact" element={<Contact />} />

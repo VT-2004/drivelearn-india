@@ -44,6 +44,12 @@ const createBooking = async (req, res) => {
         throw new Error('SLOT_ALREADY_BOOKED');
       }
 
+      // If any cancelled booking was holding this slotId, clear its slotId to satisfy unique constraint
+      await tx.booking.updateMany({
+        where: { slotId: slot.id, status: 'cancelled' },
+        data: { slotId: null },
+      });
+
       const newBooking = await tx.booking.create({
         data: {
           learnerId,
@@ -75,7 +81,7 @@ const createBooking = async (req, res) => {
       return res.status(409).json({ error: 'This slot was just booked by someone else. Please pick another.' });
     }
     console.error('Create booking error:', error);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: error.message || 'Something went wrong creating booking' });
   }
 };
 
@@ -127,7 +133,7 @@ const getSchoolBookings = async (req, res) => {
   }
 };
 
-// LEARNER or SCHOOL OWNER: Cancel a booking
+// LEARNER or SCHOOL OWNER: Cancel a booking with automated wallet refund
 const cancelBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -139,6 +145,7 @@ const cancelBooking = async (req, res) => {
       include: {
         course: { include: { school: true } },
         learner: true,
+        payment: true,
       },
     });
 
@@ -154,20 +161,55 @@ const cancelBooking = async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to cancel this booking' });
     }
 
-    const updated = await prisma.booking.update({
-      where: { id: parseInt(id) },
-      data: { status: 'cancelled' },
-    });
-
-    // Free up the time slot so it can be booked again
-    if (booking.slotId) {
-      await prisma.availabilitySlot.update({
-        where: { id: booking.slotId },
-        data: { isBooked: false },
-      });
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({ error: 'Booking is already cancelled' });
     }
 
-    res.json({ message: 'Booking cancelled', booking: updated });
+    // Process refund if payment was successful
+    let refundedAmount = 0;
+    const payment = booking.payment;
+    const isPaid = payment && payment.status === 'success';
+
+    if (isPaid) {
+      refundedAmount = Number(payment.amount) + Number(payment.walletUsed || 0);
+    }
+
+    const { updatedBooking } = await prisma.$transaction(async (tx) => {
+      // 1. If paid, refund directly to learner wallet
+      if (refundedAmount > 0) {
+        await tx.user.update({
+          where: { id: booking.learnerId },
+          data: { walletBalance: { increment: refundedAmount } },
+        });
+
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: { status: 'refunded' },
+        });
+      }
+
+      // 2. Free up the slot
+      if (booking.slotId) {
+        await tx.availabilitySlot.update({
+          where: { id: booking.slotId },
+          data: { isBooked: false },
+        });
+      }
+
+      // 3. Mark booking as cancelled
+      const updated = await tx.booking.update({
+        where: { id: parseInt(id) },
+        data: { status: 'cancelled', slotId: null },
+      });
+
+      return { updatedBooking: updated };
+    });
+
+    const msg = refundedAmount > 0
+      ? `Booking cancelled successfully. ₹${refundedAmount} has been refunded to your wallet!`
+      : 'Booking cancelled successfully.';
+
+    res.json({ message: msg, booking: updatedBooking, refundedAmount });
 
     // Send cancellation email (non-blocking, wrapped separately)
     try {
@@ -184,7 +226,7 @@ const cancelBooking = async (req, res) => {
     }
   } catch (error) {
     console.error('Cancel booking error:', error);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: error.message || 'Something went wrong cancelling booking' });
   }
 };
 
@@ -221,4 +263,110 @@ const getMyCalendar = async (req, res) => {
   }
 };
 
-module.exports = { createBooking, getMyBookings, getSchoolBookings, cancelBooking, getMyCalendar };
+// LEARNER or SCHOOL OWNER: Reschedule a booking to another open slot
+const rescheduleBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { slotId } = req.body;
+    const userId = req.user.id;
+    const role = req.user.role;
+
+    if (!slotId) {
+      return res.status(400).json({ error: 'New slot ID is required' });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        course: { include: { school: true } },
+        instructor: { include: { user: { select: { name: true } } } },
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    const isOwnLearner = role === 'learner' && booking.learnerId === userId;
+    const isOwnSchool = role === 'school_owner' && booking.course.school.ownerId === userId;
+
+    if (!isOwnLearner && !isOwnSchool) {
+      return res.status(403).json({ error: 'Not authorized to reschedule this booking' });
+    }
+
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({ error: 'Cannot reschedule a cancelled booking' });
+    }
+    if (booking.status === 'completed') {
+      return res.status(400).json({ error: 'Cannot reschedule a completed booking' });
+    }
+
+    const newSlot = await prisma.availabilitySlot.findUnique({
+      where: { id: parseInt(slotId) },
+      include: { instructor: true },
+    });
+
+    if (!newSlot) {
+      return res.status(404).json({ error: 'New time slot not found' });
+    }
+    if (newSlot.isBooked) {
+      return res.status(409).json({ error: 'This time slot is already booked. Please choose another.' });
+    }
+    if (newSlot.instructorId !== booking.instructorId) {
+      return res.status(400).json({ error: 'New slot must be with the same assigned instructor' });
+    }
+
+    const updatedBooking = await prisma.$transaction(async (tx) => {
+      const freshSlot = await tx.availabilitySlot.findUnique({ where: { id: newSlot.id } });
+      if (freshSlot.isBooked) {
+        throw new Error('SLOT_ALREADY_BOOKED');
+      }
+
+      // Free previous slot if exists
+      if (booking.slotId) {
+        await tx.availabilitySlot.update({
+          where: { id: booking.slotId },
+          data: { isBooked: false },
+        });
+      }
+
+      // Lock new slot
+      await tx.availabilitySlot.update({
+        where: { id: newSlot.id },
+        data: { isBooked: true },
+      });
+
+      // Update booking
+      return tx.booking.update({
+        where: { id: booking.id },
+        data: {
+          slotId: newSlot.id,
+          bookedDate: newSlot.date,
+          startTime: newSlot.startTime,
+          endTime: newSlot.endTime,
+        },
+        include: {
+          course: { include: { school: { select: { name: true, city: true } } } },
+          instructor: { include: { user: { select: { name: true } } } },
+        },
+      });
+    });
+
+    res.json({ message: 'Booking rescheduled successfully', booking: updatedBooking });
+  } catch (error) {
+    if (error.message === 'SLOT_ALREADY_BOOKED') {
+      return res.status(409).json({ error: 'This slot was just booked by someone else. Please pick another.' });
+    }
+    console.error('Reschedule booking error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+module.exports = {
+  createBooking,
+  getMyBookings,
+  getSchoolBookings,
+  cancelBooking,
+  getMyCalendar,
+  rescheduleBooking,
+};

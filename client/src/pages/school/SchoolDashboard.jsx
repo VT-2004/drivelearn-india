@@ -23,6 +23,7 @@ import {
   verifySubscriptionPayment,
   getSchoolAnalytics,
   cancelSchoolRegistration,
+  getSchoolSchedule,
 } from '../../services/api';
 import { openRazorpayCheckout } from '../../services/razorpayHelper';
 import { useAuth } from '../../context/AuthContext';
@@ -65,8 +66,35 @@ const SchoolDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [location, setLocation] = useState(null);
 
+  // Instructor Schedule state
+  const [scheduleSlots, setScheduleSlots] = useState([]);
+  const [scheduleStats, setScheduleStats] = useState({ totalSlots: 0, bookedSlots: 0, openSlots: 0 });
+  const [scheduleInstructorFilter, setScheduleInstructorFilter] = useState('');
+  const [scheduleDateFilter, setScheduleDateFilter] = useState('');
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
+
+  // Dedicated Instructor Detail Modal / Drawer state
+  const [selectedInstructorDetail, setSelectedInstructorDetail] = useState(null);
+  const [instructorModalDateFilter, setInstructorModalDateFilter] = useState('');
+
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+
+  const loadSchedule = async (instId = scheduleInstructorFilter, dateVal = scheduleDateFilter) => {
+    setLoadingSchedule(true);
+    try {
+      const res = await getSchoolSchedule({
+        instructorId: instId || undefined,
+        date: dateVal || undefined,
+      });
+      setScheduleSlots(res.data.slots || []);
+      setScheduleStats(res.data.stats || { totalSlots: 0, bookedSlots: 0, openSlots: 0 });
+    } catch (err) {
+      console.error('Failed to load school schedule', err);
+    } finally {
+      setLoadingSchedule(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -100,6 +128,7 @@ const SchoolDashboard = () => {
       setSubscription(subRes.data.subscription);
       setSubStatus(subRes.data.currentStatus);
       setAnalytics(analyticsRes.data.analytics);
+      loadSchedule();
     } catch (err) {
       if (err.response?.status === 404) {
         navigate('/school/register');
@@ -425,49 +454,518 @@ const SchoolDashboard = () => {
         ))
       )}
 
-      <div className="dash-header" style={{ marginTop: '40px' }}>
-        <h1 style={{ fontSize: '22px' }}>Instructors</h1>
+      {/* Instructors Group Header */}
+      <div className="dash-header" style={{ marginTop: '48px' }}>
+        <div>
+          <h1 style={{ fontSize: '22px', margin: 0 }}>Instructors & Teaching Staff</h1>
+          <p style={{ color: '#6B7680', fontSize: '13px', margin: '4px 0 0' }}>
+            Manage instructors, monitor their lesson completions, track teaching slots, and inspect individual schedules.
+          </p>
+        </div>
         <button className="btn btn-primary" onClick={() => setShowInstructorForm(!showInstructorForm)}>
-          {showInstructorForm ? 'Cancel' : '+ Add Instructor'}
+          {showInstructorForm ? 'Cancel' : '+ Add New Instructor'}
         </button>
       </div>
 
       {showInstructorForm && (
-        <form className="form-card" onSubmit={handleAddInstructor} style={{ marginBottom: '24px' }}>
-          <label>Full Name</label>
-          <input type="text" name="name" value={instructorData.name} onChange={handleInstructorChange} required />
-          <label>Email</label>
-          <input type="email" name="email" value={instructorData.email} onChange={handleInstructorChange} required />
-          <label>Temporary Password</label>
-          <input type="password" name="password" value={instructorData.password} onChange={handleInstructorChange} required />
-          <label>Phone</label>
-          <input type="text" name="phone" value={instructorData.phone} onChange={handleInstructorChange} required />
-          <label>Specialization</label>
-          <input type="text" name="specialization" value={instructorData.specialization} onChange={handleInstructorChange} placeholder="e.g. 2-wheeler, 4-wheeler" />
-          <label>Years of Experience</label>
-          <input type="number" name="experienceYears" value={instructorData.experienceYears} onChange={handleInstructorChange} />
-          {instructorError && <p style={{ color: 'red', fontSize: '14px' }}>{instructorError}</p>}
-          <button type="submit" className="btn btn-primary submit-btn">Add Instructor</button>
+        <form className="form-card" onSubmit={handleAddInstructor} style={{ marginBottom: '24px', border: '2px solid #D32F2F' }}>
+          <h3 style={{ marginTop: 0, marginBottom: '14px' }}>➕ Register New Instructor</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+            <div>
+              <label>Full Name *</label>
+              <input type="text" name="name" value={instructorData.name} onChange={handleInstructorChange} required />
+            </div>
+            <div>
+              <label>Email Address *</label>
+              <input type="email" name="email" value={instructorData.email} onChange={handleInstructorChange} required />
+            </div>
+            <div>
+              <label>Temporary Password *</label>
+              <input type="password" name="password" value={instructorData.password} onChange={handleInstructorChange} required />
+            </div>
+            <div>
+              <label>Phone Number *</label>
+              <input type="text" name="phone" value={instructorData.phone} onChange={handleInstructorChange} required />
+            </div>
+            <div>
+              <label>Specialization</label>
+              <input type="text" name="specialization" value={instructorData.specialization} onChange={handleInstructorChange} placeholder="e.g. 2-Wheeler Specialist, Car Trainer" />
+            </div>
+            <div>
+              <label>Years of Experience</label>
+              <input type="number" name="experienceYears" value={instructorData.experienceYears} onChange={handleInstructorChange} placeholder="e.g. 5" />
+            </div>
+          </div>
+          {instructorError && <p style={{ color: '#D32F2F', fontSize: '14px', marginTop: '10px' }}>{instructorError}</p>}
+          <div style={{ marginTop: '16px' }}>
+            <button type="submit" className="btn btn-primary submit-btn">Add Instructor</button>
+          </div>
         </form>
       )}
 
+      {/* Instructor Group Cards Grid */}
       {instructors.length === 0 ? (
-        <div className="empty-state">No instructors added yet.</div>
+        <div className="empty-state">No instructors added yet. Click "+ Add New Instructor" to onboard your trainers.</div>
       ) : (
-        instructors.map((i) => (
-          <div className="branch-card" key={i.id}>
-            <span>
-              <strong>{i.user.name}</strong> — {i.user.email}
-              {i.specialization && ` · ${i.specialization}`}
-              {i.experienceYears && ` · ${i.experienceYears} yrs exp`}
-            </span>
-            <button className="action-btn reject-btn" onClick={() => handleDeleteInstructor(i.id)}>Remove</button>
-          </div>
-        ))
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+          {instructors.map((i) => {
+            const instBookings = bookings.filter((b) => b.instructorId === i.id);
+            const totalBookingsCount = instBookings.length;
+            const completedCount = instBookings.filter((b) => b.status === 'completed').length;
+            const instSlots = scheduleSlots.filter((s) => s.instructorId === i.id);
+            const openSlotsCount = instSlots.filter((s) => !s.isBooked).length;
+
+            return (
+              <div
+                key={i.id}
+                style={{
+                  background: '#FFFFFF',
+                  border: '1.5px solid #E0DDD5',
+                  borderRadius: '10px',
+                  padding: '20px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '50%',
+                      background: '#181A1B',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '18px',
+                      border: '2px solid #D32F2F',
+                    }}>
+                      {i.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '17px', color: '#181A1B' }}>{i.user.name}</h3>
+                      <span style={{ fontSize: '12px', color: '#D32F2F', fontWeight: 600 }}>
+                        {i.specialization || 'Certified Driving Instructor'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '13px', color: '#5F6368', marginBottom: '14px', lineHeight: 1.5 }}>
+                    <div>📞 {i.user.phone || i.user.email}</div>
+                    <div>⭐ {i.experienceYears != null ? `${i.experienceYears} Years Experience` : 'Experienced Trainer'}</div>
+                  </div>
+
+                  {/* Instructor Live KPIs */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                    <div style={{ background: '#F8F9FA', border: '1px solid #E9ECEF', borderRadius: '6px', padding: '8px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#6B7680', fontWeight: 600 }}>Students</div>
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: '#181A1B' }}>{totalBookingsCount}</div>
+                    </div>
+                    <div style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', borderRadius: '6px', padding: '8px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#2E7D32', fontWeight: 600 }}>Completed</div>
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: '#2E7D32' }}>{completedCount}</div>
+                    </div>
+                    <div style={{ background: '#FFF8E1', border: '1px solid #FFE082', borderRadius: '6px', padding: '8px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#F57F17', fontWeight: 600 }}>Open Slots</div>
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: '#F57F17' }}>{openSlotsCount}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #ECEFF1', paddingTop: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedInstructorDetail(i);
+                      setInstructorModalDateFilter('');
+                    }}
+                    style={{
+                      background: '#181A1B',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      padding: '8px 14px',
+                      borderRadius: '5px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    🔍 View Details & Slots →
+                  </button>
+                  <button
+                    className="action-btn reject-btn"
+                    onClick={() => handleDeleteInstructor(i.id)}
+                    style={{ fontSize: '12px', padding: '6px 10px' }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
+      {/* Dedicated Instructor Detail & Management Center Modal */}
+      {selectedInstructorDetail && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '20px',
+        }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '14px',
+            maxWidth: '900px',
+            width: '100%',
+            maxHeight: '92vh',
+            overflowY: 'auto',
+            padding: '32px',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', borderBottom: '1.5px solid #ECEFF1', paddingBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  width: '58px',
+                  height: '58px',
+                  borderRadius: '50%',
+                  background: '#181A1B',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 800,
+                  fontSize: '24px',
+                  border: '3px solid #D32F2F',
+                }}>
+                  {selectedInstructorDetail.user.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h2 style={{ margin: 0, fontSize: '24px', color: '#181A1B' }}>{selectedInstructorDetail.user.name}</h2>
+                    <span style={{ fontSize: '12px', background: '#FFEBEE', color: '#D32F2F', fontWeight: 700, padding: '3px 10px', borderRadius: '12px' }}>
+                      Instructor Admin View
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#D32F2F', fontWeight: 600, marginTop: '2px' }}>
+                    {selectedInstructorDetail.specialization || 'Certified Driving Trainer'} · {selectedInstructorDetail.experienceYears || 0} Years Experience
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#5F6368', marginTop: '2px' }}>
+                    📧 {selectedInstructorDetail.user.email} | 📞 {selectedInstructorDetail.user.phone || 'No phone provided'}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedInstructorDetail(null)}
+                style={{
+                  background: '#F1F3F4',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '36px',
+                  height: '36px',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  color: '#5F6368',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Instructor Financial & Performance Analytics */}
+            {(() => {
+              const instBookings = bookings.filter((b) => b.instructorId === selectedInstructorDetail.id);
+              const totalStudents = instBookings.length;
+              const completed = instBookings.filter((b) => b.status === 'completed').length;
+              const ongoing = instBookings.filter((b) => b.status === 'confirmed' || b.status === 'pending').length;
+              const instSlots = scheduleSlots.filter((s) => s.instructorId === selectedInstructorDetail.id);
+              const openSlots = instSlots.filter((s) => !s.isBooked).length;
+              
+              // Calculate numeric sum of revenue generated by this instructor's bookings
+              const instRevenue = instBookings
+                .filter((b) => b.status === 'confirmed' || b.status === 'completed')
+                .reduce((acc, b) => acc + Number(b.course?.price || 0), 0);
+
+              return (
+                <div style={{ marginBottom: '28px' }}>
+                  <h3 style={{ margin: '0 0 12px', fontSize: '16px', color: '#181A1B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    📊 Instructor Analytics & Performance
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+                    <div style={{ background: '#FFF8E1', border: '1px solid #FFE082', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#F57F17', fontWeight: 700, textTransform: 'uppercase' }}>Generated Revenue</div>
+                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#E65100', marginTop: '4px' }}>
+                        ₹{instRevenue.toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                    <div style={{ background: '#F8F9FA', border: '1px solid #E9ECEF', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#6B7680', fontWeight: 700, textTransform: 'uppercase' }}>Total Bookings</div>
+                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#181A1B', marginTop: '4px' }}>{totalStudents}</div>
+                    </div>
+                    <div style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#2E7D32', fontWeight: 700, textTransform: 'uppercase' }}>Completed Lessons</div>
+                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#2E7D32', marginTop: '4px' }}>{completed}</div>
+                    </div>
+                    <div style={{ background: '#E3F2FD', border: '1px solid #BBDEFB', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#1565C0', fontWeight: 700, textTransform: 'uppercase' }}>Active Ongoing</div>
+                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#1565C0', marginTop: '4px' }}>{ongoing}</div>
+                    </div>
+                    <div style={{ background: '#F3E5F5', border: '1px solid #E1BEE7', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#7B1FA2', fontWeight: 700, textTransform: 'uppercase' }}>Open Slots</div>
+                      <div style={{ fontSize: '20px', fontWeight: 800, color: '#7B1FA2', marginTop: '4px' }}>{openSlots}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Instructor Timetable & Teaching Slots */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', color: '#181A1B' }}>📅 Teaching Schedule & Time Slots</h3>
+                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#6B7680' }}>
+                    Available and booked time slots assigned to {selectedInstructorDetail.user.name}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="date"
+                    value={instructorModalDateFilter}
+                    onChange={(e) => setInstructorModalDateFilter(e.target.value)}
+                    style={{ padding: '6px 12px', fontSize: '13px', border: '1.5px solid #D8D4C9', borderRadius: '6px' }}
+                  />
+                  {instructorModalDateFilter && (
+                    <button
+                      className="btn btn-outline"
+                      style={{ padding: '4px 10px', fontSize: '12px' }}
+                      onClick={() => setInstructorModalDateFilter('')}
+                    >
+                      All Dates
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {(() => {
+                const now = new Date();
+                const nowTimeStr = now.toLocaleTimeString('en-IN', {
+                  timeZone: 'Asia/Kolkata',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                });
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+
+                let filteredSlots = scheduleSlots.filter((s) => {
+                  if (s.instructorId !== selectedInstructorDetail.id) return false;
+                  if (!s.isBooked) {
+                    const sDate = new Date(s.date);
+                    sDate.setHours(0, 0, 0, 0);
+                    if (sDate < todayStart) return false;
+                    if (sDate.getTime() === todayStart.getTime() && (s.endTime || s.startTime) <= nowTimeStr) return false;
+                  }
+                  return true;
+                });
+
+                if (instructorModalDateFilter) {
+                  filteredSlots = filteredSlots.filter((s) => s.date.startsWith(instructorModalDateFilter));
+                }
+
+                if (filteredSlots.length === 0) {
+                  return (
+                    <div style={{ padding: '24px', background: '#F8F9FA', border: '1px solid #E9ECEF', borderRadius: '8px', textAlign: 'center', color: '#6B7680', fontSize: '13px' }}>
+                      No time slots found for {instructorModalDateFilter || 'this instructor'}. The instructor can auto-generate batches from their portal.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div style={{ maxHeight: '250px', overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '10px', paddingRight: '4px' }}>
+                    {filteredSlots.map((slot) => {
+                      const [sh, sm] = slot.startTime.split(':').map(Number);
+                      const [eh, em] = slot.endTime.split(':').map(Number);
+                      const diff = (eh * 60 + em) - (sh * 60 + sm);
+                      const durText = diff === 60 ? '1 hr' : diff > 60 ? `${Math.floor(diff / 60)}h ${diff % 60}m` : `${diff} min`;
+
+                      return (
+                        <div
+                          key={slot.id}
+                          style={{
+                            background: '#FFFFFF',
+                            border: slot.isBooked ? '1.5px solid #2E7D32' : '1px solid #E0DDD5',
+                            borderRadius: '8px',
+                            padding: '12px',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <strong style={{ fontSize: '14px', color: '#181A1B' }}>{slot.startTime} – {slot.endTime}</strong>
+                            <span
+                              className={`status-badge ${slot.isBooked ? 'status-verified' : 'status-pending'}`}
+                              style={{ fontSize: '10px', padding: '2px 8px' }}
+                            >
+                              {slot.isBooked ? 'Booked' : 'Open'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#5F6368' }}>
+                            📅 {new Date(slot.date).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })} · {durText}
+                          </div>
+                          {slot.isBooked && slot.booking ? (
+                            <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #E8F5E9', fontSize: '11px', color: '#2E7D32', fontWeight: 600 }}>
+                              👤 {slot.booking.learner?.name} ({slot.booking.learner?.phone || 'No phone'})
+                              <div style={{ color: '#5F6368', fontWeight: 400 }}>{slot.booking.course?.title}</div>
+                            </div>
+                          ) : (
+                            <div style={{ color: '#8B929A', fontSize: '11px', fontStyle: 'italic', marginTop: '4px' }}>
+                              Available for student booking
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Bookings Assigned to This Instructor */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '17px', color: '#181A1B' }}>
+                  📝 Student Bookings for {selectedInstructorDetail.user.name}
+                </h3>
+              </div>
+
+              {(() => {
+                const instBookings = bookings.filter((b) => b.instructorId === selectedInstructorDetail.id);
+                if (instBookings.length === 0) {
+                  return (
+                    <div style={{ padding: '20px', background: '#F8F9FA', border: '1px solid #E9ECEF', borderRadius: '8px', textAlign: 'center', color: '#6B7680', fontSize: '13px' }}>
+                      No student bookings recorded yet for this instructor.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div style={{ overflowX: 'auto', border: '1px solid #ECEFF1', borderRadius: '8px' }}>
+                    <table className="dash-table" style={{ margin: 0 }}>
+                      <thead>
+                        <tr>
+                          <th>Learner</th>
+                          <th>Course</th>
+                          <th>Date & Time</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {instBookings.map((b) => (
+                          <tr key={b.id}>
+                            <td>
+                              <strong>{b.learner.name}</strong>
+                              <br />
+                              <span style={{ color: '#8B929A', fontSize: '12px' }}>{b.learner.phone || b.learner.email}</span>
+                            </td>
+                            <td>
+                              {b.course.title}
+                              <br />
+                              <span style={{ fontSize: '11px', color: '#D32F2F', fontWeight: 700 }}>₹{Number(b.course.price).toLocaleString('en-IN')}</span>
+                            </td>
+                            <td>
+                              {new Date(b.bookedDate).toLocaleDateString('en-IN')}
+                              {b.startTime && b.endTime && (
+                                <>
+                                  <br />
+                                  <span style={{ fontSize: '12px', color: '#8B929A' }}>{b.startTime} – {b.endTime}</span>
+                                </>
+                              )}
+                            </td>
+                            <td>
+                              <span className={`status-badge ${b.status === 'cancelled' ? 'status-rejected' : b.status === 'pending' ? 'status-pending' : 'status-verified'}`}>
+                                {b.status}
+                              </span>
+                            </td>
+                            <td>
+                              {(b.status === 'pending' || b.status === 'confirmed') && (
+                                <button
+                                  className="action-btn reject-btn"
+                                  onClick={async () => {
+                                    if (window.confirm('Cancel this booking and issue a full refund to learner?')) {
+                                      await handleCancelBooking(b.id);
+                                    }
+                                  }}
+                                  style={{ fontSize: '11px', padding: '4px 8px' }}
+                                >
+                                  Cancel & Refund
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Courses Taught by this Instructor */}
+            <div>
+              <h3 style={{ margin: '0 0 10px', fontSize: '17px', color: '#181A1B' }}>
+                📚 Courses Offered by {selectedInstructorDetail.user.name}
+              </h3>
+              {(() => {
+                const instCourses = courses.filter((c) => c.instructorId === selectedInstructorDetail.id);
+                if (instCourses.length === 0) {
+                  return (
+                    <p style={{ color: '#8B929A', fontSize: '13px', margin: 0 }}>
+                      No teacher-specific courses assigned. (Instructor conducts all standard school courses).
+                    </p>
+                  );
+                }
+                return (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                    {instCourses.map((c) => (
+                      <div key={c.id} style={{ background: '#F8F9FA', border: '1px solid #E9ECEF', borderRadius: '6px', padding: '8px 12px', fontSize: '13px' }}>
+                        <strong>{c.title}</strong> — <span style={{ color: '#D32F2F', fontWeight: 700 }}>₹{Number(c.price).toLocaleString('en-IN')}</span> ({c.durationDays} days)
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div style={{ marginTop: '28px', textAlign: 'right', borderTop: '1px solid #ECEFF1', paddingTop: '16px' }}>
+              <button
+                className="btn btn-outline"
+                style={{ color: '#181A1B', border: '1.5px solid #181A1B', padding: '9px 22px', fontWeight: 600 }}
+                onClick={() => setSelectedInstructorDetail(null)}
+              >
+                Close Instructor View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Courses Management */}
       <div className="dash-header" style={{ marginTop: '40px' }}>
-        <h1 style={{ fontSize: '22px' }}>Courses</h1>
+        <h1 style={{ fontSize: '22px' }}>School Courses</h1>
         <button className="btn btn-primary" onClick={() => setShowCourseForm(!showCourseForm)}>
           {showCourseForm ? 'Cancel' : '+ Add Course'}
         </button>
@@ -499,49 +997,6 @@ const SchoolDashboard = () => {
             <button className="action-btn reject-btn" onClick={() => handleDeleteCourse(c.id)}>Delete</button>
           </div>
         ))
-      )}
-
-      <div className="dash-header" style={{ marginTop: '40px' }}>
-        <h1 style={{ fontSize: '22px' }}>Bookings</h1>
-        <Link to="/school/students" className="btn btn-outline" style={{ color: '#1C1F22', border: '1.5px solid #1C1F22' }}>
-          View All Students
-        </Link>
-      </div>
-
-      {bookings.length === 0 ? (
-        <div className="empty-state">No bookings yet.</div>
-      ) : (
-        <table className="dash-table">
-          <thead>
-            <tr>
-              <th>Learner</th>
-              <th>Course</th>
-              <th>Instructor</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bookings.map((b) => (
-              <tr key={b.id}>
-                <td>{b.learner.name}<br /><span style={{ color: '#8B929A', fontSize: '12px' }}>{b.learner.phone}</span></td>
-                <td>{b.course.title}</td>
-                <td>{b.instructor.user.name}</td>
-                <td>
-                  {new Date(b.bookedDate).toLocaleDateString('en-IN')}
-                  {b.startTime && b.endTime && <><br /><span style={{ fontSize: '12px', color: '#8B929A' }}>{b.startTime} – {b.endTime}</span></>}
-                </td>
-                <td><span className={`status-badge ${b.status === 'cancelled' ? 'status-rejected' : b.status === 'pending' ? 'status-pending' : 'status-verified'}`}>{b.status}</span></td>
-                <td>
-                  {(b.status === 'pending' || b.status === 'confirmed') && (
-                    <button className="action-btn reject-btn" onClick={() => handleCancelBooking(b.id)}>Cancel</button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       )}
     </div>
   );

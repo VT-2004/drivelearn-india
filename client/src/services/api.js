@@ -21,6 +21,8 @@ export const googleAuth = (credential) => api.post('/auth/google', { credential 
 export const getMe = () => api.get('/auth/me');
 export const updateProfile = (data) => api.put('/auth/me', data);
 export const changePassword = (data) => api.put('/auth/change-password', data);
+export const checkEmailExists = (email) => api.post('/auth/check-email', { email });
+export const forgotPassword = (data) => api.post('/auth/forgot-password', data);
 
 // ===== School (Owner) =====
 export const registerSchool = (formData) =>
@@ -63,12 +65,15 @@ export const createBooking = (data) => api.post('/bookings', data);
 
 // ===== Availability =====
 export const addAvailability = (data) => api.post('/availability', data);
+export const generateAvailability = (data) => api.post('/availability/generate', data);
 export const getMyAvailability = () => api.get('/availability/my');
 export const deleteAvailability = (id) => api.delete(`/availability/${id}`);
 export const getAvailableSlotsForInstructor = (instructorId) => api.get(`/availability/instructor/${instructorId}`);
+export const getSchoolSchedule = (params) => api.get('/availability/school', { params });
 export const getMyBookings = () => api.get('/bookings/my');
 export const getSchoolBookings = () => api.get('/bookings/school');
 export const cancelBooking = (id) => api.patch(`/bookings/${id}/cancel`);
+export const rescheduleBooking = (id, slotId) => api.patch(`/bookings/${id}/reschedule`, { slotId });
 
 // ===== Payments (Course Booking) =====
 export const createBookingOrder = (bookingId) => api.post('/payments/booking/create-order', { bookingId });

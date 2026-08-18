@@ -31,6 +31,7 @@ enum PaymentStatus {
   pending
   success
   failed
+  refunded
 }
 
 enum SubscriptionPlan {
@@ -108,12 +109,15 @@ model Instructor {
 
   bookings         Booking[]
   availabilitySlots AvailabilitySlot[]
+  courses          Course[]
 }
 
 model Course {
   id            Int           @id @default(autoincrement())
   schoolId      Int
   school        DrivingSchool @relation(fields: [schoolId], references: [id])
+  instructorId  Int?
+  instructor    Instructor?   @relation(fields: [instructorId], references: [id])
   title         String
   description   String?
   price         Decimal
