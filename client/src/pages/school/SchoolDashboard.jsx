@@ -56,8 +56,12 @@ const SchoolDashboard = () => {
   });
 
   const handleGenerateTempPassword = () => {
-    const pin = Math.floor(1000 + Math.random() * 9000);
-    setInstructorForm((prev) => ({ ...prev, password: `Pass#${pin}` }));
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let token = '';
+    for (let i = 0; i < 8; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setInstructorForm((prev) => ({ ...prev, password: token }));
   };
 
   const [showAddCourseModal, setShowAddCourseModal] = useState(false);
