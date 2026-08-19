@@ -7,8 +7,8 @@ const addInstructor = async (req, res) => {
     const ownerId = req.user.id;
     const { name, email, password, phone, specialization, experienceYears } = req.body;
 
-    if (!name || !email || !password || !phone) {
-      return res.status(400).json({ error: 'Name, email, password, and phone are required' });
+    if (!name || !email || !phone) {
+      return res.status(400).json({ error: 'Name, email, and phone are required' });
     }
 
     const school = await prisma.drivingSchool.findUnique({ where: { ownerId } });
@@ -22,7 +22,8 @@ const addInstructor = async (req, res) => {
       return res.status(409).json({ error: 'This email is already registered' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const initialPass = password || process.env.DEFAULT_INSTRUCTOR_PASSWORD || 'password123';
+    const hashedPassword = await bcrypt.hash(initialPass, 10);
 
     // Create the User account (role: instructor) and Instructor profile together
     const newUser = await prisma.user.create({

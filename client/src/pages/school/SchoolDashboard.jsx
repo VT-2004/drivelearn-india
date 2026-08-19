@@ -49,20 +49,10 @@ const SchoolDashboard = () => {
     name: '',
     email: '',
     phone: '',
-    password: '',
     specialization: '4-Wheeler (Manual & Automatic)',
     experienceYears: '5',
     licenseNumber: '',
   });
-
-  const handleGenerateTempPassword = () => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-    let token = '';
-    for (let i = 0; i < 8; i++) {
-      token += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setInstructorForm((prev) => ({ ...prev, password: token }));
-  };
 
   const [showAddCourseModal, setShowAddCourseModal] = useState(false);
   const [courseForm, setCourseForm] = useState({ title: '', price: '', durationDays: '15', description: '', instructorId: '' });
@@ -294,10 +284,10 @@ const SchoolDashboard = () => {
     navigate('/');
   };
 
-  const handleCreateInstructor = async (e) => {
+  const handleAddInstructor = async (e) => {
     e.preventDefault();
-    if (!instructorForm.name || !instructorForm.email || !instructorForm.phone || !instructorForm.password) {
-      alert('Please provide instructor full name, login email, phone number, and a temporary password.');
+    if (!instructorForm.name || !instructorForm.email || !instructorForm.phone) {
+      alert('Please provide instructor full name, login email, and phone number.');
       return;
     }
     try {
@@ -305,24 +295,21 @@ const SchoolDashboard = () => {
         name: instructorForm.name,
         email: instructorForm.email,
         phone: instructorForm.phone,
-        password: instructorForm.password,
         specialization: instructorForm.specialization,
         experienceYears: parseInt(instructorForm.experienceYears) || 3,
       });
       const savedEmail = instructorForm.email;
-      const savedPass = instructorForm.password;
       setShowAddInstructorModal(false);
       setInstructorForm({
         name: '',
         email: '',
         phone: '',
-        password: '',
         specialization: '4-Wheeler (Manual & Automatic)',
         experienceYears: '5',
         licenseNumber: '',
       });
       await loadData();
-      alert(`✅ Instructor onboarded successfully!\n\n📧 Login Email: ${savedEmail}\n🔑 Temporary Password: ${savedPass}\n\nPlease share these credentials with the instructor. They will use this password for initial login and can set their own private password anytime inside their Instructor Portal.`);
+      alert(`✅ Instructor onboarded successfully!\n\n📧 Login Email: ${savedEmail}\n🔑 Initial Default Password: password123\n\nThe instructor can sign in with their email and the default password, and then update their private password anytime inside their Instructor Portal.`);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to add instructor');
     }
@@ -2368,37 +2355,11 @@ const SchoolDashboard = () => {
 
                 {/* Temporary Password Section with Generator */}
                 <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', padding: '12px 14px', borderRadius: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12.5px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>
-                      🔑 Temporary Password (For 1st Login)
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleGenerateTempPassword}
-                      style={{
-                        background: 'var(--teal-tint)',
-                        border: '1px solid var(--teal)',
-                        color: 'var(--teal)',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      🎲 Generate Pin
-                    </button>
+                  <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px' }}>
+                    🔐 Account Login Credentials
                   </div>
-                  <input
-                    type="text"
-                    value={instructorForm.password}
-                    onChange={(e) => setInstructorForm({ ...instructorForm, password: e.target.value })}
-                    placeholder="Set temporary password"
-                    style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontFamily: 'var(--font-mono)', fontWeight: 700 }}
-                    required
-                  />
-                  <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '6px', lineHeight: 1.4 }}>
-                    ℹ️ <strong>First-Time Login:</strong> This temporary password will be saved in the database. When the instructor logs in to their portal, they can update it anytime in their Profile settings.
+                  <div style={{ fontSize: '11.5px', color: 'var(--muted)', lineHeight: 1.45 }}>
+                    Upon onboarding, a secure instructor portal account is provisioned with default initial password <code style={{ background: '#FFFFFF', padding: '1px 6px', borderRadius: '4px', border: '1px solid var(--line)', fontWeight: 700 }}>password123</code>. The instructor can sign in using their email and change their password anytime inside their portal.
                   </div>
                 </div>
 
