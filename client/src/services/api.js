@@ -158,4 +158,8 @@ export const markMyNotificationRead = (id) => api.patch(`/notifications/${id}/re
 export const markAllNotificationsRead = () => api.patch('/notifications/read-all');
 export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
 
+// ===== 28-Day / 14-Module Course Milestones =====
+export const getBookingMilestones = (bookingId) => api.get(`/milestones/${bookingId}`);
+export const updateMilestoneStatus = (bookingId, milestoneIndex, data) => api.patch(`/milestones/${bookingId}/${milestoneIndex}`, data);
+
 export default api;

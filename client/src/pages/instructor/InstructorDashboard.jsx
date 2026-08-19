@@ -13,6 +13,8 @@ import {
   deleteAvailability,
   markInstructorLeave,
   cancelInstructorLeave,
+  updateMilestoneStatus,
+  getBookingMilestones,
 } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../../components/NotificationBell';
@@ -56,9 +58,13 @@ const InstructorDashboard = () => {
     date: new Date().toISOString().split('T')[0],
     status: 'present',
     notes: '',
-    milestone: 'Clutch & Gear Control',
+    milestone: 'Module 01: Cockpit, Dashboard & ABC Pedals (Days 1-2)',
   });
   const [markingAttendance, setMarkingAttendance] = useState(false);
+
+  // 14-Module Curriculum Tracker state
+  const [updatingMilestoneKey, setUpdatingMilestoneKey] = useState(null);
+  const [milestoneNotesInput, setMilestoneNotesInput] = useState({});
 
   // Live Session Tracker
   const [activeLessonSession, setActiveLessonSession] = useState(null);
@@ -295,6 +301,42 @@ const InstructorDashboard = () => {
     }
   };
 
+  const handleUpdateMilestone = async (bookingId, milestoneIndex, status, customNotes) => {
+    const key = `${bookingId}-${milestoneIndex}`;
+    setUpdatingMilestoneKey(key);
+    try {
+      const notes = customNotes !== undefined ? customNotes : milestoneNotesInput[key];
+      await updateMilestoneStatus(bookingId, milestoneIndex, {
+        status,
+        instructorNotes: notes !== undefined ? notes : undefined,
+      });
+
+      // Update in-memory selectedStudent if open
+      setSelectedStudent((prev) => {
+        if (!prev || prev.bookingId !== bookingId) return prev;
+        const currentMilestones = prev.milestones || [];
+        const updatedM = currentMilestones.map((m) =>
+          m.milestoneIndex === milestoneIndex
+            ? { ...m, status, instructorNotes: notes !== undefined ? notes : m.instructorNotes, completedAt: status === 'completed' ? new Date() : null }
+            : m
+        );
+        const completedCount = updatedM.filter((m) => m.status === 'completed').length;
+        return {
+          ...prev,
+          milestones: updatedM,
+          completedMilestonesCount: completedCount,
+          progress: Math.round((completedCount / 14) * 100),
+        };
+      });
+
+      await loadData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to update milestone status');
+    } finally {
+      setUpdatingMilestoneKey(null);
+    }
+  };
+
   const handleOpenQaModal = async (studentOrBooking) => {
     setQaModalBooking(studentOrBooking);
     setNewQaMessage('');
@@ -482,7 +524,11 @@ const InstructorDashboard = () => {
     const duration = b.course?.durationDays || 15;
     const attendedCount = b.attendance?.length || 0;
     const remainingCount = Math.max(0, duration - attendedCount);
-    const progressPercent = b.status === 'completed' || remainingCount === 0 ? 100 : Math.min(100, Math.round((attendedCount / duration) * 100));
+    const completedMilestones = (b.milestones || []).filter((m) => m.status === 'completed').length;
+    const progressPercent = b.status === 'completed' || completedMilestones === 14 ? 100 : Math.max(
+      Math.round((completedMilestones / 14) * 100),
+      Math.min(100, Math.round((attendedCount / duration) * 100))
+    );
     const isTodayAttended = (b.attendance || []).some(
       (a) => new Date(a.date).toISOString().split('T')[0] === todayDateKey
     );
@@ -515,6 +561,8 @@ const InstructorDashboard = () => {
       attendanceCount: attendedCount,
       remainingCount,
       attendanceList: b.attendance || [],
+      milestones: b.milestones || [],
+      completedMilestonesCount: completedMilestones,
       durationDays: duration,
       enrolledAt: b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent',
       vehicle: assignedVehicle,
@@ -2166,20 +2214,27 @@ const InstructorDashboard = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
-                    Core Practical Milestone Cleared
+                    Practical Curriculum Module (28-Day Plan)
                   </label>
                   <select
                     value={attendanceForm.milestone}
                     onChange={(e) => setAttendanceForm({ ...attendanceForm, milestone: e.target.value })}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px' }}
                   >
-                    <option value="Clutch & Gear Control">Clutch, Brake & Gear Shifting</option>
-                    <option value="8-Track & H-Track Maneuvers">RTO 8-Track & H-Track Reversing</option>
-                    <option value="Slope & Hill Ascent Start">Hill Ascent / Slope Start without rollback</option>
-                    <option value="Traffic & Lane Merging">City Traffic & Lane Changing Practice</option>
-                    <option value="Parallel & Bay Parking">Parallel & Reverse Bay Parking</option>
-                    <option value="Night & Highway Driving">Night Driving & Highway Overtaking</option>
-                    <option value="Final RTO Driving Test Mock">RTO Driver Test Simulation</option>
+                    <option value="Module 01: Cockpit, Dashboard & ABC Pedals (Days 1-2)">Module 01: Cockpit, Dashboard & ABC Pedals (Days 1-2)</option>
+                    <option value="Module 02: Smooth Starting, Stopping & Dead Stop (Days 3-4)">Module 02: Smooth Starting, Stopping & Dead Stop (Days 3-4)</option>
+                    <option value="Module 03: Clutch Bite Point & Balancing (Days 5-6)">Module 03: Clutch Bite Point & Balancing (Days 5-6)</option>
+                    <option value="Module 04: Gear Transitions & Synchronized Braking (Days 7-8)">Module 04: Gear Transitions & Synchronized Braking (Days 7-8)</option>
+                    <option value="Module 05: Steering Precision & 3-Point Turns (Days 9-10)">Module 05: Steering Precision & 3-Point Turns (Days 9-10)</option>
+                    <option value="Module 06: RTO 8-Track Forward Maneuver (Days 11-12)">Module 06: RTO 8-Track Forward Maneuver (Days 11-12)</option>
+                    <option value="Module 07: RTO 8-Track Reverse Maneuvering (Days 13-14)">Module 07: RTO 8-Track Reverse Maneuvering (Days 13-14)</option>
+                    <option value="Module 08: RTO H-Track & 90° Bay Parking (Days 15-16)">Module 08: RTO H-Track & 90° Bay Parking (Days 15-16)</option>
+                    <option value="Module 09: Slope Start & Hill Ascent (Days 17-18)">Module 09: Slope Start & Hill Ascent (Days 17-18)</option>
+                    <option value="Module 10: City Traffic & Roundabouts (Days 19-20)">Module 10: City Traffic & Roundabouts (Days 19-20)</option>
+                    <option value="Module 11: Hazard Perception & Defensive Driving (Days 21-22)">Module 11: Hazard Perception & Defensive Driving (Days 21-22)</option>
+                    <option value="Module 12: Highway Cruising & Safe Overtaking (Days 23-24)">Module 12: Highway Cruising & Safe Overtaking (Days 23-24)</option>
+                    <option value="Module 13: Reverse Parallel Parking & Curb Alignment (Days 25-26)">Module 13: Reverse Parallel Parking & Curb Alignment (Days 25-26)</option>
+                    <option value="Module 14: Final 100-Point Mock RTO Driving Test (Days 27-28)">Module 14: Final 100-Point Mock RTO Driving Test (Days 27-28)</option>
                   </select>
                 </div>
 
@@ -2319,13 +2374,26 @@ const InstructorDashboard = () => {
               style={{
                 background: '#FFFFFF',
                 borderRadius: '16px',
-                maxWidth: '520px',
+                maxWidth: '680px',
                 width: '100%',
-                padding: '28px',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column',
                 boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+                overflow: 'hidden',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              {/* Header */}
+              <div
+                style={{
+                  padding: '20px 24px',
+                  borderBottom: '1px solid var(--line)',
+                  background: 'var(--paper)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div
                     style={{
@@ -2345,9 +2413,14 @@ const InstructorDashboard = () => {
                   </div>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '18px' }}>{selectedStudent.name}</h3>
-                    <span className="badge badge-success" style={{ fontSize: '11px', marginTop: '2px' }}>
-                      {selectedStudent.status} · Enrolled
-                    </span>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '3px' }}>
+                      <span className="badge badge-success" style={{ fontSize: '10.5px' }}>
+                        {selectedStudent.status} · Enrolled
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
+                        {selectedStudent.course} · 🚗 {selectedStudent.vehicle}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -2359,64 +2432,157 @@ const InstructorDashboard = () => {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', background: 'var(--paper)', padding: '18px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Phone Number</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
-                      {selectedStudent.phone}
+              {/* Scrollable Body */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                {/* Stats Summary Strip */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+                  <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Course Progress</div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--primary)', marginTop: '2px' }}>
+                      {selectedStudent.progress}%
                     </div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Email Address</div>
-                    <div style={{ fontSize: '13px', marginTop: '2px' }}>
-                      {selectedStudent.email}
+                  <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>14 Sub-Courses</div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: '#166534', marginTop: '2px' }}>
+                      {(selectedStudent.milestones || []).filter((m) => m.status === 'completed').length} / 14 Cleared
                     </div>
                   </div>
-                </div>
-
-                <div style={{ paddingTop: '10px', borderTop: '1px solid var(--line-soft)' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Enrolled Course</div>
-                  <div style={{ fontSize: '14.5px', fontWeight: 700, marginTop: '2px', color: 'var(--primary)' }}>
-                    {selectedStudent.course}
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', paddingTop: '10px', borderTop: '1px solid var(--line-soft)' }}>
-                  <div>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Daily Slot Window</div>
-                    <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 700, marginTop: '2px' }}>
-                      {selectedStudent.slotTime}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Training Progress</div>
-                    <div style={{ fontSize: '13.5px', fontWeight: 700, marginTop: '2px', color: 'var(--primary)' }}>
-                      {selectedStudent.attendanceCount} Sessions ({selectedStudent.progress}%)
+                  <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Sessions Logged</div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', marginTop: '2px' }}>
+                      {selectedStudent.attendanceCount} / {selectedStudent.durationDays} Days
                     </div>
                   </div>
                 </div>
 
-                <div style={{ paddingTop: '10px', borderTop: '1px solid var(--line-soft)' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Assigned Dual-Control Vehicle</div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginTop: '2px' }}>
-                    {selectedStudent.vehicle}
-                  </div>
-                </div>
-
-                {/* Practical Session Log List */}
-                <div style={{ paddingTop: '12px', borderTop: '1px solid var(--line-soft)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)' }}>
-                      📜 Attendance & Skill Log ({selectedStudent.attendanceList?.length || 0})
+                {/* 14 Sub-Course Curriculum Sign-Off Manager */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--ink)' }}>
+                        🎯 14 Sub-Course Practical Modules (28-Day Plan)
+                      </h4>
+                      <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                        Mark each 2-day sub-course completed as student demonstrates driving mastery.
+                      </div>
                     </div>
-                    <span style={{ fontSize: '11.5px', fontWeight: 700, color: selectedStudent.remainingCount === 0 ? '#2E7D32' : 'var(--orange)' }}>
-                      {selectedStudent.remainingCount} Sessions Left
+                    <span style={{ fontSize: '11px', background: 'var(--primary-tint)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                      Live DB Sync
                     </span>
                   </div>
 
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '320px', overflowY: 'auto', paddingRight: '4px' }}>
+                    {selectedStudent.milestones && selectedStudent.milestones.length > 0 ? (
+                      selectedStudent.milestones.map((m) => {
+                        const isDone = m.status === 'completed';
+                        const isInProgress = m.status === 'in_progress';
+                        const itemKey = `${selectedStudent.bookingId}-${m.milestoneIndex}`;
+                        const isUpdating = updatingMilestoneKey === itemKey;
+
+                        return (
+                          <div
+                            key={m.id || m.milestoneIndex}
+                            style={{
+                              background: isDone ? '#F0FDF4' : isInProgress ? '#FFFBEB' : '#FFFFFF',
+                              border: isDone ? '1.5px solid #86EFAC' : isInProgress ? '1.5px solid #FCD34D' : '1px solid var(--line)',
+                              borderRadius: '8px',
+                              padding: '12px 14px',
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                              <div>
+                                <span style={{ fontSize: '11px', fontWeight: 800, color: isDone ? '#15803D' : isInProgress ? '#B45309' : 'var(--muted)', textTransform: 'uppercase' }}>
+                                  Module {String(m.milestoneIndex).padStart(2, '0')} · {m.dayRange}
+                                </span>
+                                <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--ink)', marginTop: '1px' }}>
+                                  {m.title}
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className={`badge ${isDone ? 'badge-success' : isInProgress ? 'badge-warning' : 'badge-neutral'}`} style={{ fontSize: '10.5px' }}>
+                                  {isDone ? '✓ Cleared' : isInProgress ? '⏳ In Progress' : '🔒 Pending'}
+                                </span>
+
+                                {!isDone && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdating}
+                                    onClick={() => handleUpdateMilestone(selectedStudent.bookingId, m.milestoneIndex, 'completed')}
+                                    className="btn btn-sm"
+                                    style={{ padding: '3px 8px', fontSize: '11px', background: '#22C55E', color: '#FFFFFF', fontWeight: 700 }}
+                                  >
+                                    {isUpdating ? '...' : '✓ Cleared'}
+                                  </button>
+                                )}
+
+                                {!isInProgress && !isDone && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdating}
+                                    onClick={() => handleUpdateMilestone(selectedStudent.bookingId, m.milestoneIndex, 'in_progress')}
+                                    className="btn btn-outline btn-sm"
+                                    style={{ padding: '3px 8px', fontSize: '11px', borderColor: '#F59E0B', color: '#B45309' }}
+                                  >
+                                    ⏳ Start
+                                  </button>
+                                )}
+
+                                {isDone && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdating}
+                                    onClick={() => handleUpdateMilestone(selectedStudent.bookingId, m.milestoneIndex, 'pending')}
+                                    className="btn btn-outline btn-sm"
+                                    style={{ padding: '2px 6px', fontSize: '10.5px', color: 'var(--muted)' }}
+                                  >
+                                    ↩ Reset
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Instructor notes input for this module */}
+                            <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <input
+                                type="text"
+                                placeholder={m.instructorNotes || 'Add coaching note (e.g. Smooth bite point maintained)...'}
+                                value={milestoneNotesInput[itemKey] !== undefined ? milestoneNotesInput[itemKey] : (m.instructorNotes || '')}
+                                onChange={(e) => setMilestoneNotesInput({ ...milestoneNotesInput, [itemKey]: e.target.value })}
+                                style={{ flex: 1, padding: '4px 8px', fontSize: '11.5px', border: '1px solid var(--line)', borderRadius: '4px' }}
+                              />
+                              <button
+                                type="button"
+                                disabled={isUpdating}
+                                onClick={() => handleUpdateMilestone(selectedStudent.bookingId, m.milestoneIndex, m.status, milestoneNotesInput[itemKey])}
+                                className="btn btn-outline btn-sm"
+                                style={{ padding: '3px 8px', fontSize: '11px' }}
+                              >
+                                Save Note
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', padding: '12px' }}>
+                        Curriculum modules will be auto-seeded on first save.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Attendance & Session Log List */}
+                <div style={{ borderTop: '1px solid var(--line)', paddingTop: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+                      📜 Attendance & Daily Lesson Logs ({selectedStudent.attendanceList?.length || 0})
+                    </div>
+                  </div>
+
                   {selectedStudent.attendanceList && selectedStudent.attendanceList.length > 0 ? (
-                    <div style={{ maxHeight: '160px', overflowY: 'auto', background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: '8px' }}>
+                    <div style={{ maxHeight: '140px', overflowY: 'auto', background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: '8px' }}>
                       <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ background: 'var(--paper)', borderBottom: '1px solid var(--line)', textAlign: 'left' }}>
@@ -2445,15 +2611,26 @@ const InstructorDashboard = () => {
                       </table>
                     </div>
                   ) : (
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', padding: '12px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid var(--line)' }}>
-                      No attendance sessions recorded yet. Click "Mark Attendance" to log today's lesson!
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', padding: '10px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                      No attendance sessions recorded yet.
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Quick Contact & Action Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap', gap: '8px' }}>
+              {/* Footer Actions */}
+              <div
+                style={{
+                  padding: '14px 24px',
+                  borderTop: '1px solid var(--line)',
+                  background: 'var(--paper)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                }}
+              >
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <a
                     href={`tel:${selectedStudent.phone}`}
@@ -2478,17 +2655,7 @@ const InstructorDashboard = () => {
                     onClick={() => {
                       const st = selectedStudent;
                       setSelectedStudent(null);
-                      handleOpenQaModal(st);
-                    }}
-                    className="btn btn-outline btn-sm"
-                    style={{ background: '#FFFFFF', color: 'var(--primary)', borderColor: 'var(--primary)' }}
-                  >
-                    💬 Q&A ({selectedStudent.updates?.length || 0})
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedStudent(null);
-                      handleOpenAttendanceModal(selectedStudent);
+                      handleOpenAttendanceModal(st);
                     }}
                     className="btn btn-primary btn-sm"
                   >

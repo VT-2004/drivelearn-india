@@ -160,12 +160,23 @@ const LearnerDashboard = () => {
     return bookings.reduce((acc, b) => acc + (b.attendance?.length || 0), 0);
   }, [bookings]);
 
-  const activeCourseDuration = activeBooking?.course?.durationDays || 15;
+  const activeMilestones = useMemo(() => {
+    return activeBooking?.milestones || [];
+  }, [activeBooking]);
+
+  const completedMilestonesCount = useMemo(() => {
+    return activeMilestones.filter((m) => m.status === 'completed').length;
+  }, [activeMilestones]);
+
+  const activeCourseDuration = activeBooking?.course?.durationDays || 28;
   const activeAttendedCount = activeBooking?.attendance?.length || 0;
   const activeRemainingCount = Math.max(0, activeCourseDuration - activeAttendedCount);
-  const activeProgressPercent = activeBooking?.status === 'completed' || activeRemainingCount === 0
+  const activeProgressPercent = activeBooking?.status === 'completed' || completedMilestonesCount === 14
     ? 100
-    : Math.min(100, Math.round((activeAttendedCount / activeCourseDuration) * 100));
+    : Math.max(
+        Math.round((completedMilestonesCount / 14) * 100),
+        Math.min(100, Math.round((activeAttendedCount / activeCourseDuration) * 100))
+      );
 
   const filteredBookings = useMemo(() => {
     if (bookingFilter === 'All') return bookings;
@@ -972,46 +983,125 @@ const LearnerDashboard = () => {
               </div>
 
               {/* Progress Metrics Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
                 <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--line)' }}>
                   <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--teal)' }}>{activeProgressPercent}%</div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Overall Progress</div>
                 </div>
                 <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--line)' }}>
+                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--primary)' }}>{completedMilestonesCount} / 14</div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Modules Cleared</div>
+                </div>
+                <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--line)' }}>
                   <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--ink)' }}>{activeAttendedCount} / {activeCourseDuration}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Sessions Attended</div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Days Attended</div>
                 </div>
                 <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--line)' }}>
                   <div style={{ fontSize: '22px', fontWeight: 800, color: activeRemainingCount === 0 ? '#2E7D32' : 'var(--orange)' }}>{activeRemainingCount}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Remaining Sessions</div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Remaining Days</div>
                 </div>
               </div>
 
-              {/* 10-Point Driving Curriculum Checklist */}
-              <h4 style={{ fontSize: '15px', marginBottom: '14px' }}>Core RTO Practical Milestones</h4>
-              <div className="skill-grid">
-                {[
-                  { name: 'Vehicle Inspection & Controls (ABC Pedals)', minSessions: 1 },
-                  { name: 'Smooth Starting, Stopping & Dead Stop', minSessions: 2 },
-                  { name: 'Clutch Control & Bite Point Balancing', minSessions: 3 },
-                  { name: 'Gear Shifting & Synchronized Deceleration', minSessions: 4 },
-                  { name: 'RTO 8-Track Forward & Reverse Maneuver', minSessions: 6 },
-                  { name: 'RTO H-Track Reversing & Precision Bay', minSessions: 8 },
-                  { name: 'Slope Start & Hill Ascent (No Rollback)', minSessions: 9 },
-                  { name: 'City Traffic Navigation & Lane Discipline', minSessions: 11 },
-                  { name: 'Parallel Parking & Tight Spot Reversing', minSessions: 13 },
-                  { name: 'Final Assessment & RTO Simulator Test', minSessions: activeCourseDuration },
-                ].map((skill, idx) => {
-                  const isDone = activeAttendedCount >= skill.minSessions || activeBooking?.status === 'completed';
-                  return (
-                    <div className="skill-item" key={idx}>
-                      <span>{skill.name}</span>
-                      <span className={`badge ${isDone ? 'badge-success' : 'badge-warning'}`}>
-                        {isDone ? '✓ Cleared' : '⏳ In Progress'}
-                      </span>
-                    </div>
-                  );
-                })}
+              {/* 14-Module 28-Day Practical Curriculum Modules */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <h4 style={{ fontSize: '15.5px', fontWeight: 800, margin: 0 }}>
+                    🎯 28-Day Practical Curriculum (14 Modules · 2 Days Each)
+                  </h4>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                    Each sub-course module is evaluated and signed off by your certified instructor.
+                  </div>
+                </div>
+                <span style={{ fontSize: '12px', background: 'var(--primary-tint)', color: 'var(--primary)', padding: '3px 10px', borderRadius: '999px', fontWeight: 700 }}>
+                  CMVR Form 5 Compliant
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '520px', overflowY: 'auto', paddingRight: '4px' }}>
+                {activeMilestones.length > 0 ? (
+                  activeMilestones.map((m) => {
+                    const isDone = m.status === 'completed' || activeBooking?.status === 'completed';
+                    const isInProgress = m.status === 'in_progress' && !isDone;
+
+                    return (
+                      <div
+                        key={m.id || m.milestoneIndex}
+                        style={{
+                          background: isDone ? '#F0FDF4' : isInProgress ? '#FFFBEB' : '#FFFFFF',
+                          border: isDone ? '1.5px solid #86EFAC' : isInProgress ? '1.5px solid #FCD34D' : '1px solid var(--line)',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span
+                              style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '50%',
+                                background: isDone ? '#22C55E' : isInProgress ? '#F59E0B' : 'var(--line)',
+                                color: isDone || isInProgress ? '#FFFFFF' : 'var(--muted)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                fontWeight: 800,
+                              }}
+                            >
+                              {isDone ? '✓' : String(m.milestoneIndex).padStart(2, '0')}
+                            </span>
+                            <div>
+                              <div style={{ fontSize: '11px', fontWeight: 800, color: isDone ? '#15803D' : isInProgress ? '#B45309' : 'var(--muted)', textTransform: 'uppercase' }}>
+                                Module {String(m.milestoneIndex).padStart(2, '0')} · {m.dayRange}
+                              </div>
+                              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginTop: '1px' }}>
+                                {m.title}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <span
+                              className={`badge ${isDone ? 'badge-success' : isInProgress ? 'badge-warning' : 'badge-neutral'}`}
+                              style={{ fontSize: '11px', fontWeight: 700 }}
+                            >
+                              {isDone ? '✓ Cleared' : isInProgress ? '⏳ In Progress' : '🔒 Pending'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {m.description && (
+                          <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '8px', paddingLeft: '38px', lineHeight: 1.5 }}>
+                            {m.description}
+                          </div>
+                        )}
+
+                        {m.instructorNotes && (
+                          <div
+                            style={{
+                              marginTop: '8px',
+                              marginLeft: '38px',
+                              padding: '6px 12px',
+                              background: 'rgba(0,0,0,0.03)',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              color: 'var(--ink)',
+                              borderLeft: `3px solid ${isDone ? '#22C55E' : '#F59E0B'}`,
+                            }}
+                          >
+                            👨‍🏫 <strong>Instructor Feedback:</strong> {m.instructorNotes}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '30px', color: 'var(--muted)' }}>
+                    Loading 14-module curriculum...
+                  </div>
+                )}
               </div>
             </div>
 

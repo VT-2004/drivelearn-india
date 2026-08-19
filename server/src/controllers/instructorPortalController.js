@@ -114,6 +114,7 @@ const getMyAssignedBookings = async (req, res) => {
         },
         learner: { select: { id: true, name: true, phone: true, email: true, createdAt: true } },
         attendance: { orderBy: { date: 'desc' } },
+        milestones: { orderBy: { milestoneIndex: 'asc' } },
         updates: {
           include: { author: { select: { id: true, name: true, role: true } } },
           orderBy: { createdAt: 'asc' },
@@ -121,6 +122,14 @@ const getMyAssignedBookings = async (req, res) => {
       },
       orderBy: { bookedDate: 'asc' },
     });
+
+    // Ensure all assigned bookings have the 14 milestones initialized
+    for (const b of bookings) {
+      if (!b.milestones || b.milestones.length < 14) {
+        const { ensureMilestonesForBooking } = require('./milestoneController');
+        b.milestones = await ensureMilestonesForBooking(b.id);
+      }
+    }
 
     res.json({ bookings });
   } catch (error) {

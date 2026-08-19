@@ -97,6 +97,7 @@ const getMyBookings = async (req, res) => {
         instructor: { include: { user: { select: { name: true, phone: true } } } },
         payment: true,
         attendance: { orderBy: { date: 'desc' } },
+        milestones: { orderBy: { milestoneIndex: 'asc' } },
         updates: {
           include: { author: { select: { id: true, name: true, role: true } } },
           orderBy: { createdAt: 'asc' },
@@ -104,6 +105,14 @@ const getMyBookings = async (req, res) => {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Auto-ensure milestones exist for any booking with missing milestones
+    for (const b of bookings) {
+      if (!b.milestones || b.milestones.length < 14) {
+        const { ensureMilestonesForBooking } = require('./milestoneController');
+        b.milestones = await ensureMilestonesForBooking(b.id);
+      }
+    }
 
     res.json({ bookings });
   } catch (error) {

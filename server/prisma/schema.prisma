@@ -158,6 +158,7 @@ model Booking {
   payment       Payment?
   attendance    Attendance[]
   updates       LessonUpdate[]
+  milestones    BookingMilestone[]
   slotId        Int?               @unique
   slot          AvailabilitySlot?  @relation(fields: [slotId], references: [id])
   startTime     String?
@@ -260,7 +261,25 @@ model Notification {
   schoolId  Int?
   title     String
   message   String
-  type      String   @default("info") // "warning" | "suspension" | "info" | "success"
+  type      String   @default("info") // "warning" | "suspension" | "info" | "success" | "certificate" | "message"
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model BookingMilestone {
+  id              Int       @id @default(autoincrement())
+  bookingId       Int
+  booking         Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  milestoneIndex  Int       // 1 to 14
+  dayRange        String    // e.g. "Days 1-2", "Days 3-4", etc.
+  title           String    // e.g. "Vehicle Cockpit, Dashboard & ABC Pedals Inspection"
+  description     String?   // Detailed curriculum guidelines & training focus
+  status          String    @default("pending") // "pending" | "in_progress" | "completed"
+  completedAt     DateTime?
+  instructorNotes String?
+  instructorId    Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([bookingId, milestoneIndex])
 }
