@@ -52,6 +52,10 @@ const InstructorDashboard = () => {
   const [selectedQaBookingId, setSelectedQaBookingId] = useState(null);
   const [qaSearchTerm, setQaSearchTerm] = useState('');
 
+  // 28-Day Curriculum Planner & Milestone Manager Page State
+  const [curriculumStudentBookingId, setCurriculumStudentBookingId] = useState(null);
+  const [curriculumSearchTerm, setCurriculumSearchTerm] = useState('');
+
   // Attendance Marking Modal State
   const [attendanceModalBooking, setAttendanceModalBooking] = useState(null);
   const [attendanceForm, setAttendanceForm] = useState({
@@ -622,6 +626,12 @@ const InstructorDashboard = () => {
           <span>👥</span> My Students ({displayStudents.length})
         </button>
         <button
+          className={`ps-link ${activeTab === 'curriculum' ? 'active' : ''}`}
+          onClick={() => setActiveTab('curriculum')}
+        >
+          <span>🎯</span> 28-Day Curriculum Plan
+        </button>
+        <button
           className={`ps-link ${activeTab === 'qa' ? 'active' : ''}`}
           onClick={() => setActiveTab('qa')}
         >
@@ -1071,6 +1081,414 @@ const InstructorDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: 28-DAY PRACTICAL CURRICULUM & MILESTONE EVALUATION CENTER */}
+        {activeTab === 'curriculum' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Header Banner */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #0B192C 0%, #1E3E62 100%)',
+                color: '#FFFFFF',
+                borderRadius: '14px',
+                padding: '22px 28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '16px',
+                boxShadow: '0 8px 24px rgba(11, 25, 44, 0.15)',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '26px' }}>🎯</span>
+                  <h3 style={{ margin: 0, fontSize: '20px', color: '#FFFFFF', fontWeight: 800 }}>
+                    28-Day Practical Curriculum & Milestone Evaluation Center
+                  </h3>
+                </div>
+                <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#E2E8F0', opacity: 0.9 }}>
+                  Central Motor Vehicles Rules (CMVR Form 5) 14-Module Training Roadmap · Grade driving maneuvers and sign off student competencies live
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => loadData()}
+                  className="btn btn-sm"
+                  style={{ background: 'rgba(255,255,255,0.15)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)', fontWeight: 700 }}
+                  disabled={loading}
+                >
+                  🔄 Refresh Live Sync
+                </button>
+              </div>
+            </div>
+
+            {/* Split Screen: Student Selector on Left & 14-Module Curriculum Tracker on Right */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 340px) 1fr', gap: '20px', alignItems: 'start' }}>
+              {/* Left Column: Student Selector */}
+              <div className="dash-card" style={{ padding: '18px' }}>
+                <div style={{ marginBottom: '14px' }}>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: 700 }}>
+                    👥 Select Student ({displayStudents.length})
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                    Pick a learner to evaluate their 14 sub-courses
+                  </p>
+                </div>
+
+                {/* Search input */}
+                <input
+                  type="text"
+                  placeholder="🔍 Search student by name or course..."
+                  value={curriculumSearchTerm}
+                  onChange={(e) => setCurriculumSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    fontSize: '12.5px',
+                    border: '1px solid var(--line)',
+                    borderRadius: '8px',
+                    marginBottom: '12px',
+                  }}
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '600px', overflowY: 'auto' }}>
+                  {displayStudents
+                    .filter((st) =>
+                      st.name.toLowerCase().includes(curriculumSearchTerm.toLowerCase()) ||
+                      st.course.toLowerCase().includes(curriculumSearchTerm.toLowerCase())
+                    )
+                    .map((st) => {
+                      const isSelected = (curriculumStudentBookingId || displayStudents[0]?.bookingId) === st.bookingId;
+                      const clearedCount = (st.milestones || []).filter((m) => m.status === 'completed').length;
+
+                      return (
+                        <div
+                          key={st.id}
+                          onClick={() => setCurriculumStudentBookingId(st.bookingId)}
+                          style={{
+                            padding: '12px 14px',
+                            borderRadius: '10px',
+                            border: isSelected ? '2px solid var(--primary)' : '1px solid var(--line)',
+                            background: isSelected ? 'rgba(240, 90, 40, 0.06)' : '#FFFFFF',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--ink)' }}>{st.name}</div>
+                            <span
+                              className={`badge ${clearedCount === 14 ? 'badge-success' : clearedCount > 0 ? 'badge-warning' : 'badge-neutral'}`}
+                              style={{ fontSize: '10.5px' }}
+                            >
+                              {clearedCount} / 14 Cleared
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '2px', fontWeight: 600 }}>
+                            {st.course}
+                          </div>
+
+                          {/* Progress bar */}
+                          <div style={{ marginTop: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>
+                              <span>Progress</span>
+                              <strong>{st.progress}%</strong>
+                            </div>
+                            <div style={{ width: '100%', height: '6px', background: 'var(--line)', borderRadius: '999px', overflow: 'hidden' }}>
+                              <div
+                                style={{
+                                  width: `${st.progress}%`,
+                                  height: '100%',
+                                  background: st.progress === 100 ? '#22C55E' : 'var(--primary)',
+                                  borderRadius: '999px',
+                                  transition: 'width 0.3s ease',
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                  {displayStudents.length === 0 && (
+                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--muted)', fontSize: '13px' }}>
+                      No assigned learners found.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: 14 Sub-Course Modules Curriculum Manager */}
+              {(() => {
+                const activeSt = displayStudents.find((s) => s.bookingId === (curriculumStudentBookingId || displayStudents[0]?.bookingId)) || displayStudents[0];
+                if (!activeSt) {
+                  return (
+                    <div className="dash-card" style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
+                      Select a student on the left to review their 28-day curriculum.
+                    </div>
+                  );
+                }
+
+                const clearedCount = (activeSt.milestones || []).filter((m) => m.status === 'completed').length;
+                const isAllCompleted = clearedCount === 14 || activeSt.status === 'completed';
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Student Overview Header Card */}
+                    <div className="dash-card" style={{ padding: '20px 24px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div
+                            style={{
+                              width: '50px',
+                              height: '50px',
+                              borderRadius: '50%',
+                              background: 'var(--primary-tint)',
+                              color: 'var(--primary)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 800,
+                              fontSize: '18px',
+                            }}
+                          >
+                            {activeSt.initials}
+                          </div>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <h3 style={{ margin: 0, fontSize: '19px', color: 'var(--ink)' }}>{activeSt.name}</h3>
+                              <span className={`badge ${isAllCompleted ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '11px' }}>
+                                {isAllCompleted ? '✓ Course Completed & Form 5 Ready' : `${clearedCount} of 14 Modules Cleared`}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '3px' }}>
+                              📚 <strong>{activeSt.course}</strong> · 🚗 {activeSt.vehicle} · ⏰ {activeSt.slotTime}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => handleOpenAttendanceModal(activeSt)}
+                            className="btn btn-primary btn-sm"
+                            style={{ padding: '6px 14px' }}
+                          >
+                            📋 Mark Daily Attendance
+                          </button>
+                          <button
+                            onClick={() => handleOpenQaModal(activeSt)}
+                            className="btn btn-outline btn-sm"
+                            style={{ padding: '6px 14px', background: '#FFFFFF', color: 'var(--primary)', borderColor: 'var(--primary)' }}
+                          >
+                            💬 Q&A ({activeSt.updates?.length || 0})
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Live 3-Pillar Progress Summary */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginTop: '18px', paddingTop: '16px', borderTop: '1px solid var(--line)' }}>
+                        <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Overall Progress</div>
+                          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--primary)', marginTop: '2px' }}>
+                            {activeSt.progress}%
+                          </div>
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Sub-Courses Cleared</div>
+                          <div style={{ fontSize: '18px', fontWeight: 800, color: '#166534', marginTop: '2px' }}>
+                            {clearedCount} / 14 Cleared
+                          </div>
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Sessions Logged</div>
+                          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', marginTop: '2px' }}>
+                            {activeSt.attendanceCount} / {activeSt.durationDays} Days
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 14 Sub-Course Cards List */}
+                    <div className="dash-card" style={{ padding: '20px 24px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--ink)' }}>
+                            📋 14 Sub-Course Detailed Practical Roadmap (28 Days)
+                          </h4>
+                          <p style={{ margin: '2px 0 0 0', fontSize: '12.5px', color: 'var(--muted)' }}>
+                            Evaluate maneuvers, add custom coaching notes, and toggle module completion with 1-click live save.
+                          </p>
+                        </div>
+
+                        {!isAllCompleted && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!window.confirm(`Mark all remaining modules as Cleared for ${activeSt.name}? This will complete the full 28-day course and issue the certificate.`)) return;
+                              for (let i = 1; i <= 14; i++) {
+                                const m = (activeSt.milestones || []).find((x) => x.milestoneIndex === i);
+                                if (!m || m.status !== 'completed') {
+                                  await handleUpdateMilestone(activeSt.bookingId, i, 'completed');
+                                }
+                              }
+                            }}
+                            className="btn btn-sm"
+                            style={{ background: '#166534', color: '#FFFFFF', fontWeight: 700, padding: '6px 12px', fontSize: '12px' }}
+                          >
+                            ✓ Clear All 14 Modules (Fast-Track Pass)
+                          </button>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {activeSt.milestones && activeSt.milestones.length > 0 ? (
+                          activeSt.milestones.map((m) => {
+                            const isDone = m.status === 'completed';
+                            const isInProgress = m.status === 'in_progress';
+                            const itemKey = `${activeSt.bookingId}-${m.milestoneIndex}`;
+                            const isUpdating = updatingMilestoneKey === itemKey;
+
+                            return (
+                              <div
+                                key={m.id || m.milestoneIndex}
+                                style={{
+                                  background: isDone ? '#F0FDF4' : isInProgress ? '#FFFBEB' : '#FFFFFF',
+                                  border: isDone ? '1.5px solid #86EFAC' : isInProgress ? '1.5px solid #FCD34D' : '1px solid var(--line)',
+                                  borderRadius: '10px',
+                                  padding: '16px 18px',
+                                  transition: 'all 0.2s ease',
+                                }}
+                              >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1, minWidth: '260px' }}>
+                                    <span
+                                      style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        background: isDone ? '#22C55E' : isInProgress ? '#F59E0B' : 'var(--line)',
+                                        color: isDone || isInProgress ? '#FFFFFF' : 'var(--muted)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '13px',
+                                        fontWeight: 800,
+                                        flexShrink: 0,
+                                        marginTop: '2px',
+                                      }}
+                                    >
+                                      {isDone ? '✓' : String(m.milestoneIndex).padStart(2, '0')}
+                                    </span>
+
+                                    <div>
+                                      <div style={{ fontSize: '11.5px', fontWeight: 800, color: isDone ? '#15803D' : isInProgress ? '#B45309' : 'var(--muted)', textTransform: 'uppercase' }}>
+                                        Module {String(m.milestoneIndex).padStart(2, '0')} · {m.dayRange}
+                                      </div>
+                                      <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
+                                        {m.title}
+                                      </div>
+                                      {m.description && (
+                                        <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)', marginTop: '6px', lineHeight: 1.5 }}>
+                                          {m.description}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Status Controls */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                                    <span
+                                      className={`badge ${isDone ? 'badge-success' : isInProgress ? 'badge-warning' : 'badge-neutral'}`}
+                                      style={{ fontSize: '11px', fontWeight: 700, padding: '4px 10px' }}
+                                    >
+                                      {isDone ? '✓ Cleared' : isInProgress ? '⏳ In Progress' : '🔒 Pending'}
+                                    </span>
+
+                                    {!isDone && (
+                                      <button
+                                        type="button"
+                                        disabled={isUpdating}
+                                        onClick={() => handleUpdateMilestone(activeSt.bookingId, m.milestoneIndex, 'completed')}
+                                        className="btn btn-sm"
+                                        style={{ padding: '5px 12px', fontSize: '12px', background: '#22C55E', color: '#FFFFFF', fontWeight: 700 }}
+                                      >
+                                        {isUpdating ? '...' : '✓ Mark Cleared'}
+                                      </button>
+                                    )}
+
+                                    {!isInProgress && !isDone && (
+                                      <button
+                                        type="button"
+                                        disabled={isUpdating}
+                                        onClick={() => handleUpdateMilestone(activeSt.bookingId, m.milestoneIndex, 'in_progress')}
+                                        className="btn btn-outline btn-sm"
+                                        style={{ padding: '5px 12px', fontSize: '12px', borderColor: '#F59E0B', color: '#B45309' }}
+                                      >
+                                        ⏳ Start
+                                      </button>
+                                    )}
+
+                                    {isDone && (
+                                      <button
+                                        type="button"
+                                        disabled={isUpdating}
+                                        onClick={() => handleUpdateMilestone(activeSt.bookingId, m.milestoneIndex, 'pending')}
+                                        className="btn btn-outline btn-sm"
+                                        style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--muted)' }}
+                                      >
+                                        ↩ Reset
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Coaching Feedback input line */}
+                                <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed var(--line)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                    👨‍🏫 Coaching Note:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    placeholder={m.instructorNotes || 'e.g. Practiced 8-track smoothly; no cone touches recorded.'}
+                                    value={milestoneNotesInput[itemKey] !== undefined ? milestoneNotesInput[itemKey] : (m.instructorNotes || '')}
+                                    onChange={(e) => setMilestoneNotesInput({ ...milestoneNotesInput, [itemKey]: e.target.value })}
+                                    style={{
+                                      flex: 1,
+                                      padding: '6px 10px',
+                                      fontSize: '12px',
+                                      border: '1px solid var(--line)',
+                                      borderRadius: '6px',
+                                      background: '#FFFFFF',
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    disabled={isUpdating}
+                                    onClick={() => handleUpdateMilestone(activeSt.bookingId, m.milestoneIndex, m.status, milestoneNotesInput[itemKey])}
+                                    className="btn btn-outline btn-sm"
+                                    style={{ padding: '5px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                                  >
+                                    💾 Save Note
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div style={{ padding: '30px', textAlign: 'center', color: 'var(--muted)' }}>
+                            Loading 14 curriculum modules...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
