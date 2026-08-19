@@ -630,341 +630,337 @@ const LearnerDashboard = () => {
               </div>
             </div>
 
-            {/* Upcoming Practical Lesson & Next Step Card */}
-            <div className="dash-split-grid">
-              {/* Left: Upcoming Lesson & Contact */}
-              <div className="dash-card">
-                <div className="dash-card-head">
-                  <div>
-                    <h3 style={{ margin: 0 }}>Upcoming Practical Training Session</h3>
-                    <p style={{ color: 'var(--muted)', fontSize: '12.5px', margin: 0 }}>
-                      Next scheduled lesson with your certified instructor
-                    </p>
-                  </div>
-                  {activeBooking && (
-                    <button
-                      onClick={() => setActiveTab('bookings')}
-                      className="btn btn-outline btn-sm"
-                      style={{ fontSize: '12px' }}
-                    >
-                      Manage Bookings →
-                    </button>
-                  )}
+            {/* Upcoming Practical Lesson & 14-Module Curriculum Pipeline (Full Width) */}
+            <div className="dash-card" style={{ marginBottom: '24px' }}>
+              <div className="dash-card-head">
+                <div>
+                  <h3 style={{ margin: 0 }}>Upcoming Practical Training Session</h3>
+                  <p style={{ color: 'var(--muted)', fontSize: '12.5px', margin: 0 }}>
+                    Next scheduled lesson with your certified instructor
+                  </p>
                 </div>
-
-                {upcomingLesson ? (
-                  <div
-                    style={{
-                      background: 'var(--paper)',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      border: '1.5px solid var(--line)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '16px',
-                    }}
+                {activeBooking && (
+                  <button
+                    onClick={() => setActiveTab('bookings')}
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '12px' }}
                   >
-                    <div>
-                      <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--primary)', fontWeight: 800, fontSize: '17px' }}>
-                        📅 {upcomingLesson.bookedDate ? new Date(upcomingLesson.bookedDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Daily Batch'} · ⏰ {upcomingLesson.startTime ? `${upcomingLesson.startTime} - ${upcomingLesson.endTime || ''}` : '07:00 AM - 08:00 AM'}
-                      </div>
-                      <div style={{ fontSize: '16px', fontWeight: 700, marginTop: '4px' }}>
-                        {upcomingLesson.course?.title || 'Driving Training Session'}
-                      </div>
-                      <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>
-                        👤 Instructor: <strong>{upcomingLesson.instructor?.user?.name || upcomingLesson.course?.school?.instructors?.[0]?.user?.name || 'Assigned Instructor'}</strong> · 🚗 {upcomingLesson.course?.school?.vehicles?.[0]?.model || 'Academy Dual-Control Vehicle'}
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--ink)', marginTop: '3px' }}>
-                        📍 Yard: {upcomingLesson.course?.school?.address || 'Main Training Facility'}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-                      <span className={`badge ${upcomingLesson.status === 'confirmed' ? 'badge-success' : upcomingLesson.status === 'completed' ? 'badge-neutral' : 'badge-warning'}`} style={{ padding: '6px 14px', fontSize: '12.5px' }}>
-                        ✓ {upcomingLesson.status.toUpperCase()}
-                      </span>
-
-                      {upcomingLesson.instructor?.user?.phone && (
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <a
-                            href={`tel:${upcomingLesson.instructor.user.phone}`}
-                            className="btn btn-outline btn-sm"
-                            style={{ textDecoration: 'none', background: '#FFFFFF', padding: '4px 10px', fontSize: '12px' }}
-                          >
-                            📞 Call Instructor
-                          </a>
-                          <a
-                            href={`https://wa.me/${upcomingLesson.instructor.user.phone.replace(/[^0-9]/g, '')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="btn btn-outline btn-sm"
-                            style={{ textDecoration: 'none', background: '#E8F5E9', color: '#2E7D32', borderColor: '#A5D6A7', padding: '4px 10px', fontSize: '12px' }}
-                          >
-                            💬 WhatsApp
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '36px 20px', color: 'var(--muted)' }}>
-                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>🚗</div>
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>No Active Driving Course Enrolled</div>
-                    <div style={{ fontSize: '13px', marginTop: '4px', maxWidth: '400px', margin: '4px auto 16px' }}>
-                      Explore certified driving schools near you, compare RTO packages, and book your training slots.
-                    </div>
-                    <button onClick={() => setActiveTab('find-schools')} className="btn btn-primary btn-sm">
-                      🔍 Browse Driving Schools →
-                    </button>
-                  </div>
+                    Manage Bookings →
+                  </button>
                 )}
-
-                {/* 14-Module Standardized Practical Curriculum Pipeline */}
-                <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--line)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
-                        🎯 Practical Curriculum Pipeline (14 Modules · 28 Days)
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                        CMVR Form 5 standardized syllabus for complete RTO driving test mastery
-                      </div>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        background: clearedMilestonesCount === 14 ? '#DCFCE7' : 'var(--primary-tint)',
-                        color: clearedMilestonesCount === 14 ? '#15803D' : 'var(--primary)',
-                        padding: '4px 12px',
-                        borderRadius: '999px',
-                        border: `1px solid ${clearedMilestonesCount === 14 ? '#86EFAC' : 'var(--primary)'}40`,
-                      }}
-                    >
-                      ✓ {clearedMilestonesCount} of 14 Modules Cleared ({activeProgressPercent}%)
-                    </span>
-                  </div>
-
-                  {/* Horizontal Scrollable 14-Step Progress Rail */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      overflowX: 'auto',
-                      padding: '12px 4px 16px',
-                      WebkitOverflowScrolling: 'touch',
-                      marginBottom: '16px',
-                    }}
-                  >
-                    {evaluatedMilestones.map((m, mIdx) => (
-                      <div key={m.index} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                        <div
-                          title={`${m.title} (${m.days}) - ${m.isDone ? 'Cleared' : m.isInProgress ? 'In Progress' : 'Pending'}`}
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => setActiveTab('progress')}
-                        >
-                          <div
-                            style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '50%',
-                              background: m.isDone ? '#22C55E' : m.isInProgress ? '#F59E0B' : '#E2E8F0',
-                              color: m.isDone || m.isInProgress ? '#FFFFFF' : '#64748B',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: m.isDone ? '13px' : '11px',
-                              fontWeight: 800,
-                              fontFamily: 'var(--font-mono)',
-                              boxShadow: m.isInProgress ? '0 0 0 4px rgba(245, 158, 11, 0.25)' : 'none',
-                              transition: 'all 0.2s ease',
-                            }}
-                          >
-                            {m.isDone ? '✓' : String(m.index).padStart(2, '0')}
-                          </div>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: m.isDone || m.isInProgress ? 700 : 500,
-                              color: m.isDone ? '#15803D' : m.isInProgress ? '#B45309' : '#64748B',
-                              marginTop: '4px',
-                              whiteSpace: 'nowrap',
-                              maxWidth: '52px',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              textAlign: 'center',
-                            }}
-                          >
-                            M{m.index}
-                          </span>
-                        </div>
-
-                        {mIdx < evaluatedMilestones.length - 1 && (
-                          <div
-                            style={{
-                              width: '16px',
-                              height: '3px',
-                              background: m.isDone ? '#22C55E' : '#E2E8F0',
-                              margin: '0 2px 14px',
-                              borderRadius: '2px',
-                            }}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 14-Sub-Course Grid Cards in Pipeline */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
-                    {evaluatedMilestones.map((m) => (
-                      <div
-                        key={m.index}
-                        style={{
-                          background: m.isDone ? '#F0FDF4' : m.isInProgress ? '#FFFBEB' : '#FFFFFF',
-                          border: m.isDone ? '1px solid #86EFAC' : m.isInProgress ? '1px solid #FCD34D' : '1px solid var(--line)',
-                          borderRadius: '8px',
-                          padding: '10px 12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '10px',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                          <span
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              borderRadius: '50%',
-                              background: m.isDone ? '#22C55E' : m.isInProgress ? '#F59E0B' : '#F1F5F9',
-                              color: m.isDone || m.isInProgress ? '#FFFFFF' : '#64748B',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: m.isDone ? '12px' : '10.5px',
-                              fontWeight: 800,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {m.isDone ? '✓' : String(m.index).padStart(2, '0')}
-                          </span>
-                          <div style={{ overflow: 'hidden' }}>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {m.title}
-                            </div>
-                            <div style={{ fontSize: '10.5px', color: 'var(--muted)' }}>
-                              {m.days} · {m.shortDesc}
-                            </div>
-                          </div>
-                        </div>
-
-                        <span
-                          style={{
-                            fontSize: '10.5px',
-                            fontWeight: 700,
-                            color: m.isDone ? '#15803D' : m.isInProgress ? '#B45309' : '#64748B',
-                            whiteSpace: 'nowrap',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {m.isDone ? '✓ Cleared' : m.isInProgress ? '⏳ Active' : 'Pending'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                    <button
-                      onClick={() => setActiveTab('progress')}
-                      className="btn btn-outline btn-sm"
-                      style={{ fontSize: '12px', padding: '6px 14px' }}
-                    >
-                      View Full 14-Module Assessment & Feedback →
-                    </button>
-                  </div>
-                </div>
               </div>
 
-              {/* Right: Attendance & Training Fleet Hub */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Attendance Summary */}
-                <div className="dash-card" style={{ marginBottom: 0 }}>
-                  <h3 style={{ fontSize: '15px', marginBottom: '10px' }}>Live Training Attendance</h3>
-                  <div style={{ background: 'var(--paper)', padding: '14px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: '#2E7D32' }}>
-                        {activeAttendedCount} Days
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Marked Present</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: activeRemainingCount === 0 ? '#2E7D32' : 'var(--orange)' }}>
-                        {activeRemainingCount} Days
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Sessions Remaining</div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setActiveTab('progress')}
-                    className="btn btn-outline btn-sm"
-                    style={{ width: '100%', marginTop: '12px', background: '#FFFFFF' }}
-                  >
-                    View Skill Milestones & Feedback →
-                  </button>
-                </div>
-
-                {/* Academy Dual-Control Fleet & Training Circuit Box */}
+              {upcomingLesson ? (
                 <div
-                  className="dash-card"
                   style={{
-                    flex: 1,
-                    marginBottom: 0,
-                    background: '#FFFFFF',
+                    background: 'var(--paper)',
+                    borderRadius: '12px',
+                    padding: '20px',
                     border: '1.5px solid var(--line)',
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '16px',
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.5px' }}>
-                        ACADEMY TRAINING FLEET
-                      </span>
-                      <span className="badge badge-verified" style={{ fontSize: '11px' }}>
-                        ✓ RTO Dual-Control
-                      </span>
+                    <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--primary)', fontWeight: 800, fontSize: '17px' }}>
+                      📅 {upcomingLesson.bookedDate ? new Date(upcomingLesson.bookedDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Daily Batch'} · ⏰ {upcomingLesson.startTime ? `${upcomingLesson.startTime} - ${upcomingLesson.endTime || ''}` : '07:00 AM - 08:00 AM'}
                     </div>
-
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
-                      {upcomingLesson?.course?.school?.vehicles?.[0]?.model || 'Certified Dual-Control Training Car'}
+                    <div style={{ fontSize: '16px', fontWeight: 700, marginTop: '4px' }}>
+                      {upcomingLesson.course?.title || 'Driving Training Session'}
                     </div>
-                    <div style={{ fontSize: '12.5px', color: 'var(--muted)', marginTop: '4px' }}>
-                      📍 <strong>Training Yard:</strong> {upcomingLesson?.course?.school?.address || 'Certified Academy Circuit, City Center'}
+                    <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>
+                      👤 Instructor: <strong>{upcomingLesson.instructor?.user?.name || upcomingLesson.course?.school?.instructors?.[0]?.user?.name || 'Assigned Instructor'}</strong> · 🚗 {upcomingLesson.course?.school?.vehicles?.[0]?.model || 'Academy Dual-Control Vehicle'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--ink)', marginTop: '3px' }}>
+                      📍 Yard: {upcomingLesson.course?.school?.address || 'Main Training Facility'}
                     </div>
                   </div>
 
-                  <div style={{ borderTop: '1px solid var(--line-soft)', paddingTop: '12px', marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                      Instructor: <strong style={{ color: 'var(--ink)' }}>{upcomingLesson?.instructor?.user?.name || 'Verified Trainer'}</strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                    <span className={`badge ${upcomingLesson.status === 'confirmed' ? 'badge-success' : upcomingLesson.status === 'completed' ? 'badge-neutral' : 'badge-warning'}`} style={{ padding: '6px 14px', fontSize: '12.5px' }}>
+                      ✓ {upcomingLesson.status.toUpperCase()}
+                    </span>
+
+                    {upcomingLesson.instructor?.user?.phone && (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <a
+                          href={`tel:${upcomingLesson.instructor.user.phone}`}
+                          className="btn btn-outline btn-sm"
+                          style={{ textDecoration: 'none', background: '#FFFFFF', padding: '4px 10px', fontSize: '12px' }}
+                        >
+                          📞 Call Instructor
+                        </a>
+                        <a
+                          href={`https://wa.me/${upcomingLesson.instructor.user.phone.replace(/[^0-9]/g, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn btn-outline btn-sm"
+                          style={{ textDecoration: 'none', background: '#E8F5E9', color: '#2E7D32', borderColor: '#A5D6A7', padding: '4px 10px', fontSize: '12px' }}
+                        >
+                          💬 WhatsApp
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '36px 20px', color: 'var(--muted)' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>🚗</div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>No Active Driving Course Enrolled</div>
+                  <div style={{ fontSize: '13px', marginTop: '4px', maxWidth: '400px', margin: '4px auto 16px' }}>
+                    Explore certified driving schools near you, compare RTO packages, and book your training slots.
+                  </div>
+                  <button onClick={() => setActiveTab('find-schools')} className="btn btn-primary btn-sm">
+                    🔍 Browse Driving Schools →
+                  </button>
+                </div>
+              )}
+
+              {/* 14-Module Standardized Practical Curriculum Pipeline */}
+              <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+                      🎯 Practical Curriculum Pipeline (14 Modules · 28 Days)
                     </div>
-                    <button
-                      onClick={() => setActiveTab('find-schools')}
-                      className="btn btn-outline btn-sm"
-                      style={{ fontSize: '11.5px', padding: '3px 8px' }}
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                      CMVR Form 5 standardized syllabus for complete RTO driving test mastery
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      background: clearedMilestonesCount === 14 ? '#DCFCE7' : 'var(--primary-tint)',
+                      color: clearedMilestonesCount === 14 ? '#15803D' : 'var(--primary)',
+                      padding: '4px 12px',
+                      borderRadius: '999px',
+                      border: `1px solid ${clearedMilestonesCount === 14 ? '#86EFAC' : 'var(--primary)'}40`,
+                    }}
+                  >
+                    ✓ {clearedMilestonesCount} of 14 Modules Cleared ({activeProgressPercent}%)
+                  </span>
+                </div>
+
+                {/* Horizontal Scrollable 14-Step Progress Rail */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    overflowX: 'auto',
+                    padding: '12px 4px 16px',
+                    WebkitOverflowScrolling: 'touch',
+                    marginBottom: '16px',
+                  }}
+                >
+                  {evaluatedMilestones.map((m, mIdx) => (
+                    <div key={m.index} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                      <div
+                        title={`${m.title} (${m.days}) - ${m.isDone ? 'Cleared' : m.isInProgress ? 'In Progress' : 'Pending'}`}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => setActiveTab('progress')}
+                      >
+                        <div
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: m.isDone ? '#22C55E' : m.isInProgress ? '#F59E0B' : '#E2E8F0',
+                            color: m.isDone || m.isInProgress ? '#FFFFFF' : '#64748B',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: m.isDone ? '13px' : '11px',
+                            fontWeight: 800,
+                            fontFamily: 'var(--font-mono)',
+                            boxShadow: m.isInProgress ? '0 0 0 4px rgba(245, 158, 11, 0.25)' : 'none',
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          {m.isDone ? '✓' : String(m.index).padStart(2, '0')}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: m.isDone || m.isInProgress ? 700 : 500,
+                            color: m.isDone ? '#15803D' : m.isInProgress ? '#B45309' : '#64748B',
+                            marginTop: '4px',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '52px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            textAlign: 'center',
+                          }}
+                        >
+                          M{m.index}
+                        </span>
+                      </div>
+
+                      {mIdx < evaluatedMilestones.length - 1 && (
+                        <div
+                          style={{
+                            width: '16px',
+                            height: '3px',
+                            background: m.isDone ? '#22C55E' : '#E2E8F0',
+                            margin: '0 2px 14px',
+                            borderRadius: '2px',
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* 14-Sub-Course Grid Cards in Pipeline */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
+                  {evaluatedMilestones.map((m) => (
+                    <div
+                      key={m.index}
+                      style={{
+                        background: m.isDone ? '#F0FDF4' : m.isInProgress ? '#FFFBEB' : '#FFFFFF',
+                        border: m.isDone ? '1px solid #86EFAC' : m.isInProgress ? '1px solid #FCD34D' : '1px solid var(--line)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '10px',
+                      }}
                     >
-                      Explore Schools →
-                    </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                        <span
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            background: m.isDone ? '#22C55E' : m.isInProgress ? '#F59E0B' : '#F1F5F9',
+                            color: m.isDone || m.isInProgress ? '#FFFFFF' : '#64748B',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: m.isDone ? '12px' : '10.5px',
+                            fontWeight: 800,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {m.isDone ? '✓' : String(m.index).padStart(2, '0')}
+                        </span>
+                        <div style={{ overflow: 'hidden' }}>
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {m.title}
+                          </div>
+                          <div style={{ fontSize: '10.5px', color: 'var(--muted)' }}>
+                            {m.days} · {m.shortDesc}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span
+                        style={{
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          color: m.isDone ? '#15803D' : m.isInProgress ? '#B45309' : '#64748B',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {m.isDone ? '✓ Cleared' : m.isInProgress ? '⏳ Active' : 'Pending'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                  <button
+                    onClick={() => setActiveTab('progress')}
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '12px', padding: '6px 14px' }}
+                  >
+                    View Full 14-Module Assessment & Feedback →
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom 2 Cards: Attendance Summary & Training Fleet (Side by Side) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+              {/* Card 1: Attendance Summary */}
+              <div className="dash-card" style={{ marginBottom: 0 }}>
+                <h3 style={{ fontSize: '15px', marginBottom: '10px' }}>Live Training Attendance</h3>
+                <div style={{ background: 'var(--paper)', padding: '16px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: '#2E7D32' }}>
+                      {activeAttendedCount} Days
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Marked Present</div>
                   </div>
+                  <div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: activeRemainingCount === 0 ? '#2E7D32' : 'var(--orange)' }}>
+                      {activeRemainingCount} Days
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Sessions Remaining</div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setActiveTab('progress')}
+                  className="btn btn-outline btn-sm"
+                  style={{ width: '100%', marginTop: '14px', background: '#FFFFFF' }}
+                >
+                  View Skill Milestones & Feedback →
+                </button>
+              </div>
+
+              {/* Card 2: Academy Dual-Control Fleet & Training Circuit */}
+              <div
+                className="dash-card"
+                style={{
+                  marginBottom: 0,
+                  background: '#FFFFFF',
+                  border: '1.5px solid var(--line)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.5px' }}>
+                      ACADEMY TRAINING FLEET
+                    </span>
+                    <span className="badge badge-verified" style={{ fontSize: '11px' }}>
+                      ✓ RTO Dual-Control
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
+                    {upcomingLesson?.course?.school?.vehicles?.[0]?.model || 'Certified Dual-Control Training Car'}
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: 'var(--muted)', marginTop: '4px' }}>
+                    📍 <strong>Training Yard:</strong> {upcomingLesson?.course?.school?.address || 'Certified Academy Circuit, City Center'}
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--line-soft)', paddingTop: '12px', marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                    Instructor: <strong style={{ color: 'var(--ink)' }}>{upcomingLesson?.instructor?.user?.name || 'Verified Trainer'}</strong>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('find-schools')}
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '11.5px', padding: '3px 8px' }}
+                  >
+                    Explore Schools →
+                  </button>
                 </div>
               </div>
             </div>
