@@ -49,7 +49,7 @@ const SchoolDashboard = () => {
     name: '',
     email: '',
     phone: '',
-    password: 'DL-Inst@2026',
+    password: '',
     specialization: '4-Wheeler (Manual & Automatic)',
     experienceYears: '5',
     licenseNumber: '',
@@ -57,7 +57,7 @@ const SchoolDashboard = () => {
 
   const handleGenerateTempPassword = () => {
     const pin = Math.floor(1000 + Math.random() * 9000);
-    setInstructorForm((prev) => ({ ...prev, password: `DL-Inst@${pin}` }));
+    setInstructorForm((prev) => ({ ...prev, password: `Pass#${pin}` }));
   };
 
   const [showAddCourseModal, setShowAddCourseModal] = useState(false);
@@ -312,7 +312,7 @@ const SchoolDashboard = () => {
         name: '',
         email: '',
         phone: '',
-        password: 'DL-Inst@2026',
+        password: '',
         specialization: '4-Wheeler (Manual & Automatic)',
         experienceYears: '5',
         licenseNumber: '',
