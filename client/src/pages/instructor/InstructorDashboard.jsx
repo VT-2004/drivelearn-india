@@ -15,6 +15,8 @@ import {
   cancelInstructorLeave,
   updateMilestoneStatus,
   getBookingMilestones,
+  createCustomMilestone,
+  deleteMilestone,
 } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../../components/NotificationBell';
@@ -69,6 +71,18 @@ const InstructorDashboard = () => {
   // 14-Module Curriculum Tracker state
   const [updatingMilestoneKey, setUpdatingMilestoneKey] = useState(null);
   const [milestoneNotesInput, setMilestoneNotesInput] = useState({});
+
+  // Module Edit & Custom Task Modal States
+  const [editingMilestone, setEditingMilestone] = useState(null);
+  const [showAddCustomTaskModal, setShowAddCustomTaskModal] = useState(false);
+  const [customTaskForm, setCustomTaskForm] = useState({
+    title: '',
+    dayRange: '',
+    description: '',
+    status: 'pending',
+    instructorNotes: '',
+  });
+  const [savingCustomTask, setSavingCustomTask] = useState(false);
 
   // Live Session Tracker
   const [activeLessonSession, setActiveLessonSession] = useState(null);
@@ -338,6 +352,68 @@ const InstructorDashboard = () => {
       alert(err.response?.data?.error || 'Failed to update milestone status');
     } finally {
       setUpdatingMilestoneKey(null);
+    }
+  };
+
+  const handleSaveEditedMilestone = async (e) => {
+    e.preventDefault();
+    if (!editingMilestone) return;
+    setSavingCustomTask(true);
+    try {
+      await updateMilestoneStatus(editingMilestone.bookingId, editingMilestone.milestoneIndex, {
+        title: editingMilestone.title,
+        dayRange: editingMilestone.dayRange,
+        description: editingMilestone.description,
+        instructorNotes: editingMilestone.instructorNotes,
+        status: editingMilestone.status,
+      });
+      alert('✓ Module details updated and synced live!');
+      setEditingMilestone(null);
+      await loadData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to update module details');
+    } finally {
+      setSavingCustomTask(false);
+    }
+  };
+
+  const handleCreateCustomTask = async (e, bookingId) => {
+    e.preventDefault();
+    if (!bookingId || !customTaskForm.title.trim()) return;
+    setSavingCustomTask(true);
+    try {
+      await createCustomMilestone(bookingId, {
+        title: customTaskForm.title.trim(),
+        dayRange: customTaskForm.dayRange || 'Custom Module',
+        description: customTaskForm.description,
+        status: customTaskForm.status,
+        instructorNotes: customTaskForm.instructorNotes,
+      });
+      alert('✓ Custom curriculum module/task created successfully!');
+      setShowAddCustomTaskModal(false);
+      setCustomTaskForm({
+        title: '',
+        dayRange: '',
+        description: '',
+        status: 'pending',
+        instructorNotes: '',
+      });
+      await loadData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to create module');
+    } finally {
+      setSavingCustomTask(false);
+    }
+  };
+
+  const handleDeleteMilestone = async (bookingId, milestoneIndex, title) => {
+    if (!window.confirm(`Delete module "${title}" from this student's curriculum?`)) return;
+    try {
+      await deleteMilestone(bookingId, milestoneIndex);
+      alert('✓ Module removed from curriculum.');
+      await loadData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete module');
     }
   };
 
@@ -1325,24 +1401,44 @@ const InstructorDashboard = () => {
                           </p>
                         </div>
 
-                        {!isAllCompleted && (
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           <button
                             type="button"
-                            onClick={async () => {
-                              if (!window.confirm(`Mark all remaining modules as Cleared for ${activeSt.name}? This will complete the full 28-day course and issue the certificate.`)) return;
-                              for (let i = 1; i <= 14; i++) {
-                                const m = (activeSt.milestones || []).find((x) => x.milestoneIndex === i);
-                                if (!m || m.status !== 'completed') {
-                                  await handleUpdateMilestone(activeSt.bookingId, i, 'completed');
-                                }
-                              }
+                            onClick={() => {
+                              setCustomTaskForm({
+                                title: '',
+                                dayRange: `Extra Task ${(activeSt.milestones?.length || 14) + 1}`,
+                                description: '',
+                                status: 'pending',
+                                instructorNotes: '',
+                              });
+                              setShowAddCustomTaskModal(true);
                             }}
                             className="btn btn-sm"
-                            style={{ background: '#166534', color: '#FFFFFF', fontWeight: 700, padding: '6px 12px', fontSize: '12px' }}
+                            style={{ background: 'var(--primary)', color: '#FFFFFF', fontWeight: 700, padding: '6px 14px', fontSize: '12px' }}
                           >
-                            ✓ Clear All 14 Modules (Fast-Track Pass)
+                            ➕ Add Custom Module / Task
                           </button>
-                        )}
+
+                          {!isAllCompleted && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (!window.confirm(`Mark all remaining modules as Cleared for ${activeSt.name}? This will complete the full 28-day course and issue the certificate.`)) return;
+                                for (let i = 1; i <= 14; i++) {
+                                  const m = (activeSt.milestones || []).find((x) => x.milestoneIndex === i);
+                                  if (!m || m.status !== 'completed') {
+                                    await handleUpdateMilestone(activeSt.bookingId, i, 'completed');
+                                  }
+                                }
+                              }}
+                              className="btn btn-sm"
+                              style={{ background: '#166534', color: '#FFFFFF', fontWeight: 700, padding: '6px 12px', fontSize: '12px' }}
+                            >
+                              ✓ Fast-Track Pass
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -1385,9 +1481,16 @@ const InstructorDashboard = () => {
                                       {isDone ? '✓' : String(m.milestoneIndex).padStart(2, '0')}
                                     </span>
 
-                                    <div>
-                                      <div style={{ fontSize: '11.5px', fontWeight: 800, color: isDone ? '#15803D' : isInProgress ? '#B45309' : 'var(--muted)', textTransform: 'uppercase' }}>
-                                        Module {String(m.milestoneIndex).padStart(2, '0')} · {m.dayRange}
+                                    <div style={{ flex: 1 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ fontSize: '11.5px', fontWeight: 800, color: isDone ? '#15803D' : isInProgress ? '#B45309' : 'var(--muted)', textTransform: 'uppercase' }}>
+                                          Module {String(m.milestoneIndex).padStart(2, '0')} · {m.dayRange}
+                                        </span>
+                                        {m.milestoneIndex > 14 && (
+                                          <span style={{ fontSize: '10px', background: '#EDE9FE', color: '#6D28D9', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                                            Custom Task
+                                          </span>
+                                        )}
                                       </div>
                                       <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
                                         {m.title}
@@ -1400,8 +1503,8 @@ const InstructorDashboard = () => {
                                     </div>
                                   </div>
 
-                                  {/* Status Controls */}
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                                  {/* Status Controls & Action Buttons */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, flexWrap: 'wrap' }}>
                                     <span
                                       className={`badge ${isDone ? 'badge-success' : isInProgress ? 'badge-warning' : 'badge-neutral'}`}
                                       style={{ fontSize: '11px', fontWeight: 700, padding: '4px 10px' }}
@@ -1409,15 +1512,25 @@ const InstructorDashboard = () => {
                                       {isDone ? '✓ Cleared' : isInProgress ? '⏳ In Progress' : '🔒 Pending'}
                                     </span>
 
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingMilestone({ ...m, bookingId: activeSt.bookingId })}
+                                      className="btn btn-outline btn-sm"
+                                      title="Edit Module Title, Schedule & Guidance"
+                                      style={{ padding: '4px 8px', fontSize: '11.5px', background: '#FFFFFF' }}
+                                    >
+                                      ✏️ Edit
+                                    </button>
+
                                     {!isDone && (
                                       <button
                                         type="button"
                                         disabled={isUpdating}
                                         onClick={() => handleUpdateMilestone(activeSt.bookingId, m.milestoneIndex, 'completed')}
                                         className="btn btn-sm"
-                                        style={{ padding: '5px 12px', fontSize: '12px', background: '#22C55E', color: '#FFFFFF', fontWeight: 700 }}
+                                        style={{ padding: '4px 10px', fontSize: '11.5px', background: '#22C55E', color: '#FFFFFF', fontWeight: 700 }}
                                       >
-                                        {isUpdating ? '...' : '✓ Mark Cleared'}
+                                        {isUpdating ? '...' : '✓ Cleared'}
                                       </button>
                                     )}
 
@@ -1427,7 +1540,7 @@ const InstructorDashboard = () => {
                                         disabled={isUpdating}
                                         onClick={() => handleUpdateMilestone(activeSt.bookingId, m.milestoneIndex, 'in_progress')}
                                         className="btn btn-outline btn-sm"
-                                        style={{ padding: '5px 12px', fontSize: '12px', borderColor: '#F59E0B', color: '#B45309' }}
+                                        style={{ padding: '4px 10px', fontSize: '11.5px', borderColor: '#F59E0B', color: '#B45309' }}
                                       >
                                         ⏳ Start
                                       </button>
@@ -1442,6 +1555,18 @@ const InstructorDashboard = () => {
                                         style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--muted)' }}
                                       >
                                         ↩ Reset
+                                      </button>
+                                    )}
+
+                                    {m.milestoneIndex > 14 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteMilestone(activeSt.bookingId, m.milestoneIndex, m.title)}
+                                        className="btn btn-outline btn-sm"
+                                        title="Delete custom task"
+                                        style={{ padding: '4px 8px', fontSize: '11px', borderColor: '#FCA5A5', color: '#DC2626' }}
+                                      >
+                                        🗑️
                                       </button>
                                     )}
                                   </div>
@@ -3275,6 +3400,289 @@ const InstructorDashboard = () => {
                 >
                   {sendingQaMessage ? 'Sending...' : '➤ Send'}
                 </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 5: EDIT MODULE / TASK MODAL */}
+        {editingMilestone && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(16, 24, 32, 0.65)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px',
+            }}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                maxWidth: '520px',
+                width: '100%',
+                padding: '26px',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '22px' }}>✏️</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '17px', color: 'var(--ink)' }}>
+                      Edit Module #{editingMilestone.milestoneIndex}
+                    </h3>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                      Customize training focus, day schedule & competency notes
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setEditingMilestone(null)}
+                  style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--muted)' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEditedMilestone} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                    Module Title
+                  </label>
+                  <input
+                    type="text"
+                    value={editingMilestone.title || ''}
+                    onChange={(e) => setEditingMilestone({ ...editingMilestone, title: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                      Day Range / Schedule
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Days 1 - 2"
+                      value={editingMilestone.dayRange || ''}
+                      onChange={(e) => setEditingMilestone({ ...editingMilestone, dayRange: e.target.value })}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                      Status
+                    </label>
+                    <select
+                      value={editingMilestone.status || 'pending'}
+                      onChange={(e) => setEditingMilestone({ ...editingMilestone, status: e.target.value })}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}
+                    >
+                      <option value="pending">🔒 Pending (Upcoming)</option>
+                      <option value="in_progress">⏳ In Progress</option>
+                      <option value="completed">✓ Cleared / Passed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                    Curriculum Guidelines & Key Maneuvers
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editingMilestone.description || ''}
+                    onChange={(e) => setEditingMilestone({ ...editingMilestone, description: e.target.value })}
+                    placeholder="Describe key exercises and assessment points..."
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '12.5px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                    Instructor Coaching Feedback
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Needs more practice on steep hill restart..."
+                    value={editingMilestone.instructorNotes || ''}
+                    onChange={(e) => setEditingMilestone({ ...editingMilestone, instructorNotes: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '12.5px' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingMilestone(null)}
+                    className="btn btn-outline btn-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingCustomTask}
+                    className="btn btn-primary btn-sm"
+                  >
+                    {savingCustomTask ? 'Saving...' : '💾 Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 6: ADD CUSTOM SUB-COURSE / TASK MODAL */}
+        {showAddCustomTaskModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(16, 24, 32, 0.65)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px',
+            }}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                maxWidth: '520px',
+                width: '100%',
+                padding: '26px',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '22px' }}>➕</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '17px', color: 'var(--ink)' }}>
+                      Add Custom Sub-Course / Task
+                    </h3>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                      Add an additional practical maneuver or specialized driving session
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddCustomTaskModal(false)}
+                  style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--muted)' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  const activeSt = displayStudents.find((s) => s.bookingId === (curriculumStudentBookingId || displayStudents[0]?.bookingId)) || displayStudents[0];
+                  handleCreateCustomTask(e, activeSt?.bookingId);
+                }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+              >
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                    Task / Sub-Course Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Night Highway Driving & Fog Light Control"
+                    value={customTaskForm.title}
+                    onChange={(e) => setCustomTaskForm({ ...customTaskForm, title: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                      Day Range / Label
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Day 29 - Specialized Session"
+                      value={customTaskForm.dayRange}
+                      onChange={(e) => setCustomTaskForm({ ...customTaskForm, dayRange: e.target.value })}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                      Initial Status
+                    </label>
+                    <select
+                      value={customTaskForm.status}
+                      onChange={(e) => setCustomTaskForm({ ...customTaskForm, status: e.target.value })}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}
+                    >
+                      <option value="pending">🔒 Pending (Upcoming)</option>
+                      <option value="in_progress">⏳ In Progress</option>
+                      <option value="completed">✓ Cleared / Passed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                    Curriculum Guidelines & Maneuvers
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="e.g. Practice low beam/high beam switching on unlit bypass roads..."
+                    value={customTaskForm.description}
+                    onChange={(e) => setCustomTaskForm({ ...customTaskForm, description: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '12.5px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                    Initial Coaching Note (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Scheduled for Saturday evening session"
+                    value={customTaskForm.instructorNotes}
+                    onChange={(e) => setCustomTaskForm({ ...customTaskForm, instructorNotes: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '12.5px' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCustomTaskModal(false)}
+                    className="btn btn-outline btn-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingCustomTask}
+                    className="btn btn-primary btn-sm"
+                  >
+                    {savingCustomTask ? 'Creating...' : '➕ Add to Curriculum'}
+                  </button>
+                </div>
               </form>
             </div>
           </div>

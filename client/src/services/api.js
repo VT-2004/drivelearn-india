@@ -161,5 +161,7 @@ export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
 // ===== 28-Day / 14-Module Course Milestones =====
 export const getBookingMilestones = (bookingId) => api.get(`/milestones/${bookingId}`);
 export const updateMilestoneStatus = (bookingId, milestoneIndex, data) => api.patch(`/milestones/${bookingId}/${milestoneIndex}`, data);
+export const createCustomMilestone = (bookingId, data) => api.post(`/milestones/${bookingId}`, data);
+export const deleteMilestone = (bookingId, milestoneIndex) => api.delete(`/milestones/${bookingId}/${milestoneIndex}`);
 
 export default api;

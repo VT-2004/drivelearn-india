@@ -167,15 +167,15 @@ const getBookingMilestones = async (req, res) => {
   }
 };
 
-// PATCH: Instructor updates milestone status / remarks
+// PATCH: Instructor updates milestone status / remarks / custom details
 const updateMilestone = async (req, res) => {
   try {
     const { bookingId, milestoneIndex } = req.params;
-    const { status, instructorNotes } = req.body;
+    const { status, instructorNotes, title, description, dayRange } = req.body;
     const userId = req.user.id;
     const role = req.user.role;
 
-    if (!['pending', 'in_progress', 'completed'].includes(status)) {
+    if (status && !['pending', 'in_progress', 'completed'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status. Must be pending, in_progress, or completed.' });
     }
 
@@ -212,9 +212,12 @@ const updateMilestone = async (req, res) => {
         },
       },
       data: {
-        status,
+        status: status || undefined,
+        title: title !== undefined ? title : undefined,
+        description: description !== undefined ? description : undefined,
+        dayRange: dayRange !== undefined ? dayRange : undefined,
         instructorNotes: instructorNotes !== undefined ? instructorNotes : undefined,
-        completedAt: status === 'completed' ? new Date() : null,
+        completedAt: status === 'completed' ? new Date() : status ? null : undefined,
         instructorId: instructor?.id || null,
       },
     });
@@ -302,9 +305,126 @@ const updateMilestone = async (req, res) => {
   }
 };
 
+// POST: Instructor creates a new custom milestone / task for student
+const createCustomMilestone = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { title, description, dayRange, status, instructorNotes } = req.body;
+    const userId = req.user.id;
+    const role = req.user.role;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'Milestone / Task title is required' });
+    }
+
+    const instructor = await prisma.instructor.findUnique({ where: { userId } });
+    if (!instructor && role !== 'admin') {
+      return res.status(403).json({ error: 'Only certified instructors can add course tasks' });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: parseInt(bookingId) },
+      include: {
+        learner: { select: { id: true, name: true } },
+        course: { select: { schoolId: true } },
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    // Ensure baseline milestones exist
+    const existing = await ensureMilestonesForBooking(booking.id);
+    const maxIndex = existing.reduce((max, m) => Math.max(max, m.milestoneIndex), 0);
+    const nextIndex = maxIndex + 1;
+
+    const newMilestone = await prisma.bookingMilestone.create({
+      data: {
+        bookingId: booking.id,
+        milestoneIndex: nextIndex,
+        dayRange: dayRange || `Task ${nextIndex}`,
+        title: title.trim(),
+        description: description ? description.trim() : null,
+        status: status || 'pending',
+        instructorNotes: instructorNotes || null,
+        instructorId: instructor?.id || null,
+        completedAt: status === 'completed' ? new Date() : null,
+      },
+    });
+
+    // Notify learner of new training module / task
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: booking.learnerId,
+          schoolId: booking.course?.schoolId || null,
+          title: `🎯 New Training Task Added: ${newMilestone.title}`,
+          message: `Your instructor added "${newMilestone.title}" (${newMilestone.dayRange}) to your training curriculum plan.`,
+          type: 'info',
+        },
+      });
+    } catch (notifErr) {
+      console.error('Failed to notify learner on new milestone:', notifErr);
+    }
+
+    const allMilestones = await prisma.bookingMilestone.findMany({
+      where: { bookingId: booking.id },
+      orderBy: { milestoneIndex: 'asc' },
+    });
+
+    res.status(201).json({
+      message: 'Custom training module added successfully',
+      milestone: newMilestone,
+      milestones: allMilestones,
+    });
+  } catch (error) {
+    console.error('Create custom milestone error:', error);
+    res.status(500).json({ error: 'Failed to create training module' });
+  }
+};
+
+// DELETE: Delete a custom milestone
+const deleteCustomMilestone = async (req, res) => {
+  try {
+    const { bookingId, milestoneIndex } = req.params;
+    const userId = req.user.id;
+    const role = req.user.role;
+
+    const instructor = await prisma.instructor.findUnique({ where: { userId } });
+    if (!instructor && role !== 'admin') {
+      return res.status(403).json({ error: 'Only certified instructors can remove course tasks' });
+    }
+
+    await prisma.bookingMilestone.delete({
+      where: {
+        bookingId_milestoneIndex: {
+          bookingId: parseInt(bookingId),
+          milestoneIndex: parseInt(milestoneIndex),
+        },
+      },
+    });
+
+    const allMilestones = await prisma.bookingMilestone.findMany({
+      where: { bookingId: parseInt(bookingId) },
+      orderBy: { milestoneIndex: 'asc' },
+    });
+
+    res.json({
+      message: 'Training module removed',
+      milestones: allMilestones,
+    });
+  } catch (error) {
+    console.error('Delete milestone error:', error);
+    res.status(500).json({ error: 'Failed to delete milestone' });
+  }
+};
+
 module.exports = {
   STANDARD_14_MILESTONES,
   ensureMilestonesForBooking,
   getBookingMilestones,
   updateMilestone,
+  createCustomMilestone,
+  deleteCustomMilestone,
 };
