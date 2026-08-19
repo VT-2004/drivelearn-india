@@ -203,6 +203,7 @@ const LearnerDashboard = () => {
   const clearedMilestonesCount = useMemo(() => {
     return evaluatedMilestones.filter((m) => m.isDone).length;
   }, [evaluatedMilestones]);
+  const completedMilestonesCount = clearedMilestonesCount;
 
   const activeProgressPercent = activeBooking?.status === 'completed' || clearedMilestonesCount === 14
     ? 100
