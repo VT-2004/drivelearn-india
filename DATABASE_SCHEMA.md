@@ -1,37 +1,47 @@
-# DriveLearn India — Database Schema
-### Part 1 / Day 2 — Database Schema Design
+# 🗄️ DriveLearn India — Complete Database Schema & Entity Architecture
+
+Comprehensive entity-relationship specification for the DriveLearn India SaaS Marketplace and Learning Management System, mapped directly to PostgreSQL via Prisma ORM.
 
 ---
 
-## Entity-Relationship Diagram
+## 📐 Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
-    USER ||--o| DRIVING_SCHOOL : owns
-    USER ||--o{ BOOKING : makes
-    USER ||--o{ REVIEW : writes
-    USER ||--o| INSTRUCTOR : "is (if role=instructor)"
+    USER ||--o| DRIVING_SCHOOL : "owns (role=school_owner)"
+    USER ||--o| INSTRUCTOR : "is (role=instructor)"
+    USER ||--o| WALLET : "has (role=learner)"
+    USER ||--o{ BOOKING : "places (role=learner)"
+    USER ||--o{ REVIEW : "writes (role=learner)"
+    USER ||--o{ NOTIFICATION : "receives"
 
-    DRIVING_SCHOOL ||--o{ BRANCH : has
-    DRIVING_SCHOOL ||--o{ INSTRUCTOR : employs
-    DRIVING_SCHOOL ||--o{ COURSE : offers
-    DRIVING_SCHOOL ||--o{ SUBSCRIPTION : pays
-    DRIVING_SCHOOL ||--o{ REVIEW : receives
+    DRIVING_SCHOOL ||--o{ SUBSCRIPTION : "pays SaaS tier"
+    DRIVING_SCHOOL ||--o{ INSTRUCTOR : "employs"
+    DRIVING_SCHOOL ||--o{ VEHICLE : "manages fleet"
+    DRIVING_SCHOOL ||--o{ COURSE : "offers"
+    DRIVING_SCHOOL ||--o{ BOOKING : "receives"
+    DRIVING_SCHOOL ||--o{ REVIEW : "receives"
+    DRIVING_SCHOOL ||--o{ NOTICE : "receives admin alerts"
 
-    COURSE ||--o{ BOOKING : "booked via"
-    INSTRUCTOR ||--o{ BOOKING : assigned
+    COURSE ||--o{ BOOKING : "enrolled in"
+    INSTRUCTOR ||--o{ BOOKING : "assigned to"
+    INSTRUCTOR ||--o{ VEHICLE : "drives"
 
-    BOOKING ||--|| PAYMENT : has
-    BOOKING ||--o{ ATTENDANCE : tracks
+    BOOKING ||--|| PAYMENT : "settled by"
+    BOOKING ||--o{ ATTENDANCE : "logs lessons"
+    BOOKING ||--o{ STUDENT_MILESTONE : "tracks 14 RTO skills"
+
+    WALLET ||--o{ WALLET_TRANSACTION : "records credits/debits"
 
     USER {
         int id PK
         string name
-        string email
+        string email UK
         string password
         string phone
-        enum role
+        enum role "admin | school_owner | instructor | learner"
         datetime createdAt
+        datetime updatedAt
     }
 
     DRIVING_SCHOOL {
@@ -42,17 +52,21 @@ erDiagram
         string city
         string state
         string address
-        enum verificationStatus
+        string pincode
+        string licenseNumber
+        enum status "pending | active | suspended | rejected"
         string documentsUrl
         datetime createdAt
+        datetime updatedAt
     }
 
-    BRANCH {
+    SUBSCRIPTION {
         int id PK
         int schoolId FK
-        string city
-        string state
-        string address
+        enum plan "monthly | yearly"
+        enum status "active | expired"
+        datetime startDate
+        datetime endDate
     }
 
     INSTRUCTOR {
@@ -61,23 +75,41 @@ erDiagram
         int schoolId FK
         string specialization
         int experienceYears
+        string licenseNumber
+        datetime createdAt
+    }
+
+    VEHICLE {
+        int id PK
+        int schoolId FK
+        string regNumber UK
+        string model
+        string type "4-Wheeler | 2-Wheeler | Commercial"
+        string transmission "Manual | Automatic"
+        boolean isDualControl
+        date fitnessExpiry
+        date insuranceExpiry
+        date pucExpiry
     }
 
     COURSE {
         int id PK
         int schoolId FK
+        int instructorId FK
         string title
         string description
         decimal price
         int durationDays
+        datetime createdAt
     }
 
     BOOKING {
         int id PK
-        int learnerId FK
+        int userId FK
+        int schoolId FK
         int courseId FK
         int instructorId FK
-        enum status
+        enum status "pending | confirmed | in_progress | completed | cancelled"
         date bookedDate
         datetime createdAt
     }
@@ -86,177 +118,105 @@ erDiagram
         int id PK
         int bookingId FK
         decimal amount
-        enum status
+        enum status "pending | success | failed | refunded"
         string razorpayOrderId
+        string razorpayPaymentId
+        string razorpaySignature
         datetime paidAt
     }
 
-    SUBSCRIPTION {
+    STUDENT_MILESTONE {
         int id PK
-        int schoolId FK
-        enum plan
-        enum status
-        date startDate
-        date endDate
-    }
-
-    REVIEW {
-        int id PK
-        int learnerId FK
-        int schoolId FK
-        int rating
-        string comment
-        datetime createdAt
+        int bookingId FK
+        int milestoneNumber "1 to 14"
+        string title
+        boolean isCompleted
+        datetime completedAt
+        string instructorNotes
     }
 
     ATTENDANCE {
         int id PK
         int bookingId FK
+        int instructorId FK
         date date
-        enum status
+        string status "present | absent"
         string notes
+    }
+
+    WALLET {
+        int id PK
+        int userId FK
+        decimal balance "default: 15.00"
+    }
+
+    WALLET_TRANSACTION {
+        int id PK
+        int walletId FK
+        decimal amount
+        enum type "credit | debit"
+        string description
+        datetime createdAt
+    }
+
+    NOTICE {
+        int id PK
+        int schoolId FK
+        string title
+        string message
+        enum type "warning | suspension | info"
+        boolean isAcknowledged
+        datetime acknowledgedAt
+        datetime createdAt
+    }
+
+    APTITUDE_QUESTION {
+        int id PK
+        string question
+        string optionA
+        string optionB
+        string optionC
+        string optionD
+        string correctOption "A | B | C | D"
+        string explanation
+        string category "Traffic Signs | Road Safety | Vehicle Controls"
     }
 ```
 
 ---
 
-## Entity Details
+## 📋 Entity Descriptions & Business Rules
 
-### 1. User
-Base table for all platform users — Super Admin, School Owner, Instructor, and Learner all share this table, differentiated by `role`.
+### 1. `User`
+- Central identity entity for all platform actors.
+- Roles enforced via `Role` enum: `admin`, `school_owner`, `instructor`, `learner`.
+- Passwords salted and hashed via `bcryptjs`.
 
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | Auto-increment |
-| name | string | Required |
-| email | string | Unique, required |
-| password | string | Hashed (bcrypt) |
-| phone | string | Required |
-| role | enum | `admin`, `school_owner`, `instructor`, `learner` |
-| createdAt | datetime | Default now |
+### 2. `DrivingSchool`
+- Represents a verified driving academy registered on DriveLearn India.
+- Managed by a single `school_owner` user.
+- Status transitions: `pending` $\rightarrow$ `active` $\rightarrow$ `suspended`.
 
-### 2. DrivingSchool
-One school profile per School Owner.
+### 3. `Subscription`
+- B2B SaaS license for driving schools to remain listed and operational.
+- Plans: `monthly` (₹999/mo) and `yearly` (₹8,999/yr).
+- Super Admin can grant 1-year free exemptions or apply custom duration overrides.
 
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| ownerId | int, FK → User | One owner per school |
-| name | string | |
-| description | string | |
-| city / state / address | string | Base location |
-| verificationStatus | enum | `pending`, `verified`, `rejected` |
-| documentsUrl | string | AWS S3 link to verification docs |
-| createdAt | datetime | |
+### 4. `Vehicle`
+- Manages driving academy dual-pedal fleet assets.
+- Telematics metadata: RTO registration plate, transmission (Manual/Automatic), dual-control certification, fitness expiry, insurance expiry, and PUC expiry dates.
 
-### 3. Branch
-Supports schools with multiple locations.
+### 5. `StudentMilestone`
+- Standardized 14 practical milestone driving curriculum (ABC pedals, clutch bite point, steering slalom, RTO 8-track, H-track bay parking, hill start without rollback, night driving, simulator exam).
 
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| schoolId | int, FK → DrivingSchool | |
-| city / state / address | string | |
+### 6. `Wallet` & `WalletTransaction`
+- Automatic ₹15 welcome bonus credited upon learner registration.
+- Auto-applied as instant checkout discounts on course bookings.
 
-### 4. Instructor
-Linked to both a User account (for login) and a School (employer).
-
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| userId | int, FK → User | Instructor's login identity |
-| schoolId | int, FK → DrivingSchool | |
-| specialization | string | e.g., "2-wheeler", "4-wheeler" |
-| experienceYears | int | |
-
-### 5. Course
-Packages a school offers to learners.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| schoolId | int, FK → DrivingSchool | |
-| title | string | |
-| description | string | |
-| price | decimal | |
-| durationDays | int | |
-
-### 6. Booking
-Central table linking a learner, course, and instructor.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| learnerId | int, FK → User | |
-| courseId | int, FK → Course | |
-| instructorId | int, FK → Instructor | |
-| status | enum | `pending`, `confirmed`, `completed`, `cancelled` |
-| bookedDate | date | |
-| createdAt | datetime | |
-
-### 7. Payment
-One-to-one with Booking.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| bookingId | int, FK → Booking | Unique |
-| amount | decimal | |
-| status | enum | `pending`, `success`, `failed` |
-| razorpayOrderId | string | |
-| paidAt | datetime | |
-
-### 8. Subscription
-School's recurring platform fee — tracks history, not just current state.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| schoolId | int, FK → DrivingSchool | |
-| plan | enum | `monthly`, `yearly` |
-| status | enum | `active`, `expired` |
-| startDate / endDate | date | |
-
-### 9. Review
-Learner feedback on a school, post-course.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| learnerId | int, FK → User | |
-| schoolId | int, FK → DrivingSchool | |
-| rating | int | 1–5 |
-| comment | string | |
-| createdAt | datetime | |
-
-### 10. Attendance
-Instructor-marked, tied to a specific booking (lesson).
-
-| Field | Type | Notes |
-|---|---|---|
-| id | int, PK | |
-| bookingId | int, FK → Booking | |
-| date | date | |
-| status | enum | `present`, `absent` |
-| notes | string | Optional progress notes |
+### 7. `Notice`
+- Administrative compliance communication channel from Super Admin to School Owners.
+- Tracks formal warning notices, temporary suspensions, and compliance acknowledgments.
 
 ---
 
-## Relationship Summary
-
-| Relationship | Type |
-|---|---|
-| User → DrivingSchool | One-to-One (owner) |
-| DrivingSchool → Branch | One-to-Many |
-| DrivingSchool → Instructor | One-to-Many |
-| DrivingSchool → Course | One-to-Many |
-| DrivingSchool → Subscription | One-to-Many (history) |
-| DrivingSchool → Review | One-to-Many |
-| User (learner) → Booking | One-to-Many |
-| Course → Booking | One-to-Many |
-| Instructor → Booking | One-to-Many |
-| Booking → Payment | One-to-One |
-| Booking → Attendance | One-to-Many |
-| User (learner) → Review | One-to-Many |
-
----
+© 2026 DriveLearn India Pvt. Ltd. · Database Schema Architecture
