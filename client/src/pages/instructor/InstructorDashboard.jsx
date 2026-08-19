@@ -847,7 +847,7 @@ const InstructorDashboard = () => {
         {activeTab === 'dashboard' && (
           <div>
             {/* 4 KPI Cards */}
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+            <div className="kpi-grid">
               <div className="kpi-card">
                 <div className="kpi-top">
                   <span className="kpi-icon">🚗</span>

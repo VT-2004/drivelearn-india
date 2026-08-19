@@ -692,7 +692,7 @@ const SchoolDashboard = () => {
         {activeTab === 'dashboard' && (
           <div>
             {/* 6 KPI Cards */}
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))' }}>
+            <div className="kpi-grid">
               <div className="kpi-card">
                 <div className="kpi-top"><span className="kpi-icon">👥</span></div>
                 <div className="kpi-val">{bookings.length || 24}</div>
@@ -731,7 +731,7 @@ const SchoolDashboard = () => {
             </div>
 
             {/* Quick Actions & Recent Bookings */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div className="dash-split-grid">
               <div className="dash-card">
                 <div className="dash-card-head">
                   <h3>Recent Student Bookings</h3>

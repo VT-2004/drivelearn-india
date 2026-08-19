@@ -360,7 +360,7 @@ const AdminDashboard = () => {
         {activeTab === 'dashboard' && (
           <div>
             {/* 6 Realtime KPI Cards Grid */}
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))' }}>
+            <div className="kpi-grid">
               <div className="kpi-card">
                 <div className="kpi-top">
                   <span className="kpi-icon">🚗</span>

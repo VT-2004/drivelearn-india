@@ -588,7 +588,7 @@ const LearnerDashboard = () => {
         {activeTab === 'dashboard' && (
           <div>
             {/* 4 KPI Cards */}
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+            <div className="kpi-grid">
               <div className="kpi-card">
                 <div className="kpi-top">
                   <span className="kpi-icon">🚗</span>
@@ -631,7 +631,7 @@ const LearnerDashboard = () => {
             </div>
 
             {/* Upcoming Practical Lesson & Next Step Card */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div className="dash-split-grid">
               {/* Left: Upcoming Lesson & Contact */}
               <div className="dash-card">
                 <div className="dash-card-head">
