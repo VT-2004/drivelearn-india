@@ -26,6 +26,23 @@ import SearchSchools from './SearchSchools';
 import NotificationBell from '../../components/NotificationBell';
 import '../../styles/dashboard.css';
 
+const STANDARD_14_MILESTONES = [
+  { index: 1, title: 'Cockpit & ABC Pedals', days: 'Days 1-2', icon: '🎛️', shortDesc: 'Dual-control orientation, clutch bite point, pedal balance' },
+  { index: 2, title: 'Clutch & Bite-Point Control', days: 'Days 3-4', icon: '⚙️', shortDesc: 'Smooth rolling start, anti-stall drills, progressive braking' },
+  { index: 3, title: 'Steering Slalom & Deceleration', days: 'Days 5-6', icon: '🔄', shortDesc: 'Push-pull steering, lane centering, downshifting' },
+  { index: 4, title: 'Yard Maneuvers & Reversing', days: 'Days 7-8', icon: '📐', shortDesc: 'Straight reverse, mirror alignment, blind spot checks' },
+  { index: 5, title: 'RTO 8-Track Forward & Reverse', days: 'Days 9-10', icon: '♾️', shortDesc: 'Figure-8 precision without kerb touching or footdown' },
+  { index: 6, title: 'RTO H-Track Bay Parking', days: 'Days 11-12', icon: '🅿️', shortDesc: '90-degree reverse docking inside official RTO yellow bays' },
+  { index: 7, title: 'Parallel & Kerb Parking', days: 'Days 13-14', icon: '🚗', shortDesc: 'Tight spot kerb alignment & mall basement angle parking' },
+  { index: 8, title: 'Slope Start & Hill Ascent', days: 'Days 15-16', icon: '⛰️', shortDesc: 'Handbrake hill hold, zero rollback on steep flyovers' },
+  { index: 9, title: 'Suburban Traffic & Lanes', days: 'Days 17-18', icon: '🛣️', shortDesc: 'Speed regulation, mirror-signal-manoeuvre discipline' },
+  { index: 10, title: 'Dense City Rush Hour & Jcts', days: 'Days 19-20', icon: '🚦', shortDesc: 'Heavy traffic creeping, traffic light protocols, pedestrians' },
+  { index: 11, title: 'Roundabout & Right-of-Way', days: 'Days 21-22', icon: '🔲', shortDesc: 'Multi-lane roundabout lane choices & right-of-way rules' },
+  { index: 12, title: 'Highway Merging & Cruising', days: 'Days 23-24', icon: '🏎️', shortDesc: 'High-speed cruising, safe overtaking distance, toll lanes' },
+  { index: 13, title: 'Night Driving & Glare Safety', days: 'Days 25-26', icon: '🌙', shortDesc: 'High-beam hazard mitigation, wet road rain traction' },
+  { index: 14, title: 'Emergency Stop & RTO Mock', days: 'Days 27-28', icon: '🏆', shortDesc: 'Panic stop hazard drills & final RTO simulator mock evaluation' },
+];
+
 const LearnerDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -160,21 +177,37 @@ const LearnerDashboard = () => {
     return bookings.reduce((acc, b) => acc + (b.attendance?.length || 0), 0);
   }, [bookings]);
 
-  const activeMilestones = useMemo(() => {
-    return activeBooking?.milestones || [];
-  }, [activeBooking]);
-
-  const completedMilestonesCount = useMemo(() => {
-    return activeMilestones.filter((m) => m.status === 'completed').length;
-  }, [activeMilestones]);
-
-  const activeCourseDuration = activeBooking?.course?.durationDays || 28;
   const activeAttendedCount = activeBooking?.attendance?.length || 0;
+  const activeCourseDuration = activeBooking?.course?.durationDays || 28;
   const activeRemainingCount = Math.max(0, activeCourseDuration - activeAttendedCount);
-  const activeProgressPercent = activeBooking?.status === 'completed' || completedMilestonesCount === 14
+
+  const evaluatedMilestones = useMemo(() => {
+    return STANDARD_14_MILESTONES.map((m) => {
+      const dbMilestone = (activeBooking?.milestones || []).find(
+        (dbM) => dbM.milestoneNumber === m.index || dbM.milestoneIndex === m.index || dbM.title?.toLowerCase().includes(m.title.toLowerCase())
+      );
+      
+      const isDone = activeBooking?.status === 'completed' || dbMilestone?.isCompleted || dbMilestone?.status === 'completed' || (activeAttendedCount >= m.index * 2);
+      const isInProgress = !isDone && (dbMilestone?.status === 'in_progress' || activeAttendedCount >= (m.index * 2) - 1);
+      
+      return {
+        ...m,
+        isDone,
+        isInProgress,
+        notes: dbMilestone?.instructorNotes || null,
+        completedAt: dbMilestone?.completedAt || null,
+      };
+    });
+  }, [activeBooking, activeAttendedCount]);
+
+  const clearedMilestonesCount = useMemo(() => {
+    return evaluatedMilestones.filter((m) => m.isDone).length;
+  }, [evaluatedMilestones]);
+
+  const activeProgressPercent = activeBooking?.status === 'completed' || clearedMilestonesCount === 14
     ? 100
     : Math.max(
-        Math.round((completedMilestonesCount / 14) * 100),
+        Math.round((clearedMilestonesCount / 14) * 100),
         Math.min(100, Math.round((activeAttendedCount / activeCourseDuration) * 100))
       );
 
@@ -688,44 +721,174 @@ const LearnerDashboard = () => {
                   </div>
                 )}
 
-                {/* 6-Stage Curriculum Pipeline */}
+                {/* 14-Module Standardized Practical Curriculum Pipeline */}
                 <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--line)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700 }}>Practical Curriculum Pipeline</div>
-                    <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--primary)' }}>
-                      {activeAttendedCount} of {activeCourseDuration} Sessions Done ({activeProgressPercent}%)
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)' }}>
+                        🎯 Practical Curriculum Pipeline (14 Modules · 28 Days)
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                        CMVR Form 5 standardized syllabus for complete RTO driving test mastery
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        background: clearedMilestonesCount === 14 ? '#DCFCE7' : 'var(--primary-tint)',
+                        color: clearedMilestonesCount === 14 ? '#15803D' : 'var(--primary)',
+                        padding: '4px 12px',
+                        borderRadius: '999px',
+                        border: `1px solid ${clearedMilestonesCount === 14 ? '#86EFAC' : 'var(--primary)'}40`,
+                      }}
+                    >
+                      ✓ {clearedMilestonesCount} of 14 Modules Cleared ({activeProgressPercent}%)
                     </span>
                   </div>
 
-                  <div className="stage-tracker">
-                    <div className={`stage-step ${activeAttendedCount >= 1 ? 'done' : 'active'}`}>
-                      <div className="stage-circle">{activeAttendedCount >= 1 ? '✓' : '1'}</div>
-                      <div className="stage-label">Theory & Controls</div>
-                    </div>
-                    <div className={`stage-line ${activeAttendedCount >= 4 ? 'done' : ''}`} />
+                  {/* Horizontal Scrollable 14-Step Progress Rail */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      overflowX: 'auto',
+                      padding: '12px 4px 16px',
+                      WebkitOverflowScrolling: 'touch',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    {evaluatedMilestones.map((m, mIdx) => (
+                      <div key={m.index} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <div
+                          title={`${m.title} (${m.days}) - ${m.isDone ? 'Cleared' : m.isInProgress ? 'In Progress' : 'Pending'}`}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => setActiveTab('progress')}
+                        >
+                          <div
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              background: m.isDone ? '#22C55E' : m.isInProgress ? '#F59E0B' : '#E2E8F0',
+                              color: m.isDone || m.isInProgress ? '#FFFFFF' : '#64748B',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: m.isDone ? '13px' : '11px',
+                              fontWeight: 800,
+                              fontFamily: 'var(--font-mono)',
+                              boxShadow: m.isInProgress ? '0 0 0 4px rgba(245, 158, 11, 0.25)' : 'none',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {m.isDone ? '✓' : String(m.index).padStart(2, '0')}
+                          </div>
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: m.isDone || m.isInProgress ? 700 : 500,
+                              color: m.isDone ? '#15803D' : m.isInProgress ? '#B45309' : '#64748B',
+                              marginTop: '4px',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '52px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              textAlign: 'center',
+                            }}
+                          >
+                            M{m.index}
+                          </span>
+                        </div>
 
-                    <div className={`stage-step ${activeAttendedCount >= 4 ? 'done' : activeAttendedCount >= 1 ? 'active' : ''}`}>
-                      <div className="stage-circle">{activeAttendedCount >= 4 ? '✓' : '2'}</div>
-                      <div className="stage-label">Clutch & Yard</div>
-                    </div>
-                    <div className={`stage-line ${activeAttendedCount >= 8 ? 'done' : ''}`} />
+                        {mIdx < evaluatedMilestones.length - 1 && (
+                          <div
+                            style={{
+                              width: '16px',
+                              height: '3px',
+                              background: m.isDone ? '#22C55E' : '#E2E8F0',
+                              margin: '0 2px 14px',
+                              borderRadius: '2px',
+                            }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
 
-                    <div className={`stage-step ${activeAttendedCount >= 8 ? 'done' : activeAttendedCount >= 4 ? 'active' : ''}`}>
-                      <div className="stage-circle">{activeAttendedCount >= 8 ? '✓' : '3'}</div>
-                      <div className="stage-label">8/H-Tracks</div>
-                    </div>
-                    <div className={`stage-line ${activeAttendedCount >= 12 ? 'done' : ''}`} />
+                  {/* 14-Sub-Course Grid Cards in Pipeline */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
+                    {evaluatedMilestones.map((m) => (
+                      <div
+                        key={m.index}
+                        style={{
+                          background: m.isDone ? '#F0FDF4' : m.isInProgress ? '#FFFBEB' : '#FFFFFF',
+                          border: m.isDone ? '1px solid #86EFAC' : m.isInProgress ? '1px solid #FCD34D' : '1px solid var(--line)',
+                          borderRadius: '8px',
+                          padding: '10px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '10px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                          <span
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '50%',
+                              background: m.isDone ? '#22C55E' : m.isInProgress ? '#F59E0B' : '#F1F5F9',
+                              color: m.isDone || m.isInProgress ? '#FFFFFF' : '#64748B',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: m.isDone ? '12px' : '10.5px',
+                              fontWeight: 800,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {m.isDone ? '✓' : String(m.index).padStart(2, '0')}
+                          </span>
+                          <div style={{ overflow: 'hidden' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {m.title}
+                            </div>
+                            <div style={{ fontSize: '10.5px', color: 'var(--muted)' }}>
+                              {m.days} · {m.shortDesc}
+                            </div>
+                          </div>
+                        </div>
 
-                    <div className={`stage-step ${activeAttendedCount >= 12 ? 'done' : activeAttendedCount >= 8 ? 'active' : ''}`}>
-                      <div className="stage-circle">{activeAttendedCount >= 12 ? '✓' : '4'}</div>
-                      <div className="stage-label">City Traffic</div>
-                    </div>
-                    <div className={`stage-line ${activeAttendedCount >= activeCourseDuration ? 'done' : ''}`} />
+                        <span
+                          style={{
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            color: m.isDone ? '#15803D' : m.isInProgress ? '#B45309' : '#64748B',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {m.isDone ? '✓ Cleared' : m.isInProgress ? '⏳ Active' : 'Pending'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
 
-                    <div className={`stage-step ${activeAttendedCount >= activeCourseDuration ? 'done' : activeAttendedCount >= 12 ? 'active' : ''}`}>
-                      <div className="stage-circle">{activeAttendedCount >= activeCourseDuration ? '✓' : '5'}</div>
-                      <div className="stage-label">RTO Mock Test</div>
-                    </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                    <button
+                      onClick={() => setActiveTab('progress')}
+                      className="btn btn-outline btn-sm"
+                      style={{ fontSize: '12px', padding: '6px 14px' }}
+                    >
+                      View Full 14-Module Assessment & Feedback →
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1018,90 +1181,81 @@ const LearnerDashboard = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '520px', overflowY: 'auto', paddingRight: '4px' }}>
-                {activeMilestones.length > 0 ? (
-                  activeMilestones.map((m) => {
-                    const isDone = m.status === 'completed' || activeBooking?.status === 'completed';
-                    const isInProgress = m.status === 'in_progress' && !isDone;
-
-                    return (
-                      <div
-                        key={m.id || m.milestoneIndex}
-                        style={{
-                          background: isDone ? '#F0FDF4' : isInProgress ? '#FFFBEB' : '#FFFFFF',
-                          border: isDone ? '1.5px solid #86EFAC' : isInProgress ? '1.5px solid #FCD34D' : '1px solid var(--line)',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          transition: 'all 0.2s ease',
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span
-                              style={{
-                                width: '28px',
-                                height: '28px',
-                                borderRadius: '50%',
-                                background: isDone ? '#22C55E' : isInProgress ? '#F59E0B' : 'var(--line)',
-                                color: isDone || isInProgress ? '#FFFFFF' : 'var(--muted)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '12px',
-                                fontWeight: 800,
-                              }}
-                            >
-                              {isDone ? '✓' : String(m.milestoneIndex).padStart(2, '0')}
-                            </span>
-                            <div>
-                              <div style={{ fontSize: '11px', fontWeight: 800, color: isDone ? '#15803D' : isInProgress ? '#B45309' : 'var(--muted)', textTransform: 'uppercase' }}>
-                                Module {String(m.milestoneIndex).padStart(2, '0')} · {m.dayRange}
-                              </div>
-                              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginTop: '1px' }}>
-                                {m.title}
-                              </div>
-                            </div>
-                          </div>
-
+                {evaluatedMilestones.map((m) => {
+                  return (
+                    <div
+                      key={m.index}
+                      style={{
+                        background: m.isDone ? '#F0FDF4' : m.isInProgress ? '#FFFBEB' : '#FFFFFF',
+                        border: m.isDone ? '1.5px solid #86EFAC' : m.isInProgress ? '1.5px solid #FCD34D' : '1px solid var(--line)',
+                        borderRadius: '10px',
+                        padding: '14px 16px',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '50%',
+                              background: m.isDone ? '#22C55E' : m.isInProgress ? '#F59E0B' : 'var(--line)',
+                              color: m.isDone || m.isInProgress ? '#FFFFFF' : 'var(--muted)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 800,
+                            }}
+                          >
+                            {m.isDone ? '✓' : String(m.index).padStart(2, '0')}
+                          </span>
                           <div>
-                            <span
-                              className={`badge ${isDone ? 'badge-success' : isInProgress ? 'badge-warning' : 'badge-neutral'}`}
-                              style={{ fontSize: '11px', fontWeight: 700 }}
-                            >
-                              {isDone ? '✓ Cleared' : isInProgress ? '⏳ In Progress' : '🔒 Pending'}
-                            </span>
+                            <div style={{ fontSize: '11px', fontWeight: 800, color: m.isDone ? '#15803D' : m.isInProgress ? '#B45309' : 'var(--muted)', textTransform: 'uppercase' }}>
+                              Module {String(m.index).padStart(2, '0')} · {m.days}
+                            </div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginTop: '1px' }}>
+                              {m.title}
+                            </div>
                           </div>
                         </div>
 
-                        {m.description && (
-                          <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '8px', paddingLeft: '38px', lineHeight: 1.5 }}>
-                            {m.description}
-                          </div>
-                        )}
-
-                        {m.instructorNotes && (
-                          <div
-                            style={{
-                              marginTop: '8px',
-                              marginLeft: '38px',
-                              padding: '6px 12px',
-                              background: 'rgba(0,0,0,0.03)',
-                              borderRadius: '6px',
-                              fontSize: '12px',
-                              color: 'var(--ink)',
-                              borderLeft: `3px solid ${isDone ? '#22C55E' : '#F59E0B'}`,
-                            }}
+                        <div>
+                          <span
+                            className={`badge ${m.isDone ? 'badge-success' : m.isInProgress ? 'badge-warning' : 'badge-neutral'}`}
+                            style={{ fontSize: '11px', fontWeight: 700 }}
                           >
-                            👨‍🏫 <strong>Instructor Feedback:</strong> {m.instructorNotes}
-                          </div>
-                        )}
+                            {m.isDone ? '✓ Cleared' : m.isInProgress ? '⏳ In Progress' : '🔒 Pending'}
+                          </span>
+                        </div>
                       </div>
-                    );
-                  })
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '30px', color: 'var(--muted)' }}>
-                    Loading 14-module curriculum...
-                  </div>
-                )}
+
+                      {m.shortDesc && (
+                        <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '8px', paddingLeft: '38px', lineHeight: 1.5 }}>
+                          {m.shortDesc}
+                        </div>
+                      )}
+
+                      {m.notes && (
+                        <div
+                          style={{
+                            marginTop: '8px',
+                            marginLeft: '38px',
+                            padding: '6px 12px',
+                            background: 'rgba(0,0,0,0.03)',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            color: 'var(--ink)',
+                            borderLeft: `3px solid ${m.isDone ? '#22C55E' : '#F59E0B'}`,
+                          }}
+                        >
+                          👨‍🏫 <strong>Instructor Feedback:</strong> {m.notes}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
