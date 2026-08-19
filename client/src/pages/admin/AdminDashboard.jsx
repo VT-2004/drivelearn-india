@@ -1032,14 +1032,24 @@ const AdminDashboard = () => {
                           </td>
                           <td>
                             <span
-                              className={`badge ${s.verificationStatus === 'verified' ? 'badge-success' : 'badge-warning'}`}
+                              className={`badge ${
+                                s.verificationStatus === 'suspended'
+                                  ? 'badge-danger'
+                                  : s.verificationStatus === 'verified'
+                                  ? 'badge-success'
+                                  : 'badge-warning'
+                              }`}
                               style={{ fontSize: '11px' }}
                             >
-                              {s.verificationStatus === 'verified' ? '🟢 Active SaaS Partner' : '🟡 Standard Trial'}
+                              {s.verificationStatus === 'suspended'
+                                ? '🔴 Suspended Academy'
+                                : s.verificationStatus === 'verified'
+                                ? '🟢 Active SaaS Partner'
+                                : '🟡 Standard Trial'}
                             </span>
                           </td>
                           <td style={{ textAlign: 'center' }}>
-                            <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                            <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
                               <button
                                 onClick={() => handleGrantFreeSaas(s.id)}
                                 title="Grant 1-Year Free Verified RTO Partner SaaS"
@@ -1059,6 +1069,33 @@ const AdminDashboard = () => {
                               >
                                 ⚙️ Custom Rights
                               </button>
+                              <button
+                                onClick={() => handleOpenWarning(s)}
+                                title="Send Official Compliance Warning Notice"
+                                className="btn btn-outline btn-sm"
+                                style={{ padding: '4px 8px', fontSize: '11.5px', color: '#B45309', borderColor: '#FDE68A', background: '#FFFBEB' }}
+                              >
+                                ⚠️ Warn
+                              </button>
+                              {s.verificationStatus === 'suspended' ? (
+                                <button
+                                  onClick={() => handleUnsuspend(s.id, s.name)}
+                                  title="Unsuspend and Reinstate Academy"
+                                  className="btn btn-sm"
+                                  style={{ padding: '4px 8px', fontSize: '11.5px', background: '#166534', color: '#FFFFFF' }}
+                                >
+                                  🟢 Unsuspend
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleOpenSuspend(s)}
+                                  title="Suspend Academy License"
+                                  className="btn btn-outline btn-sm"
+                                  style={{ padding: '4px 8px', fontSize: '11.5px', color: 'var(--danger)', borderColor: '#FCA5A5', background: '#FEF2F2' }}
+                                >
+                                  🛑 Suspend
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -1503,6 +1540,125 @@ const AdminDashboard = () => {
                     style={{ background: 'var(--danger)', color: '#FFFFFF', padding: '6px 14px' }}
                   >
                     {suspendLoading ? 'Suspending...' : 'Confirm Suspension'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 4: CUSTOM SAAS SUBSCRIPTION RIGHTS OVERRIDE */}
+        {selectedSchoolForSub && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(16, 24, 32, 0.65)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px',
+            }}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                maxWidth: '500px',
+                width: '100%',
+                padding: '26px',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--ink)' }}>
+                    ⚙️ Custom SaaS Rights
+                  </h3>
+                  <div style={{ fontSize: '12.5px', color: 'var(--muted)', marginTop: '2px' }}>
+                    {selectedSchoolForSub.name} · {selectedSchoolForSub.city}, {selectedSchoolForSub.state}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedSchoolForSub(null)}
+                  style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--muted)' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveSubOverride} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                    SaaS Subscription Plan
+                  </label>
+                  <select
+                    value={overrideForm.plan}
+                    onChange={(e) => setOverrideForm({ ...overrideForm, plan: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}
+                  >
+                    <option value="yearly">⭐ Annual Pro Verified Partner Tier (Yearly)</option>
+                    <option value="monthly">🏢 Starter Monthly Academy Tier (Monthly)</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                      Duration (Months)
+                    </label>
+                    <select
+                      value={overrideForm.durationMonths}
+                      onChange={(e) => setOverrideForm({ ...overrideForm, durationMonths: e.target.value })}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px' }}
+                    >
+                      <option value="1">1 Month</option>
+                      <option value="3">3 Months (Quarterly)</option>
+                      <option value="6">6 Months (Half-Year)</option>
+                      <option value="12">12 Months (1 Year Full)</option>
+                      <option value="24">24 Months (2 Years VIP)</option>
+                      <option value="36">36 Months (3 Years VIP)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px' }}>
+                      Status
+                    </label>
+                    <select
+                      value={overrideForm.status}
+                      onChange={(e) => setOverrideForm({ ...overrideForm, status: e.target.value })}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}
+                    >
+                      <option value="active">🟢 Active / Granted</option>
+                      <option value="expired">🔴 Expired / Revoked</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '12px 14px', borderRadius: '8px', fontSize: '12px', color: '#166534', lineHeight: 1.4 }}>
+                  ✓ Overriding will instantly activate the academy's cloud features, unlock unlimited fleet & instructor onboarding, and notify the school owner.
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSchoolForSub(null)}
+                    className="btn btn-outline btn-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={overrideLoading}
+                    className="btn btn-primary btn-sm"
+                    style={{ padding: '6px 16px', fontWeight: 700 }}
+                  >
+                    {overrideLoading ? 'Saving...' : '💾 Save SaaS Rights'}
                   </button>
                 </div>
               </form>

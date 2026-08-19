@@ -463,27 +463,74 @@ const adminOverrideSchoolSubscription = async (req, res) => {
     const { plan, durationMonths, status } = req.body;
 
     const targetSchoolId = parseInt(schoolId);
+    const school = await prisma.drivingSchool.findUnique({
+      where: { id: targetSchoolId },
+      include: { owner: true },
+    });
+
+    if (!school) {
+      return res.status(404).json({ error: 'Driving school not found' });
+    }
+
     const months = parseInt(durationMonths) || (plan === 'yearly' ? 12 : 1);
     const startDate = new Date();
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
 
-    const subscription = await prisma.subscription.create({
-      data: {
-        schoolId: targetSchoolId,
-        plan: plan || 'yearly',
-        status: status || 'active',
-        startDate,
-        endDate,
-        amount: plan === 'yearly' ? 8999 : 999,
-        paymentId: `admin_grant_${Date.now()}`,
-      },
+    // Normalize plan enum to 'monthly' or 'yearly'
+    const normalizedPlan = (plan === 'monthly' || plan === 'starter') ? 'monthly' : 'yearly';
+    const normalizedStatus = (status === 'expired') ? 'expired' : 'active';
+
+    // Find if school already has an active subscription record
+    const existing = await prisma.subscription.findFirst({
+      where: { schoolId: targetSchoolId },
+      orderBy: { endDate: 'desc' },
     });
+
+    let subscription;
+    if (existing) {
+      subscription = await prisma.subscription.update({
+        where: { id: existing.id },
+        data: {
+          plan: normalizedPlan,
+          status: normalizedStatus,
+          startDate,
+          endDate,
+        },
+      });
+    } else {
+      subscription = await prisma.subscription.create({
+        data: {
+          schoolId: targetSchoolId,
+          plan: normalizedPlan,
+          status: normalizedStatus,
+          startDate,
+          endDate,
+        },
+      });
+    }
+
+    // Notify school owner about the SaaS subscription override
+    try {
+      if (school.ownerId) {
+        await prisma.notification.create({
+          data: {
+            userId: school.ownerId,
+            schoolId: school.id,
+            title: `⭐ VIP SaaS Partner Rights Activated (${months} Months)`,
+            message: `Super Admin granted your academy a ${normalizedPlan.toUpperCase()} SaaS subscription active until ${endDate.toLocaleDateString('en-IN')}. All fleet and instructor limits unlocked.`,
+            type: 'success',
+          },
+        });
+      }
+    } catch (notifErr) {
+      console.error('Failed to notify school owner of subscription grant:', notifErr);
+    }
 
     res.json({ message: 'School subscription updated successfully by Admin', subscription });
   } catch (error) {
     console.error('Admin override subscription error:', error);
-    res.status(500).json({ error: 'Failed to update school subscription' });
+    res.status(500).json({ error: error.message || 'Failed to update school subscription' });
   }
 };
 

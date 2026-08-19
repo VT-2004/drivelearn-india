@@ -1122,15 +1122,44 @@ const LearnerDashboard = () => {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                         <span style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
-                          📅 {new Date(att.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
+                          📅 {new Date(att.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                         </span>
-                        <span className={`badge ${att.status === 'present' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '10.5px' }}>
-                          ✓ {att.status.toUpperCase()}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {att.clockIn && (
+                            <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                              ⏱️ {new Date(att.clockIn).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                          <span className={`badge ${att.status === 'present' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '10.5px' }}>
+                            ✓ {att.status.toUpperCase()}
+                          </span>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '12.5px', color: 'var(--ink)' }}>
-                        {att.notes || 'Practical driving practice successfully logged.'}
-                      </div>
+
+                      {(() => {
+                        const noteText = att.notes || 'Practical driving practice successfully logged.';
+                        const milestoneMatch = noteText.match(/^\[(?:Milestone:\s*)?([^\]]+)\]\s*(.*)$/);
+                        if (milestoneMatch) {
+                          const [, milestoneTitle, remainingNotes] = milestoneMatch;
+                          return (
+                            <div>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--primary-tint)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, marginBottom: '6px' }}>
+                                <span>🎯</span> {milestoneTitle}
+                              </div>
+                              {remainingNotes && (
+                                <div style={{ fontSize: '12.5px', color: 'var(--ink)' }}>
+                                  {remainingNotes}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div style={{ fontSize: '12.5px', color: 'var(--ink)' }}>
+                            {noteText}
+                          </div>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>

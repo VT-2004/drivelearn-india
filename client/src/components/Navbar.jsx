@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const location = useLocation();
 
   const getDashboardRoute = () => {
     if (!user) return '/login';
@@ -20,12 +21,12 @@ const Navbar = () => {
       </Link>
 
       <nav className="pub-nav">
-        <Link to="/" className="active">Home</Link>
-        <Link to="/learner">Find Driving School</Link>
-        <Link to="/aptitude-test">Driving Quiz</Link>
-        <Link to="/for-learners">Courses</Link>
-        <Link to="/for-schools">For Schools</Link>
-        <Link to="/contact">Help & Contact</Link>
+        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+        <Link to="/learner" className={location.pathname.startsWith('/learner') ? 'active' : ''}>Find Driving School</Link>
+        <Link to="/aptitude-test" className={location.pathname.startsWith('/aptitude-test') ? 'active' : ''}>Driving Quiz</Link>
+        <Link to="/for-learners" className={location.pathname.startsWith('/for-learners') ? 'active' : ''}>Courses</Link>
+        <Link to="/for-schools" className={location.pathname.startsWith('/for-schools') ? 'active' : ''}>For Schools</Link>
+        <Link to="/contact" className={location.pathname.startsWith('/contact') ? 'active' : ''}>Help & Contact</Link>
       </nav>
 
       <div className="pub-actions">

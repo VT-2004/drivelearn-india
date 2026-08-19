@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import LocationPicker from '../../components/LocationPicker';
+import NotificationBell from '../../components/NotificationBell';
 import {
   getMySchool,
   updateSchool,
@@ -31,7 +32,7 @@ import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
 const SchoolDashboard = () => {
-  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, students, instructors, vehicles, courses, schedule, payments, subscription, reviews, settings
+  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, students, instructors, vehicles, courses, schedule, payments, subscription, notices, reviews, settings
   const [school, setSchool] = useState(null);
   const [stats, setStats] = useState(null);
   const [instructors, setInstructors] = useState([]);
@@ -58,7 +59,7 @@ const SchoolDashboard = () => {
     const pin = Math.floor(1000 + Math.random() * 9000);
     setInstructorForm((prev) => ({ ...prev, password: `DL-Inst@${pin}` }));
   };
-  
+
   const [showAddCourseModal, setShowAddCourseModal] = useState(false);
   const [courseForm, setCourseForm] = useState({ title: '', price: '', durationDays: '15', description: '', instructorId: '' });
 
@@ -595,7 +596,8 @@ const SchoolDashboard = () => {
             </div>
           </div>
 
-          <div className="topbar-right">
+          <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <NotificationBell onSelectNotification={() => setActiveTab('notices')} />
             <button
               onClick={() => loadData()}
               className="btn btn-outline btn-sm"
@@ -1137,9 +1139,8 @@ const SchoolDashboard = () => {
                             </td>
                             <td style={{ textAlign: 'left' }}>
                               <span
-                                className={`badge ${
-                                  v.dualControlStatus?.includes('Certified') ? 'badge-success' : 'badge-neutral'
-                                }`}
+                                className={`badge ${v.dualControlStatus?.includes('Certified') ? 'badge-success' : 'badge-neutral'
+                                  }`}
                                 style={{ fontSize: '11px' }}
                               >
                                 {v.dualControlStatus || 'Dual-Control'}
@@ -1559,13 +1560,12 @@ const SchoolDashboard = () => {
                               </td>
                               <td style={{ textAlign: 'left' }}>
                                 <span
-                                  className={`badge ${
-                                    b.status === 'confirmed'
+                                  className={`badge ${b.status === 'confirmed'
                                       ? 'badge-success'
                                       : b.status === 'pending'
-                                      ? 'badge-warning'
-                                      : 'badge-danger'
-                                  }`}
+                                        ? 'badge-warning'
+                                        : 'badge-danger'
+                                    }`}
                                 >
                                   {b.status === 'confirmed' ? '✓ Confirmed' : b.status === 'pending' ? '▲ Pending' : '✕ Cancelled'}
                                 </span>
