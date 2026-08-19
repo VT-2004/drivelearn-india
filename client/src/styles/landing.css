@@ -842,26 +842,71 @@ button {
   line-height: 1.6;
 }
 
-/* ============ RESPONSIVE MEDIA QUERIES ============ */
+/* ============ RESPONSIVE MEDIA QUERIES & MOBILE NAVIGATION ============ */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: flex;
+}
+
 @media (max-width: 1024px) {
   .search-grid { grid-template-columns: 1fr 1fr; }
   .school-grid { grid-template-columns: repeat(2, 1fr); }
   .value-strip { grid-template-columns: repeat(2, 1fr); }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-inner { grid-template-columns: 1fr 1fr; }
+  .split-hero { grid-template-columns: 1fr; gap: 32px; padding: 48px 24px; }
+  .benefits { padding: 48px 24px; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+}
+
+@media (max-width: 860px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: flex !important;
+  }
+  .pub-header {
+    padding: 12px 18px;
+  }
+  .pub-logo {
+    font-size: 19px;
+  }
 }
 
 @media (max-width: 768px) {
-  .pub-header { padding: 12px 20px; }
-  .pub-nav { display: none; }
-  .hero { padding: 50px 20px 90px; }
-  .hero h1 { font-size: 34px; }
-  .search-card { margin-top: -40px; padding: 20px 16px; }
-  .search-grid { grid-template-columns: 1fr; }
+  .hero { padding: 40px 18px 80px; }
+  .hero h1 { font-size: 28px; line-height: 1.2; }
+  .hero p { font-size: 15px; }
+  .search-card { margin-top: -30px; padding: 18px 14px; border-radius: 14px; }
+  .search-grid { grid-template-columns: 1fr; gap: 12px; }
   .school-grid { grid-template-columns: 1fr; }
-  .value-strip { grid-template-columns: 1fr; }
+  .value-strip { grid-template-columns: 1fr; gap: 12px; }
   .stats-grid { grid-template-columns: 1fr; }
   .footer-inner { grid-template-columns: 1fr; }
-  .promo-banner-inner { padding: 20px; }
-  .section { padding: 40px 16px; }
+  .promo-banner-inner { padding: 18px; }
+  .section { padding: 36px 14px; }
+  
+  /* Tables on mobile */
+  .comparison-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Form and Button Full-Width on Mobile */
+  .btn-lg {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 24px; }
+  .pub-logo { font-size: 17px; }
+  .pub-logo-badge { width: 28px; height: 28px; font-size: 14px; }
+  .contact-hero h1 { font-size: 26px; }
 }
