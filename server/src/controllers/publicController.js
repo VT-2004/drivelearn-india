@@ -60,7 +60,7 @@ const searchSchools = async (req, res) => {
     if (lat && lng) {
       const userLat = parseFloat(lat);
       const userLng = parseFloat(lng);
-      const radius = radiusKm ? parseFloat(radiusKm) : 50; // default 500km radius
+      const radius = radiusKm ? parseFloat(radiusKm) : 50; // default 50km radius
 
       schoolsWithPricing = schoolsWithPricing
         .filter((s) => s.latitude != null && s.longitude != null)
@@ -93,6 +93,7 @@ const getSchoolProfile = async (req, res) => {
           orderBy: { id: 'asc' },
         },
         branches: true,
+        vehicles: true,
         instructors: {
           include: {
             user: { select: { name: true, phone: true } },
@@ -113,44 +114,14 @@ const getSchoolProfile = async (req, res) => {
       return res.status(404).json({ error: 'School not found' });
     }
 
-    const now = new Date();
-    const nowTimeStr = now.toLocaleTimeString('en-IN', {
-      timeZone: 'Asia/Kolkata',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-    const todayStart = new Date(now);
-    todayStart.setHours(0, 0, 0, 0);
-
-    const instructorsWithActiveSlots = school.instructors.map((inst) => {
-      const activeSlots = (inst.availabilitySlots || []).filter((s) => {
-        const sDate = new Date(s.date);
-        sDate.setHours(0, 0, 0, 0);
-        if (sDate < todayStart) return false;
-        if (sDate.getTime() === todayStart.getTime()) {
-          return (s.endTime || s.startTime) > nowTimeStr;
-        }
-        return true;
-      });
-      return { ...inst, availabilitySlots: activeSlots };
-    });
-
-    const avgRating = (school.reviews && school.reviews.length > 0)
+    const avgRating = school.reviews.length > 0
       ? (school.reviews.reduce((sum, r) => sum + r.rating, 0) / school.reviews.length).toFixed(1)
       : null;
 
-    res.json({
-      school: {
-        ...school,
-        instructors: instructorsWithActiveSlots,
-        avgRating,
-        reviewCount: (school.reviews || []).length,
-      },
-    });
+    res.json({ school: { ...school, avgRating, reviewCount: school.reviews.length } });
   } catch (error) {
     console.error('Get school profile error:', error);
-    res.status(500).json({ error: error.message || 'Something went wrong fetching school' });
+    res.status(500).json({ error: 'Something went wrong' });
   }
 };
 

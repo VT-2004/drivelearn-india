@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { IconSteeringWheel } from './Icons';
 
 const Footer = () => {
   return (
@@ -38,19 +39,18 @@ const Footer = () => {
               style={{
                 width: '36px',
                 height: '36px',
-                background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
+                background: 'linear-gradient(135deg, #B3182F 0%, #E1712E 100%)',
                 borderRadius: '10px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '18px',
-                boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)',
+                boxShadow: '0 4px 12px rgba(179, 24, 47, 0.3)',
               }}
             >
-              🚗
+              <IconSteeringWheel size={20} color="#FFFFFF" strokeWidth={2.2} />
             </div>
             <div style={{ fontSize: '20px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-              Drive<span style={{ color: '#F97316' }}>Learn</span> India
+              Drive<span style={{ color: '#E1712E' }}>Learn</span> India
             </div>
           </Link>
 

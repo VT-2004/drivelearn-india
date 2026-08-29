@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { IconSteeringWheel, IconWallet } from './Icons';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -24,7 +25,9 @@ const Navbar = () => {
     <header className="pub-header" style={{ top: 0, position: 'sticky', zIndex: 999 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', maxWidth: '1240px', margin: '0 auto' }}>
         <Link to="/" className="pub-logo" style={{ textDecoration: 'none' }}>
-          <div className="pub-logo-badge">🚗</div>
+          <div className="pub-logo-badge" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconSteeringWheel size={22} color="#FFFFFF" strokeWidth={2.2} />
+          </div>
           <div>Drive<span>Learn</span> India</div>
         </Link>
 
@@ -40,8 +43,8 @@ const Navbar = () => {
 
         {/* Desktop Actions */}
         <div className="pub-actions desktop-only">
-          <Link to="/learner" className="wallet-chip" title="₹15 Welcome bonus credited on signup!">
-            <span>🎁</span> ₹15 Wallet
+          <Link to="/learner" className="wallet-chip" title="₹15 Welcome bonus credited on signup!" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <IconWallet size={15} color="var(--primary)" /> ₹15 Wallet
           </Link>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -69,8 +72,8 @@ const Navbar = () => {
 
         {/* Mobile Hamburger Button */}
         <div className="mobile-only" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link to="/learner" className="wallet-chip" style={{ fontSize: '11.5px', padding: '4px 10px' }}>
-            <span>🎁</span> ₹15
+          <Link to="/learner" className="wallet-chip" style={{ fontSize: '11.5px', padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <IconWallet size={14} color="var(--primary)" /> ₹15
           </Link>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
