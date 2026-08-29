@@ -23,6 +23,7 @@ import {
   IconWallet,
   IconSearch,
   IconSliders,
+  IconCompass,
   IconBuilding,
   IconHelpCircle,
   IconChevronDown,
