@@ -14,23 +14,16 @@ import {
   IconStar,
   IconCheckCircle,
   IconArrowRight,
-  IconUser,
   IconUserCheck,
-  IconPhone,
   IconBookOpen,
-  IconAlertCircle,
   IconCheck,
   IconWallet,
   IconSearch,
-  IconSliders,
-  IconCompass,
   IconBuilding,
-  IconHelpCircle,
-  IconChevronDown,
+  IconCompass,
   SignStop,
   SignGiveWay,
   SignNoStopping,
-  SignSpeedLimit50,
 } from '../../components/Icons';
 import '../../styles/landing.css';
 
@@ -122,7 +115,6 @@ const Home = () => {
               price: 4999,
               vehiclesCount: 6,
               verified: true,
-              image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=70',
             },
             {
               id: 2,
@@ -135,7 +127,6 @@ const Home = () => {
               price: 4499,
               vehiclesCount: 5,
               verified: true,
-              image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=70',
             },
             {
               id: 3,
@@ -148,7 +139,6 @@ const Home = () => {
               price: 5299,
               vehiclesCount: 8,
               verified: true,
-              image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=600&q=70',
             },
           ]);
         }
@@ -242,7 +232,6 @@ const Home = () => {
       role: 'Software Engineer',
       location: 'Indiranagar, Bengaluru',
       rating: 5,
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
       story: 'I was terrified of stalling at Bengaluru traffic signals. My instructor, Suresh, spent the first 4 sessions solely on clutch bite-point control in a closed yard. Passed my RTO test at Kasturi Nagar in my very first attempt with zero negative points!',
       course: '28-Day Comprehensive Car Course',
     },
@@ -251,7 +240,6 @@ const Home = () => {
       role: 'Product Designer',
       location: 'Kothrud, Pune',
       rating: 5,
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
       story: 'The online slot rescheduling is a lifesaver. When my office schedule changed, I could move my 7:00 AM slot to 5:30 PM with one tap. The dual-control Maruti Swift felt extremely safe even on crowded FC Road traffic.',
       course: '15-Day Fast-Track Manual',
     },
@@ -260,7 +248,6 @@ const Home = () => {
       role: 'Doctor',
       location: 'Dwarka, Delhi NCR',
       rating: 5,
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80',
       story: 'Having a dedicated female instructor was important for me. DriveLearn matched me with Ananya at Apex Academy. She patiently taught me parallel parking and flyover slope hold without raising her voice once.',
       course: '21-Day Automatic / EV Course',
     },
@@ -291,163 +278,142 @@ const Home = () => {
   ];
 
   return (
-    <div style={{ background: '#FAF8F5', minHeight: '100vh', color: 'var(--ink)' }}>
+    <div style={{ background: '#FFFFFF', minHeight: '100vh', color: '#1E293B', fontFamily: 'var(--font-body)' }}>
       <Navbar />
 
-      {/* 1. HERO SECTION: HANDCRAFTED, AUTHENTIC & GROUNDED */}
+      {/* 1. HERO SECTION: CLEAN RED & WHITE INSTITUTIONAL THEME */}
       <section
         style={{
-          background: 'linear-gradient(145deg, #101622 0%, #1A2332 55%, #121824 100%)',
-          color: '#FFFFFF',
-          padding: '60px 24px 76px',
-          position: 'relative',
-          overflow: 'hidden',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: '#FFFFFF',
+          borderBottom: '1px solid #E2E8F0',
+          padding: '50px 24px 60px',
         }}
       >
-        {/* Subtle Architectural Grid Lines */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            opacity: 0.04,
-            backgroundImage: 'radial-gradient(#FFFFFF 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-            pointerEvents: 'none',
-          }}
-        />
-
-        <div style={{ maxWidth: '1220px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.18fr 0.82fr', gap: '48px', alignItems: 'center', position: 'relative', zIndex: 2 }}>
-          {/* Left Column: Authentic Copy & Search Engine */}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '40px', alignItems: 'center' }}>
+          {/* Left Column: Clean Headline & Search Engine */}
           <div>
-            {/* Trust Pill */}
+            {/* Red Badge */}
             <div
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.16)',
+                background: '#FDF2F4',
+                border: '1px solid #F8D7DA',
                 padding: '6px 14px',
-                borderRadius: '999px',
+                borderRadius: '6px',
                 fontSize: '12.5px',
-                fontWeight: 600,
-                color: '#E2E8F0',
-                marginBottom: '20px',
+                fontWeight: 700,
+                color: '#B3182F',
+                marginBottom: '18px',
               }}
             >
-              <IconShieldCheck size={16} color="#4ADE80" />
-              <span>Ministry of Road Transport & Highways (MoRTH) Standardized Curriculum</span>
+              <IconShieldCheck size={16} color="#B3182F" />
+              <span>Government of India (MoRTH) Standardized Driving Network</span>
             </div>
 
             <h1
               style={{
-                fontSize: '44px',
-                fontWeight: 900,
-                lineHeight: 1.15,
-                color: '#FFFFFF',
-                margin: '0 0 16px',
-                letterSpacing: '-0.025em',
+                fontSize: '40px',
+                fontWeight: 800,
+                lineHeight: 1.2,
+                color: '#1E293B',
+                margin: '0 0 14px',
+                letterSpacing: '-0.02em',
               }}
             >
-              Learn driving on real roads.<br />
-              <span style={{ color: '#F59E0B' }}>
-                With instructors who teach with patience.
+              Learn Driving on Real Roads.<br />
+              <span style={{ color: '#B3182F' }}>
+                With Verified RTO Driving Schools.
               </span>
             </h1>
 
             <p
               style={{
-                fontSize: '16px',
-                color: '#CBD5E1',
+                fontSize: '15.5px',
+                color: '#475569',
                 lineHeight: 1.6,
-                marginBottom: '28px',
+                marginBottom: '26px',
                 maxWidth: '560px',
               }}
             >
-              Compare licensed RTO driving academies, train on verified dual-control cars, practice on official 8-tracks, and track all 14 practical skills to earn your official Form 5 certificate.
+              Compare licensed driving schools, train in dual-control cars, practice on official 8-tracks, and track all 14 practical driving skills to clear your RTO license test.
             </p>
 
-            {/* Tactile Search Bar */}
+            {/* Plain Search Box */}
             <div
               style={{
-                background: '#FFFFFF',
-                borderRadius: '16px',
+                background: '#F8F9FA',
+                borderRadius: '12px',
                 padding: '20px',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                color: 'var(--ink)',
+                border: '1px solid #E2E8F0',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                <IconSearch size={16} color="var(--primary)" />
-                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
-                  FIND LICENSED DRIVING ACADEMIES
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <IconSearch size={16} color="#B3182F" />
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#B3182F', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                  SEARCH DRIVING SCHOOLS NEAR YOU
                 </span>
               </div>
 
-              <form onSubmit={handleHeroSearch} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr auto', gap: '12px', alignItems: 'end' }}>
+              <form onSubmit={handleHeroSearch} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr auto', gap: '10px', alignItems: 'end' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase' }}>
-                    City / Locality
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                    City
                   </label>
-                  <div style={{ position: 'relative' }}>
-                    <select
-                      value={searchFilters.city}
-                      onChange={(e) => setSearchFilters({ ...searchFilters, city: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        border: '1.5px solid #E2E8F0',
-                        fontSize: '13.5px',
-                        fontWeight: 600,
-                        background: '#FFFFFF',
-                        color: 'var(--ink)',
-                        outline: 'none',
-                      }}
-                    >
-                      <option value="Bengaluru">Bengaluru (KA)</option>
-                      <option value="Mumbai">Mumbai (MH)</option>
-                      <option value="Delhi">Delhi NCR</option>
-                      <option value="Pune">Pune (MH)</option>
-                      <option value="Hyderabad">Hyderabad (TS)</option>
-                      <option value="Chennai">Chennai (TN)</option>
-                      <option value="Kolkata">Kolkata (WB)</option>
-                      <option value="Ahmedabad">Ahmedabad (GJ)</option>
-                    </select>
-                  </div>
+                  <select
+                    value={searchFilters.city}
+                    onChange={(e) => setSearchFilters({ ...searchFilters, city: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '9px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      background: '#FFFFFF',
+                      color: '#1E293B',
+                      outline: 'none',
+                    }}
+                  >
+                    <option value="Bengaluru">Bengaluru (KA)</option>
+                    <option value="Mumbai">Mumbai (MH)</option>
+                    <option value="Delhi">Delhi NCR</option>
+                    <option value="Pune">Pune (MH)</option>
+                    <option value="Hyderabad">Hyderabad (TS)</option>
+                    <option value="Chennai">Chennai (TN)</option>
+                    <option value="Kolkata">Kolkata (WB)</option>
+                    <option value="Ahmedabad">Ahmedabad (GJ)</option>
+                  </select>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase' }}>
-                    Vehicle Type
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                    Vehicle
                   </label>
                   <select
                     value={searchFilters.category}
                     onChange={(e) => setSearchFilters({ ...searchFilters, category: e.target.value })}
                     style={{
                       width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: '1.5px solid #E2E8F0',
-                      fontSize: '13.5px',
+                      padding: '9px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '13px',
                       fontWeight: 600,
                       background: '#FFFFFF',
-                      color: 'var(--ink)',
+                      color: '#1E293B',
                       outline: 'none',
                     }}
                   >
                     <option value="4-wheeler">4-Wheeler Car</option>
-                    <option value="2-wheeler">2-Wheeler (MCWG)</option>
+                    <option value="2-wheeler">2-Wheeler (Bike/Scooter)</option>
                     <option value="commercial">Commercial LMV</option>
                   </select>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase' }}>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                     Transmission
                   </label>
                   <select
@@ -455,13 +421,13 @@ const Home = () => {
                     onChange={(e) => setSearchFilters({ ...searchFilters, transmission: e.target.value })}
                     style={{
                       width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: '1.5px solid #E2E8F0',
-                      fontSize: '13.5px',
+                      padding: '9px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '13px',
                       fontWeight: 600,
                       background: '#FFFFFF',
-                      color: 'var(--ink)',
+                      color: '#1E293B',
                       outline: 'none',
                     }}
                   >
@@ -472,66 +438,70 @@ const Home = () => {
 
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="btn"
                   style={{
-                    padding: '11px 22px',
-                    fontWeight: 800,
-                    fontSize: '13.5px',
+                    background: '#B3182F',
+                    color: '#FFFFFF',
+                    padding: '10px 20px',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    borderRadius: '6px',
+                    border: 'none',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    height: '42px',
+                    gap: '6px',
+                    height: '38px',
+                    cursor: 'pointer',
                   }}
                 >
                   <span>Search</span>
-                  <IconArrowRight size={16} />
+                  <IconArrowRight size={15} />
                 </button>
               </form>
             </div>
 
-            {/* Humanized Trust Signals */}
+            {/* Plain Trust Chips */}
             <div
               style={{
                 display: 'flex',
-                gap: '20px',
-                marginTop: '20px',
+                gap: '18px',
+                marginTop: '16px',
                 fontSize: '12.5px',
-                color: '#CBD5E1',
+                color: '#475569',
                 flexWrap: 'wrap',
               }}
             >
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <IconCheck size={15} color="#4ADE80" strokeWidth={2.5} /> Dual-Control Safety Pedals
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <IconCheck size={14} color="#B3182F" strokeWidth={2.5} /> Dual-Control Safety Cars
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <IconCheck size={15} color="#4ADE80" strokeWidth={2.5} /> Lady Instructors on Request
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <IconCheck size={14} color="#B3182F" strokeWidth={2.5} /> Female Instructors Available
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <IconCheck size={15} color="#4ADE80" strokeWidth={2.5} /> Instant Wallet Refunds
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <IconCheck size={14} color="#B3182F" strokeWidth={2.5} /> 100% Wallet Refund Protection
               </span>
             </div>
           </div>
 
-          {/* Right Column: Authentic Academy Training Docket Simulation */}
+          {/* Right Column: Clean Academy Preview Card */}
           <div>
             <div
               style={{
-                background: 'rgba(255, 255, 255, 0.06)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.14)',
-                borderRadius: '18px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRadius: '12px',
                 padding: '24px',
-                boxShadow: '0 24px 48px rgba(0,0,0,0.35)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', borderBottom: '1px solid #F1F5F9', paddingBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div
                     style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #B3182F 0%, #E1712E 100%)',
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '8px',
+                      background: '#B3182F',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -539,53 +509,48 @@ const Home = () => {
                       flexShrink: 0,
                     }}
                   >
-                    <IconCar size={24} color="#FFFFFF" strokeWidth={2} />
+                    <IconCar size={22} color="#FFFFFF" strokeWidth={2} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '15px', color: '#FFFFFF' }}>
+                    <div style={{ fontWeight: 800, fontSize: '15px', color: '#1E293B' }}>
                       Royal Crown Driving Academy
                     </div>
-                    <div style={{ fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                      <IconMapPin size={13} color="#94A3B8" /> Indiranagar, Bengaluru · RTO KA-03 Accredited
+                    <div style={{ fontSize: '12px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                      <IconMapPin size={13} color="#64748B" /> Indiranagar, Bengaluru · RTO Verified
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#4ADE80', padding: '4px 8px', borderRadius: '6px', fontSize: '11.5px', fontWeight: 800 }}>
-                  <IconStar size={12} color="#4ADE80" /> 4.9 (420+ Reviews)
+                <div style={{ background: '#FDF2F4', color: '#B3182F', border: '1px solid #F8D7DA', padding: '3px 8px', borderRadius: '4px', fontSize: '11.5px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <IconStar size={12} color="#B3182F" /> 4.9 (420+ Reviews)
                 </div>
               </div>
 
-              {/* Course Docket Box */}
-              <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', fontSize: '12.5px' }}>
-                  <span style={{ color: '#94A3B8' }}>Package:</span>
-                  <strong style={{ color: '#FDE047' }}>28-Day Comprehensive Car Course</strong>
+              {/* Course Detail Table */}
+              <div style={{ background: '#F8F9FA', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12.5px' }}>
+                  <span style={{ color: '#64748B' }}>Training Course:</span>
+                  <strong style={{ color: '#1E293B' }}>28-Day Comprehensive Car Course</strong>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', fontSize: '12.5px' }}>
-                  <span style={{ color: '#94A3B8' }}>Training Fleet:</span>
-                  <strong style={{ color: '#FFFFFF' }}>Maruti Swift Dual-Brake (KA-03-MB-4102)</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12.5px' }}>
+                  <span style={{ color: '#64748B' }}>Training Car:</span>
+                  <strong style={{ color: '#1E293B' }}>Maruti Swift Dual-Brake (KA-03)</strong>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '12.5px' }}>
-                  <span style={{ color: '#94A3B8' }}>Assigned Instructor:</span>
-                  <strong style={{ color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <IconUserCheck size={14} color="#4ADE80" /> Suresh Kumar (9 Yrs Exp)
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '12.5px' }}>
+                  <span style={{ color: '#64748B' }}>Certified Instructor:</span>
+                  <strong style={{ color: '#1E293B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <IconUserCheck size={13} color="#15803D" /> Suresh Kumar (9 Yrs Exp)
                   </strong>
                 </div>
 
-                {/* Milestone Progress Bar */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', marginBottom: '6px' }}>
-                    <span style={{ color: '#CBD5E1' }}>14-Module Practical Progress</span>
-                    <span style={{ color: '#4ADE80', fontWeight: 800 }}>8 of 14 Cleared (60%)</span>
+                {/* Progress Bar */}
+                <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', marginBottom: '5px' }}>
+                    <span style={{ color: '#475569', fontWeight: 600 }}>14-Module Practical Progress</span>
+                    <span style={{ color: '#B3182F', fontWeight: 800 }}>8 of 14 Cleared (60%)</span>
                   </div>
-                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.15)', borderRadius: '999px', overflow: 'hidden' }}>
-                    <div style={{ width: '60%', height: '100%', background: 'linear-gradient(90deg, #E1712E 0%, #22C55E 100%)', borderRadius: '999px' }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#94A3B8', marginTop: '6px' }}>
-                    <span>✓ 8-Track Cleared</span>
-                    <span>✓ H-Bay Cleared</span>
-                    <span style={{ color: '#FDE047' }}>⏳ Next: Flyover Slope</span>
+                  <div style={{ width: '100%', height: '7px', background: '#E2E8F0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '60%', height: '100%', background: '#B3182F', borderRadius: '4px' }} />
                   </div>
                 </div>
               </div>
@@ -594,38 +559,39 @@ const Home = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <Link
                   to="/learner"
-                  className="btn"
                   style={{
-                    background: '#FFFFFF',
-                    color: '#0F172A',
+                    background: '#B3182F',
+                    color: '#FFFFFF',
                     textAlign: 'center',
-                    padding: '10px',
+                    padding: '9px',
                     fontSize: '12.5px',
                     fontWeight: 700,
-                    borderRadius: '8px',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
+                    gap: '5px',
                   }}
                 >
-                  <IconCalendar size={14} /> Book Training Slot
+                  <IconCalendar size={14} /> Book Lesson Slot
                 </Link>
                 <Link
                   to="/aptitude-test"
-                  className="btn"
                   style={{
-                    background: 'linear-gradient(135deg, #B3182F 0%, #8B0E20 100%)',
-                    color: '#FFFFFF',
+                    background: '#FFFFFF',
+                    color: '#1E293B',
+                    border: '1px solid #CBD5E1',
                     textAlign: 'center',
-                    padding: '10px',
+                    padding: '9px',
                     fontSize: '12.5px',
                     fontWeight: 700,
-                    borderRadius: '8px',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
+                    gap: '5px',
                   }}
                 >
                   <IconBookOpen size={14} /> Free Mock Test
@@ -636,116 +602,114 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 2. REAL IMPACT NUMBERS STRIP */}
-      <section style={{ background: '#FFFFFF', borderBottom: '1px solid var(--line)', padding: '36px 24px' }}>
+      {/* 2. PLAIN STATS STRIP */}
+      <section style={{ background: '#F8F9FA', borderBottom: '1px solid #E2E8F0', padding: '30px 24px' }}>
         <div
           style={{
-            maxWidth: '1180px',
+            maxWidth: '1200px',
             margin: '0 auto',
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '32px',
+            gap: '24px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--primary-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', flexShrink: 0 }}>
-              <IconAward size={24} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '8px', background: '#FDF2F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B3182F', flexShrink: 0 }}>
+              <IconAward size={22} color="#B3182F" />
             </div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--ink)', fontFamily: 'var(--font-mono)' }}>50,000+</div>
-              <div style={{ fontSize: '12.5px', color: 'var(--muted)', fontWeight: 600 }}>Certified Drivers Graduated</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: '#B3182F', fontFamily: 'var(--font-mono)' }}>50,000+</div>
+              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Trained Licensed Drivers</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--orange-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--orange)', flexShrink: 0 }}>
-              <IconBuilding size={24} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '8px', background: '#FDF2F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B3182F', flexShrink: 0 }}>
+              <IconBuilding size={22} color="#B3182F" />
             </div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--ink)', fontFamily: 'var(--font-mono)' }}>1,200+</div>
-              <div style={{ fontSize: '12.5px', color: 'var(--muted)', fontWeight: 600 }}>RTO-Accredited Academies</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: '#B3182F', fontFamily: 'var(--font-mono)' }}>1,200+</div>
+              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>RTO Verified Academies</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#15803D', flexShrink: 0 }}>
-              <IconCheckCircle size={24} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '8px', background: '#FDF2F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B3182F', flexShrink: 0 }}>
+              <IconCheckCircle size={22} color="#B3182F" />
             </div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--ink)', fontFamily: 'var(--font-mono)' }}>98.4%</div>
-              <div style={{ fontSize: '12.5px', color: 'var(--muted)', fontWeight: 600 }}>First-Attempt RTO Test Pass Rate</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: '#B3182F', fontFamily: 'var(--font-mono)' }}>98.4%</div>
+              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>First-Attempt Pass Rate</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F172A', flexShrink: 0 }}>
-              <IconCompass size={24} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '8px', background: '#FDF2F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B3182F', flexShrink: 0 }}>
+              <IconCompass size={22} color="#B3182F" />
             </div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--ink)', fontFamily: 'var(--font-mono)' }}>40+ Cities</div>
-              <div style={{ fontSize: '12.5px', color: 'var(--muted)', fontWeight: 600 }}>Across 18 Indian States</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: '#B3182F', fontFamily: 'var(--font-mono)' }}>40+ Cities</div>
+              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Across India</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. INTERACTIVE RTO ROAD SIGN SIMULATOR */}
-      <section style={{ padding: '72px 24px', background: '#F4F5F2' }}>
-        <div style={{ maxWidth: '980px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '11.5px', letterSpacing: '1.2px', textTransform: 'uppercase', background: 'var(--primary-tint)', padding: '4px 12px', borderRadius: '999px' }}>
-              PRACTICE OFFICIAL RTO QUESTIONS
+      {/* 3. INTERACTIVE RTO ROAD SIGN QUIZ */}
+      <section style={{ padding: '60px 24px', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ maxWidth: '920px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <span style={{ color: '#B3182F', fontWeight: 700, fontSize: '11.5px', textTransform: 'uppercase', background: '#FDF2F4', padding: '4px 10px', borderRadius: '4px', border: '1px solid #F8D7DA' }}>
+              RTO TEST PREPARATION
             </span>
-            <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '10px 0 8px', color: 'var(--ink)', letterSpacing: '-0.02em' }}>
-              Interactive Road Sign & Traffic Rule Simulator
+            <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '8px 0 6px', color: '#1E293B' }}>
+              RTO Road Sign & Traffic Rule Practice
             </h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14.5px', maxWidth: '620px', margin: '0 auto' }}>
-              Over 40% of learner permit applicants fail the computer aptitude test on road sign technicalities. Test your reflexes on authentic RTO test questions:
+            <p style={{ color: '#64748B', fontSize: '14px', maxWidth: '580px', margin: '0 auto' }}>
+              Test your understanding of official Indian traffic rules before your learner permit exam:
             </p>
           </div>
 
           <div
             style={{
-              background: '#FFFFFF',
-              borderRadius: '16px',
-              padding: '28px',
-              border: '1px solid var(--line)',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.05)',
+              background: '#F8F9FA',
+              borderRadius: '10px',
+              padding: '24px',
+              border: '1px solid #E2E8F0',
             }}
           >
-            {/* Question Header */}
             {(() => {
               const currentQ = quizQuestions[currentQuizIndex];
               const SignComp = currentQ.SignComponent;
               return (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', borderBottom: '1px solid var(--line)', paddingBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ flexShrink: 0, padding: '4px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                        <SignComp size={54} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #E2E8F0', paddingBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ flexShrink: 0, padding: '4px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+                        <SignComp size={48} />
                       </div>
                       <div>
-                        <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700 }}>
+                        <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 700 }}>
                           Question {currentQuizIndex + 1} of {quizQuestions.length} · {currentQ.signName}
                         </div>
-                        <div style={{ fontSize: '15.5px', fontWeight: 800, color: 'var(--ink)', marginTop: '2px', lineHeight: 1.4 }}>
+                        <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#1E293B', marginTop: '2px', lineHeight: 1.4 }}>
                           {currentQ.question}
                         </div>
                       </div>
                     </div>
 
-                    <span style={{ background: 'var(--primary-tint)', color: 'var(--primary)', padding: '5px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 800 }}>
+                    <span style={{ background: '#FDF2F4', color: '#B3182F', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 800, border: '1px solid #F8D7DA' }}>
                       Score: {quizScore} / {quizQuestions.length}
                     </span>
                   </div>
 
-                  {/* Options Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+                  {/* Options */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '10px', marginBottom: '16px' }}>
                     {currentQ.options.map((opt, idx) => {
                       const isSelected = selectedQuizOption === idx;
-                      let bg = '#FAFAFA';
-                      let borderColor = '#E2E8F0';
-                      let textColor = 'var(--ink)';
+                      let bg = '#FFFFFF';
+                      let borderColor = '#CBD5E1';
+                      let textColor = '#1E293B';
 
                       if (quizAnswered) {
                         if (opt.correct) {
@@ -767,32 +731,31 @@ const Home = () => {
                           onClick={() => handleQuizSelect(idx, opt.correct)}
                           style={{
                             background: bg,
-                            border: `1.5px solid ${borderColor}`,
-                            borderRadius: '10px',
-                            padding: '14px 16px',
+                            border: `1px solid ${borderColor}`,
+                            borderRadius: '8px',
+                            padding: '12px 14px',
                             textAlign: 'left',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '12px',
+                            gap: '10px',
                             cursor: quizAnswered ? 'default' : 'pointer',
                             color: textColor,
-                            fontSize: '13.5px',
+                            fontSize: '13px',
                             fontWeight: 600,
                             lineHeight: 1.4,
-                            transition: 'all 0.15s ease',
                           }}
                         >
                           <span
                             style={{
-                              width: '26px',
-                              height: '26px',
-                              borderRadius: '50%',
-                              background: '#FFFFFF',
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '4px',
+                              background: '#F1F5F9',
                               border: '1px solid #CBD5E1',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '12px',
+                              fontSize: '11px',
                               fontWeight: 800,
                               flexShrink: 0,
                             }}
@@ -805,26 +768,26 @@ const Home = () => {
                     })}
                   </div>
 
-                  {/* Explanation & Next */}
+                  {/* Explanation */}
                   {quizAnswered && (
                     <div
                       style={{
                         background: selectedQuizOption !== null && currentQ.options[selectedQuizOption].correct ? '#F0FDF4' : '#FEF2F2',
-                        border: `1.5px solid ${selectedQuizOption !== null && currentQ.options[selectedQuizOption].correct ? '#86EFAC' : '#FCA5A5'}`,
-                        borderRadius: '10px',
-                        padding: '16px 20px',
+                        border: `1px solid ${selectedQuizOption !== null && currentQ.options[selectedQuizOption].correct ? '#86EFAC' : '#FCA5A5'}`,
+                        borderRadius: '8px',
+                        padding: '14px 16px',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         flexWrap: 'wrap',
-                        gap: '12px',
+                        gap: '10px',
                       }}
                     >
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: '13.5px', color: selectedQuizOption !== null && currentQ.options[selectedQuizOption].correct ? '#15803D' : '#B91C1C' }}>
-                          {selectedQuizOption !== null && currentQ.options[selectedQuizOption].correct ? '✓ Correct! Excellent road reflex.' : '✗ Incorrect observation.'}
+                        <div style={{ fontWeight: 800, fontSize: '13px', color: selectedQuizOption !== null && currentQ.options[selectedQuizOption].correct ? '#15803D' : '#B91C1C' }}>
+                          {selectedQuizOption !== null && currentQ.options[selectedQuizOption].correct ? '✓ Correct Answer!' : '✗ Incorrect!'}
                         </div>
-                        <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)', marginTop: '4px', maxWidth: '620px' }}>
+                        <div style={{ fontSize: '12px', color: '#475569', marginTop: '3px', maxWidth: '600px' }}>
                           {currentQ.explanation}
                         </div>
                       </div>
@@ -832,17 +795,33 @@ const Home = () => {
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           onClick={handleNextQuizQuestion}
-                          className="btn btn-primary btn-sm"
-                          style={{ padding: '8px 16px', fontWeight: 700, fontSize: '12.5px' }}
+                          style={{
+                            background: '#B3182F',
+                            color: '#FFFFFF',
+                            padding: '7px 14px',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            borderRadius: '4px',
+                            border: 'none',
+                            cursor: 'pointer',
+                          }}
                         >
                           Next Question →
                         </button>
                         <Link
                           to="/aptitude-test"
-                          className="btn btn-outline btn-sm"
-                          style={{ background: '#FFFFFF', padding: '8px 16px', fontWeight: 700, fontSize: '12.5px' }}
+                          style={{
+                            background: '#FFFFFF',
+                            color: '#1E293B',
+                            border: '1px solid #CBD5E1',
+                            padding: '7px 14px',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            borderRadius: '4px',
+                            textDecoration: 'none',
+                          }}
                         >
-                          Full 20-Q Exam
+                          Full 20-Q Mock Test
                         </Link>
                       </div>
                     </div>
@@ -854,28 +833,28 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 4. 4-PHASE / 14-MODULE CMVR STANDARDIZED SYLLABUS */}
-      <section style={{ padding: '80px 24px', background: '#FFFFFF' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '44px' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '11.5px', letterSpacing: '1.2px', textTransform: 'uppercase', background: 'var(--primary-tint)', padding: '4px 12px', borderRadius: '999px' }}>
-              CMVR FORM 5 SYLLABUS
+      {/* 4. 4-PHASE / 14-MODULE CMVR PRACTICAL SYLLABUS */}
+      <section style={{ padding: '60px 24px', background: '#F8F9FA', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <span style={{ color: '#B3182F', fontWeight: 700, fontSize: '11.5px', textTransform: 'uppercase', background: '#FDF2F4', padding: '4px 10px', borderRadius: '4px', border: '1px solid #F8D7DA' }}>
+              PRACTICAL CURRICULUM
             </span>
-            <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '10px 0 8px', color: 'var(--ink)', letterSpacing: '-0.02em' }}>
-              Structured 28-Day Practical Roadmap
+            <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '8px 0 6px', color: '#1E293B' }}>
+              Standardized 28-Day Driving Syllabus
             </h2>
-            <p style={{ color: 'var(--muted)', fontSize: '15px', maxWidth: '600px', margin: '0 auto' }}>
-              Unlike unorganized drivers who just tell you to "press accelerator", every DriveLearn academy breaks your training into 4 structured stages:
+            <p style={{ color: '#64748B', fontSize: '14px', maxWidth: '580px', margin: '0 auto' }}>
+              Every DriveLearn India academy follows the 14 mandatory practical modules mandated under Central Motor Vehicles Rules (CMVR):
             </p>
           </div>
 
-          {/* Phase Stepper Selectors */}
+          {/* Stepper Tabs */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '12px',
-              marginBottom: '28px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '10px',
+              marginBottom: '20px',
             }}
           >
             {curriculumPhases.map((phase, pIdx) => {
@@ -886,25 +865,25 @@ const Home = () => {
                   type="button"
                   onClick={() => setActiveCurriculumStage(pIdx)}
                   style={{
-                    background: isActive ? '#FFFFFF' : '#F8FAFC',
-                    border: isActive ? '2px solid var(--primary)' : '1px solid var(--line)',
-                    borderRadius: '12px',
-                    padding: '16px 18px',
+                    background: isActive ? '#B3182F' : '#FFFFFF',
+                    color: isActive ? '#FFFFFF' : '#1E293B',
+                    border: isActive ? '1px solid #B3182F' : '1px solid #CBD5E1',
+                    borderRadius: '8px',
+                    padding: '14px 16px',
                     textAlign: 'left',
                     cursor: 'pointer',
-                    boxShadow: isActive ? '0 6px 18px rgba(179, 24, 47, 0.12)' : 'none',
-                    transition: 'all 0.18s ease',
+                    boxShadow: isActive ? '0 2px 8px rgba(179, 24, 47, 0.2)' : 'none',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: isActive ? 'var(--primary)' : 'var(--muted)', textTransform: 'uppercase' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: isActive ? '#FFFFFF' : '#B3182F', textTransform: 'uppercase' }}>
                       {phase.phase}
                     </span>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: isActive ? '#FEE2E2' : '#64748B' }}>
                       {phase.days}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, lineHeight: 1.3 }}>
                     {phase.title}
                   </div>
                 </button>
@@ -912,39 +891,38 @@ const Home = () => {
             })}
           </div>
 
-          {/* Active Phase Showcase */}
+          {/* Active Phase Card */}
           {(() => {
             const activePhase = curriculumPhases[activeCurriculumStage];
             return (
               <div
                 style={{
-                  background: 'linear-gradient(135deg, #131A24 0%, #202B3B 100%)',
-                  color: '#FFFFFF',
-                  borderRadius: '16px',
-                  padding: '36px',
+                  background: '#FFFFFF',
+                  borderRadius: '10px',
+                  border: '1px solid #E2E8F0',
+                  padding: '28px',
                   display: 'grid',
-                  gridTemplateColumns: '1.25fr 0.75fr',
-                  gap: '36px',
+                  gridTemplateColumns: '1.3fr 0.7fr',
+                  gap: '28px',
                   alignItems: 'center',
-                  boxShadow: '0 16px 40px rgba(0,0,0,0.12)',
                 }}
               >
                 <div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#FFFFFF', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 800, marginBottom: '14px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FDF2F4', color: '#B3182F', border: '1px solid #F8D7DA', padding: '3px 10px', borderRadius: '4px', fontSize: '11.5px', fontWeight: 800, marginBottom: '10px' }}>
                     <span>{activePhase.phase}</span> · <span>{activePhase.days}</span>
                   </div>
 
-                  <h3 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 10px', color: '#FFFFFF' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 8px', color: '#1E293B' }}>
                     {activePhase.title}
                   </h3>
-                  <p style={{ color: '#CBD5E1', fontSize: '14px', marginBottom: '22px', lineHeight: 1.6 }}>
+                  <p style={{ color: '#475569', fontSize: '13.5px', marginBottom: '18px', lineHeight: 1.5 }}>
                     {activePhase.summary}
                   </p>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {activePhase.skills.map((skill, skIdx) => (
-                      <div key={skIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: '#F1F5F9' }}>
-                        <span style={{ color: '#4ADE80', fontWeight: 800, marginTop: '2px' }}>✓</span>
+                      <div key={skIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: '#334155' }}>
+                        <span style={{ color: '#B3182F', fontWeight: 800, marginTop: '1px' }}>✓</span>
                         <span>{skill}</span>
                       </div>
                     ))}
@@ -953,29 +931,41 @@ const Home = () => {
 
                 <div
                   style={{
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    borderRadius: '14px',
-                    padding: '24px',
+                    background: '#F8F9FA',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    padding: '20px',
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.2)', color: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                    <IconSteeringWheel size={26} color="#F59E0B" />
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FDF2F4', color: '#B3182F', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                    <IconSteeringWheel size={22} color="#B3182F" />
                   </div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
-                    Ready to practice this stage?
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#1E293B', marginBottom: '4px' }}>
+                    Enroll in this course module
                   </div>
-                  <p style={{ fontSize: '12.5px', color: '#94A3B8', marginBottom: '20px', lineHeight: 1.5 }}>
-                    Pick an accredited academy near you with verified dual-control cars and transparent fee structures.
+                  <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '16px', lineHeight: 1.4 }}>
+                    Choose an accredited driving academy in your city with verified dual-control cars.
                   </p>
                   <Link
                     to="/learner"
-                    className="btn btn-primary"
-                    style={{ width: '100%', padding: '11px', fontWeight: 800, fontSize: '13px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    style={{
+                      background: '#B3182F',
+                      color: '#FFFFFF',
+                      width: '100%',
+                      padding: '9px',
+                      fontWeight: 700,
+                      fontSize: '12.5px',
+                      borderRadius: '6px',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                    }}
                   >
-                    <span>Browse Certified Schools</span>
-                    <IconArrowRight size={15} />
+                    <span>Browse Driving Schools</span>
+                    <IconArrowRight size={14} />
                   </Link>
                 </div>
               </div>
@@ -984,66 +974,66 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 5. SIDE-BY-SIDE COMPARISON: DRIVELEARN VS UNORGANIZED DRIVING AGENTS */}
-      <section style={{ padding: '80px 24px', background: '#F8FAFC' }}>
-        <div style={{ maxWidth: '980px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '38px' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '11.5px', letterSpacing: '1.2px', textTransform: 'uppercase', background: 'var(--primary-tint)', padding: '4px 12px', borderRadius: '999px' }}>
-              TRANSPARENCY & STANDARDS
+      {/* 5. COMPARISON TABLE */}
+      <section style={{ padding: '60px 24px', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ maxWidth: '920px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <span style={{ color: '#B3182F', fontWeight: 700, fontSize: '11.5px', textTransform: 'uppercase', background: '#FDF2F4', padding: '4px 10px', borderRadius: '4px', border: '1px solid #F8D7DA' }}>
+              WHY DRIVELEARN INDIA
             </span>
-            <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '10px 0 8px', color: 'var(--ink)', letterSpacing: '-0.02em' }}>
-              DriveLearn India vs. Unorganized Local Driving Schools
+            <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '8px 0 6px', color: '#1E293B' }}>
+              DriveLearn India Network vs. Unorganized Driving Agents
             </h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14.5px' }}>
-              Why over 50,000 learners chose our structured, transparent digital network:
+            <p style={{ color: '#64748B', fontSize: '14px' }}>
+              Clear comparison of safety standards and transparent policies:
             </p>
           </div>
 
-          <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid var(--line)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-            <table className="comparison-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ border: '1px solid #CBD5E1', borderRadius: '8px', overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid var(--line)' }}>
-                  <th style={{ padding: '16px 20px', textAlign: 'left', fontSize: '13px', fontWeight: 800, color: 'var(--ink)', width: '38%' }}>
-                    Safety, Standards & Service
+                <tr style={{ background: '#F1F5F9', borderBottom: '1px solid #CBD5E1' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 800, color: '#1E293B', width: '38%' }}>
+                    Features & Safety
                   </th>
-                  <th style={{ padding: '16px 20px', textAlign: 'left', fontSize: '13px', fontWeight: 800, color: 'var(--primary)', background: '#FBE9EA', width: '31%' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 800, color: '#B3182F', background: '#FDF2F4', width: '31%' }}>
                     DriveLearn India Network
                   </th>
-                  <th style={{ padding: '16px 20px', textAlign: 'left', fontSize: '13px', fontWeight: 800, color: 'var(--muted)', width: '31%' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 800, color: '#64748B', width: '31%' }}>
                     Unorganized Local Agents
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ borderBottom: '1px solid var(--line)' }}>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', fontWeight: 700 }}>Dual-Control Vehicle Safety</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#15803D', fontWeight: 700 }}>✓ 100% Certified Dual-Brake Fleet</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#B91C1C' }}>✗ Often private cars without pedals</td>
+                <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 700 }}>Dual-Control Car Verification</td>
+                  <td style={{ padding: '12px 16px', color: '#15803D', fontWeight: 700 }}>✓ 100% Certified Dual-Brake Cars</td>
+                  <td style={{ padding: '12px 16px', color: '#B91C1C' }}>✗ Often private unverified cars</td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid var(--line)' }}>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', fontWeight: 700 }}>Slot Rescheduling</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#15803D', fontWeight: 700 }}>✓ 1-Click Online Rescheduling (Free)</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#B91C1C' }}>✗ Missed slot lost completely</td>
+                <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 700 }}>Free Slot Rescheduling</td>
+                  <td style={{ padding: '12px 16px', color: '#15803D', fontWeight: 700 }}>✓ 1-Click Online Rescheduling</td>
+                  <td style={{ padding: '12px 16px', color: '#B91C1C' }}>✗ Missed slot lost completely</td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid var(--line)' }}>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', fontWeight: 700 }}>Milestone Tracking</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#15803D', fontWeight: 700 }}>✓ 14-Module Digital Skill Scorecard</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#B91C1C' }}>✗ Paper register with cut corners</td>
+                <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 700 }}>14-Module Skill Scorecard</td>
+                  <td style={{ padding: '12px 16px', color: '#15803D', fontWeight: 700 }}>✓ Digital Session Attendance Logs</td>
+                  <td style={{ padding: '12px 16px', color: '#B91C1C' }}>✗ Manual paper cuts</td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid var(--line)' }}>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', fontWeight: 700 }}>Female Instructor Choice</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#15803D', fontWeight: 700 }}>✓ Certified Lady Instructors available</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#B91C1C' }}>✗ Rarely available or verified</td>
+                <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 700 }}>Female Instructor Availability</td>
+                  <td style={{ padding: '12px 16px', color: '#15803D', fontWeight: 700 }}>✓ Certified Lady Instructors</td>
+                  <td style={{ padding: '12px 16px', color: '#B91C1C' }}>✗ Rarely available</td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid var(--line)' }}>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', fontWeight: 700 }}>Payment Protection & Refunds</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#15803D', fontWeight: 700 }}>✓ Escrow Razorpay & Instant Refund</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#B91C1C' }}>✗ Cash-only, non-refundable</td>
+                <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 700 }}>Payment Protection & Refunds</td>
+                  <td style={{ padding: '12px 16px', color: '#15803D', fontWeight: 700 }}>✓ Razorpay & Instant Refund</td>
+                  <td style={{ padding: '12px 16px', color: '#B91C1C' }}>✗ Cash-only, non-refundable</td>
                 </tr>
                 <tr>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', fontWeight: 700 }}>Official CMVR Form 5</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#15803D', fontWeight: 700 }}>✓ Tamper-proof Digital PDF & Serial</td>
-                  <td style={{ padding: '14px 20px', fontSize: '13px', color: '#B91C1C' }}>✗ Manual delays and re-test hassles</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 700 }}>Official CMVR Form 5</td>
+                  <td style={{ padding: '12px 16px', color: '#15803D', fontWeight: 700 }}>✓ Tamper-proof Digital PDF</td>
+                  <td style={{ padding: '12px 16px', color: '#B91C1C' }}>✗ Delayed physical slips</td>
                 </tr>
               </tbody>
             </table>
@@ -1051,57 +1041,50 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 6. REAL LEARNER REVIEWS & STORIES */}
-      <section style={{ padding: '80px 24px', background: '#FFFFFF' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '44px' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '11.5px', letterSpacing: '1.2px', textTransform: 'uppercase', background: 'var(--primary-tint)', padding: '4px 12px', borderRadius: '999px' }}>
-              REAL EXPERIENCES
+      {/* 6. LEARNER EXPERIENCES */}
+      <section style={{ padding: '60px 24px', background: '#F8F9FA', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <span style={{ color: '#B3182F', fontWeight: 700, fontSize: '11.5px', textTransform: 'uppercase', background: '#FDF2F4', padding: '4px 10px', borderRadius: '4px', border: '1px solid #F8D7DA' }}>
+              STUDENT REVIEWS
             </span>
-            <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '10px 0 8px', color: 'var(--ink)', letterSpacing: '-0.02em' }}>
-              Stories from First-Time Drivers
+            <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '8px 0 6px', color: '#1E293B' }}>
+              Learner Experiences
             </h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14.5px' }}>
-              How real students overcame driving anxiety and cleared their license test on first try:
+            <p style={{ color: '#64748B', fontSize: '14px' }}>
+              Feedback from students who passed their driving license test on first attempt:
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
             {learnerReviews.map((rev, rIdx) => (
               <div
                 key={rIdx}
                 style={{
-                  background: '#F8FAFC',
-                  border: '1px solid var(--line)',
-                  borderRadius: '16px',
-                  padding: '24px',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                 }}
               >
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#F59E0B', marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#B3182F', marginBottom: '10px' }}>
                     {[...Array(rev.rating)].map((_, i) => (
-                      <IconStar key={i} size={15} color="#F59E0B" />
+                      <IconStar key={i} size={14} color="#B3182F" />
                     ))}
                   </div>
 
-                  <p style={{ fontSize: '13.5px', color: 'var(--ink)', lineHeight: 1.6, marginBottom: '20px', fontStyle: 'italic' }}>
+                  <p style={{ fontSize: '13px', color: '#334155', lineHeight: 1.6, marginBottom: '16px', fontStyle: 'italic' }}>
                     "{rev.story}"
                   </p>
                 </div>
 
-                <div style={{ borderTop: '1px solid var(--line)', paddingTop: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={rev.avatar}
-                    alt={rev.name}
-                    style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                  <div>
-                    <div style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--ink)' }}>{rev.name}</div>
-                    <div style={{ fontSize: '11.5px', color: 'var(--muted)' }}>{rev.role} · {rev.location}</div>
-                  </div>
+                <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#1E293B' }}>{rev.name}</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B' }}>{rev.role} · {rev.location}</div>
                 </div>
               </div>
             ))}
@@ -1109,61 +1092,60 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 7. ACADEMY PARTNER PORTAL CTA */}
-      <section style={{ padding: '70px 24px', background: '#F8FAFC' }}>
+      {/* 7. PARTNER WITH DRIVELEARN FOR SCHOOL OWNERS */}
+      <section style={{ padding: '60px 24px', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
         <div
           style={{
-            maxWidth: '1180px',
+            maxWidth: '1140px',
             margin: '0 auto',
-            background: 'linear-gradient(135deg, #101622 0%, #1E293B 100%)',
-            color: '#FFFFFF',
-            borderRadius: '20px',
-            padding: '48px',
+            background: '#FDF2F4',
+            border: '1px solid #F8D7DA',
+            borderRadius: '12px',
+            padding: '36px',
             display: 'grid',
             gridTemplateColumns: '1.2fr 0.8fr',
-            gap: '36px',
+            gap: '30px',
             alignItems: 'center',
-            boxShadow: '0 20px 48px rgba(0,0,0,0.12)',
           }}
         >
           <div>
-            <span style={{ background: '#E1712E', color: '#FFFFFF', padding: '4px 12px', borderRadius: '999px', fontSize: '11.5px', fontWeight: 800, textTransform: 'uppercase' }}>
+            <span style={{ background: '#B3182F', color: '#FFFFFF', padding: '3px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
               FOR DRIVING SCHOOL OWNERS
             </span>
-            <h2 style={{ fontSize: '30px', fontWeight: 900, color: '#FFFFFF', margin: '14px 0 12px', letterSpacing: '-0.02em' }}>
-              Digitize Your Academy & Fill Your Training Slots
+            <h2 style={{ fontSize: '26px', fontWeight: 800, color: '#1E293B', margin: '12px 0 10px' }}>
+              List Your Driving Academy on DriveLearn India
             </h2>
-            <p style={{ color: '#CBD5E1', fontSize: '14.5px', lineHeight: 1.6, marginBottom: '24px' }}>
-              Receive verified student bookings, manage instructor schedules with automated buffer slots, track digital attendance, and issue government-compliant Form 5 certificates.
+            <p style={{ color: '#475569', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
+              Receive online student bookings, manage instructor availability slots, track student milestones, and issue official CMVR Form 5 certificates.
             </p>
 
-            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-              <Link to="/for-schools" className="btn btn-primary" style={{ padding: '12px 24px', fontWeight: 800, fontSize: '13.5px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <Link to="/for-schools" style={{ background: '#B3182F', color: '#FFFFFF', padding: '10px 20px', fontWeight: 700, fontSize: '13px', borderRadius: '6px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                 <span>List Your Academy</span>
-                <IconArrowRight size={15} />
+                <IconArrowRight size={14} />
               </Link>
-              <Link to="/login" className="btn btn-outline" style={{ background: '#FFFFFF', color: '#0F172A', padding: '12px 24px', fontWeight: 800, fontSize: '13.5px' }}>
+              <Link to="/login" style={{ background: '#FFFFFF', color: '#1E293B', border: '1px solid #CBD5E1', padding: '10px 20px', fontWeight: 700, fontSize: '13px', borderRadius: '6px', textDecoration: 'none' }}>
                 Owner Portal Login
               </Link>
             </div>
           </div>
 
-          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.12)' }}>
-            <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#FDE047', marginBottom: '14px' }}>
-              Included in DriveLearn Academy OS:
+          <div style={{ background: '#FFFFFF', borderRadius: '8px', padding: '20px', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#B3182F', marginBottom: '12px' }}>
+              Included with Academy Registration:
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#E2E8F0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <IconCheck size={16} color="#4ADE80" strokeWidth={2.5} /> Direct student bookings with zero upfront setup fee
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12.5px', color: '#334155' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconCheck size={14} color="#B3182F" strokeWidth={2.5} /> Direct online student bookings
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <IconCheck size={16} color="#4ADE80" strokeWidth={2.5} /> Automated slot calendar with 15-min vehicle reset buffers
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconCheck size={14} color="#B3182F" strokeWidth={2.5} /> Automated slot scheduling calendar
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <IconCheck size={16} color="#4ADE80" strokeWidth={2.5} /> Multi-car fleet management (Manual, Automatic, 2-Wheeler)
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconCheck size={14} color="#B3182F" strokeWidth={2.5} /> Multi-vehicle fleet tracking
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <IconCheck size={16} color="#4ADE80" strokeWidth={2.5} /> Instant digital invoicing with automated GST calculation
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconCheck size={14} color="#B3182F" strokeWidth={2.5} /> Government-compliant Form 5 certification
               </div>
             </div>
           </div>
@@ -1171,17 +1153,17 @@ const Home = () => {
       </section>
 
       {/* 8. FREQUENTLY ASKED QUESTIONS */}
-      <section style={{ padding: '80px 24px', background: '#FFFFFF' }}>
+      <section style={{ padding: '60px 24px', background: '#F8F9FA', borderBottom: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: '840px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '38px' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '11.5px', letterSpacing: '1.2px', textTransform: 'uppercase', background: 'var(--primary-tint)', padding: '4px 12px', borderRadius: '999px' }}>
-              COMMON QUESTIONS
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <span style={{ color: '#B3182F', fontWeight: 700, fontSize: '11.5px', textTransform: 'uppercase', background: '#FDF2F4', padding: '4px 10px', borderRadius: '4px', border: '1px solid #F8D7DA' }}>
+              FAQ
             </span>
-            <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '10px 0 8px', color: 'var(--ink)', letterSpacing: '-0.02em' }}>
-              Everything You Need to Know
+            <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '8px 0 6px', color: '#1E293B' }}>
+              Frequently Asked Questions
             </h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14.5px' }}>
-              Direct answers about course packages, RTO testing, and safety policies:
+            <p style={{ color: '#64748B', fontSize: '14px' }}>
+              Common questions about driving lessons, fees, and RTO test procedures:
             </p>
           </div>
 
@@ -1189,19 +1171,18 @@ const Home = () => {
             {faqs.map((faq, fIdx) => {
               const isOpen = openFaq === fIdx;
               return (
-                <div key={fIdx} className="faq-item" style={{ border: '1px solid var(--line)', borderRadius: '12px', marginBottom: '12px', background: '#FFFFFF', overflow: 'hidden' }}>
+                <div key={fIdx} style={{ border: '1px solid #CBD5E1', borderRadius: '8px', marginBottom: '10px', background: '#FFFFFF', overflow: 'hidden' }}>
                   <div
-                    className="faq-header"
                     onClick={() => setOpenFaq(isOpen ? null : fIdx)}
-                    style={{ padding: '18px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', fontWeight: 700, fontSize: '14.5px', color: 'var(--ink)' }}
+                    style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#1E293B' }}
                   >
                     <span>{faq.q}</span>
-                    <span style={{ fontSize: '18px', color: 'var(--primary)', fontWeight: 800 }}>
+                    <span style={{ fontSize: '18px', color: '#B3182F', fontWeight: 800 }}>
                       {isOpen ? '−' : '+'}
                     </span>
                   </div>
                   {isOpen && (
-                    <div className="faq-body" style={{ padding: '0 22px 18px', fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.6, borderTop: '1px solid #F1F5F9', paddingTop: '12px' }}>
+                    <div style={{ padding: '0 20px 16px', fontSize: '13px', color: '#475569', lineHeight: 1.5, borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
                       {faq.a}
                     </div>
                   )}
@@ -1212,21 +1193,21 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 9. FINAL ACTION BANNER */}
-      <section style={{ padding: '60px 24px', background: 'linear-gradient(135deg, #B3182F 0%, #8B0E20 100%)', color: '#FFFFFF', textAlign: 'center' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '34px', fontWeight: 900, color: '#FFFFFF', marginBottom: '12px', letterSpacing: '-0.02em' }}>
-            Ready to get behind the wheel?
+      {/* 9. FINAL RED & WHITE ACTION BANNER */}
+      <section style={{ padding: '50px 24px', background: '#B3182F', color: '#FFFFFF', textAlign: 'center' }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '30px', fontWeight: 800, color: '#FFFFFF', marginBottom: '10px' }}>
+            Ready to Start Learning?
           </h2>
-          <p style={{ fontSize: '15.5px', color: 'rgba(255,255,255,0.9)', marginBottom: '28px', lineHeight: 1.5 }}>
-            Join 50,000+ confident drivers. Claim your ₹15 introductory wallet bonus and book your first lesson slot with a verified academy.
+          <p style={{ fontSize: '15px', color: '#FEE2E2', marginBottom: '24px', lineHeight: 1.5 }}>
+            Join 50,000+ drivers. Claim your ₹15 welcome wallet credit and book your first lesson with a certified school today.
           </p>
-          <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/signup" className="btn" style={{ background: '#FFFFFF', color: '#B3182F', padding: '13px 30px', fontWeight: 800, fontSize: '14px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <IconWallet size={16} color="#B3182F" />
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/signup" style={{ background: '#FFFFFF', color: '#B3182F', padding: '12px 26px', fontWeight: 800, fontSize: '13.5px', borderRadius: '6px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <IconWallet size={15} color="#B3182F" />
               <span>Claim ₹15 Bonus & Sign Up</span>
             </Link>
-            <Link to="/aptitude-test" className="btn" style={{ background: 'rgba(255,255,255,0.15)', color: '#FFFFFF', border: '1.5px solid rgba(255,255,255,0.35)', padding: '13px 26px', fontWeight: 800, fontSize: '14px', borderRadius: '8px' }}>
+            <Link to="/aptitude-test" style={{ background: 'transparent', color: '#FFFFFF', border: '1px solid #FFFFFF', padding: '12px 22px', fontWeight: 800, fontSize: '13.5px', borderRadius: '6px', textDecoration: 'none' }}>
               Take Free Mock RTO Test
             </Link>
           </div>
